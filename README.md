@@ -1,2 +1,2 @@
 # oauthc
-User-friendly command-line client for OAuth
+User-friendly command-line client for OAuth2
