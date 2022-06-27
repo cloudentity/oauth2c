@@ -2,14 +2,17 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
 	"os"
 
 	"github.com/cloudentity/oauth2c/internal/oauth2"
-	"github.com/sirupsen/logrus"
+	"github.com/pkg/browser"
+	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
+	"github.com/tidwall/pretty"
 )
 
 var clientConfig oauth2.ClientConfig
@@ -25,39 +28,66 @@ var oauth2Cmd = &cobra.Command{
 	Short: "Obtain authorization from the resource owner",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		var (
-			serverConfig oauth2.ServerConfig
-			authorizeURL *url.URL
-			addr         = "localhost:9876"
-			output       map[string]interface{}
-			code         string
-			err          error
-		)
-
 		clientConfig.IssuerURL = args[0]
 
-		if serverConfig, err = oauth2.FetchOpenIDConfiguration(context.Background(), clientConfig.IssuerURL, http.DefaultClient); err != nil {
-			logrus.WithError(err).Fatalf("failed to fetch openid configuration")
+		if err := Authorize(); err != nil {
+			pterm.Error.PrintOnError(err)
+			os.Exit(1)
 		}
-
-		if authorizeURL, err = oauth2.BuildAuthorizeURL(addr, clientConfig, serverConfig); err != nil {
-			logrus.WithError(err).Fatalf("failed to fetch openid configuration")
-		}
-
-		fmt.Printf("Go to %s\n", authorizeURL.String())
-
-		if code, err = oauth2.WaitForCallback(addr); err != nil {
-			logrus.WithError(err).Fatalf("failed to fetch authorization code")
-		}
-
-		logrus.Infof("Code: %s", code)
-
-		if output, err = oauth2.ExchangeCode(context.Background(), addr, code, clientConfig, serverConfig, http.DefaultClient); err != nil {
-			logrus.WithError(err).Fatalf("failed to exchange code for token")
-		}
-
-		logrus.WithField("output", output).Infof("Response")
 	},
+}
+
+func Authorize() error {
+	var (
+		serverConfig oauth2.ServerConfig
+		authorizeURL *url.URL
+		addr         = "localhost:9876"
+		output       map[string]interface{}
+		code         string
+		err          error
+	)
+
+	openidConfigurationStatus, _ := pterm.DefaultSpinner.Start("Fetching OpenID configuration")
+
+	if serverConfig, err = oauth2.FetchOpenIDConfiguration(context.Background(), clientConfig.IssuerURL, http.DefaultClient); err != nil {
+		return err
+	}
+
+	openidConfigurationStatus.Success("Fetched OpenID configuration")
+
+	if authorizeURL, err = oauth2.BuildAuthorizeURL(addr, clientConfig, serverConfig); err != nil {
+		return err
+	}
+
+	pterm.Info.Println("Open the following URL:")
+	pterm.Println()
+	pterm.Println(authorizeURL)
+	pterm.Println()
+
+	browser.OpenURL(authorizeURL.String())
+
+	callbackStatus, _ := pterm.DefaultSpinner.Start("Waiting for callback")
+
+	if code, err = oauth2.WaitForCallback(addr); err != nil {
+		return err
+	}
+
+	callbackStatus.Success("Obtained authorization code")
+
+	exchangeStatus, _ := pterm.DefaultSpinner.Start("Exchaging authorization code for access token")
+
+	if output, err = oauth2.ExchangeCode(context.Background(), addr, code, clientConfig, serverConfig, http.DefaultClient); err != nil {
+		return err
+	}
+
+	exchangeStatus.Success("Exchanged authorization code for access token")
+
+	s, _ := json.Marshal(output)
+
+	pterm.Println("* Response")
+	pterm.Println(string(pretty.Color(pretty.Pretty(s), nil)))
+
+	return nil
 }
 
 func Execute() {
