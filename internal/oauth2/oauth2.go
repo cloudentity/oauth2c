@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/rs/xid"
 )
 
 type ClientConfig struct {
@@ -29,6 +30,7 @@ func BuildAuthorizeRequest(addr string, cconfig ClientConfig, sconfig ServerConf
 		"client_id":     {cconfig.ClientID},
 		"response_type": {"code"},
 		"redirect_uri":  {"http://" + addr + "/callback"},
+		"state":         {xid.New().String()},
 	}
 
 	r.URL.RawQuery = values.Encode()

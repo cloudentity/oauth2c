@@ -52,8 +52,18 @@ func LogRequest(r oauth2.Request) {
 	}
 }
 
+func LogRequestln(r oauth2.Request) {
+	LogRequest(r)
+	pterm.Println()
+}
+
 func LogRequestAndResponse(request oauth2.Request, response interface{}) {
 	LogRequest(request)
 	pterm.Println(pterm.FgGray.Sprint("Response:"))
 	LogJson(response)
+}
+
+func LogRequestAndResponseln(request oauth2.Request, response interface{}) {
+	LogRequestAndResponse(request, response)
+	pterm.Println()
 }

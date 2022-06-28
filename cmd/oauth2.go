@@ -43,6 +43,7 @@ var oauth2Cmd = &cobra.Command{
 
 func Authorize() error {
 	var (
+		serverRequest    oauth2.Request
 		serverConfig     oauth2.ServerConfig
 		authorizeRequest oauth2.Request
 		addr             = "localhost:9876"
@@ -55,11 +56,12 @@ func Authorize() error {
 	)
 
 	// openid configuration
-	if serverConfig, err = oauth2.FetchOpenIDConfiguration(
+	if serverRequest, serverConfig, err = oauth2.FetchOpenIDConfiguration(
 		context.Background(),
 		clientConfig.IssuerURL,
 		http.DefaultClient,
 	); err != nil {
+		LogRequestAndResponseln(serverRequest, err)
 		return err
 	}
 
@@ -82,8 +84,7 @@ func Authorize() error {
 	callbackStatus, _ := pterm.DefaultSpinner.Start("Waiting for callback")
 
 	if callbackRequest, err = oauth2.WaitForCallback(addr); err != nil {
-		LogRequestAndResponse(callbackRequest, err)
-		pterm.Println()
+		LogRequestln(callbackRequest)
 		return err
 	}
 
@@ -105,8 +106,7 @@ func Authorize() error {
 		serverConfig,
 		http.DefaultClient,
 	); err != nil {
-		LogRequestAndResponse(tokenRequest, err)
-		pterm.Println()
+		LogRequestAndResponseln(tokenRequest, err)
 		return err
 	}
 
