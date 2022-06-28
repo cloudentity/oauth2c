@@ -2,19 +2,22 @@ package cmd
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"os"
 
 	"github.com/cloudentity/oauth2c/internal/oauth2"
+	"github.com/golang-jwt/jwt"
 	"github.com/pkg/browser"
 	"github.com/pterm/pterm"
+	"github.com/pterm/pterm/putils"
 	"github.com/spf13/cobra"
 )
 
-var clientConfig oauth2.ClientConfig
+var (
+	clientConfig oauth2.ClientConfig
+	parser       jwt.Parser
+)
 
 func init() {
 	oauth2Cmd.PersistentFlags().StringVar(&clientConfig.ClientID, "client-id", "", "client identifier")
@@ -29,16 +32,10 @@ var oauth2Cmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		clientConfig.IssuerURL = args[0]
 
+		_ = pterm.DefaultBigText.WithLetters(putils.LettersFromString("OAuth2c")).Render()
+
 		if err := Authorize(); err != nil {
-			var oauthErr *oauth2.Error
-
-			if ok := errors.As(err, &oauthErr); ok {
-				pterm.Error.PrintOnError(err)
-				LogJson(oauthErr)
-			} else {
-				pterm.Error.PrintOnError(err)
-			}
-
+			pterm.Error.PrintOnError(err)
 			os.Exit(1)
 		}
 	},
@@ -46,50 +43,97 @@ var oauth2Cmd = &cobra.Command{
 
 func Authorize() error {
 	var (
-		serverConfig oauth2.ServerConfig
-		authorizeURL *url.URL
-		addr         = "localhost:9876"
-		output       map[string]interface{}
-		code         string
-		err          error
+		serverRequest    oauth2.Request
+		serverConfig     oauth2.ServerConfig
+		authorizeRequest oauth2.Request
+		addr             = "localhost:9876"
+		callbackRequest  oauth2.Request
+		tokenRequest     oauth2.Request
+		tokenResponse    oauth2.TokenResponse
+		atClaims         jwt.MapClaims
+		idClaims         jwt.MapClaims
+		err              error
 	)
 
-	openidConfigurationStatus, _ := pterm.DefaultSpinner.Start("Fetching OpenID configuration")
-
-	if serverConfig, err = oauth2.FetchOpenIDConfiguration(context.Background(), clientConfig.IssuerURL, http.DefaultClient); err != nil {
+	// openid configuration
+	if serverRequest, serverConfig, err = oauth2.FetchOpenIDConfiguration(
+		context.Background(),
+		clientConfig.IssuerURL,
+		http.DefaultClient,
+	); err != nil {
+		LogRequestAndResponseln(serverRequest, err)
 		return err
 	}
 
-	openidConfigurationStatus.Success("Fetched OpenID configuration")
+	pterm.DefaultHeader.WithFullWidth().Println("Authorization Code Flow")
 
-	if authorizeURL, err = oauth2.BuildAuthorizeURL(addr, clientConfig, serverConfig); err != nil {
+	// authorize endpoint
+	pterm.DefaultSection.Println("Request authorization")
+
+	if authorizeRequest, err = oauth2.BuildAuthorizeRequest(addr, clientConfig, serverConfig); err != nil {
 		return err
 	}
 
-	pterm.Info.Println("Open the following URL:")
-	pterm.Println()
-	pterm.Println(authorizeURL)
+	LogRequest(authorizeRequest)
+
+	pterm.Printfln("\nOpen the following URL:\n\n%s\n", authorizeRequest.URL.String())
+	browser.OpenURL(authorizeRequest.URL.String())
 	pterm.Println()
 
-	browser.OpenURL(authorizeURL.String())
-
+	// callback
 	callbackStatus, _ := pterm.DefaultSpinner.Start("Waiting for callback")
 
-	if code, err = oauth2.WaitForCallback(addr); err != nil {
+	if callbackRequest, err = oauth2.WaitForCallback(addr); err != nil {
+		LogRequestln(callbackRequest)
 		return err
 	}
+
+	LogRequest(callbackRequest)
+	pterm.Println()
 
 	callbackStatus.Success("Obtained authorization code")
 
+	pterm.DefaultSection.Println("Exchange authorization code for token")
+
+	// token exchange
 	exchangeStatus, _ := pterm.DefaultSpinner.Start("Exchaging authorization code for access token")
 
-	if output, err = oauth2.ExchangeCode(context.Background(), addr, code, clientConfig, serverConfig, http.DefaultClient); err != nil {
+	if tokenRequest, tokenResponse, err = oauth2.ExchangeCode(
+		context.Background(),
+		addr,
+		callbackRequest.URL.Query().Get("code"),
+		clientConfig,
+		serverConfig,
+		http.DefaultClient,
+	); err != nil {
+		LogRequestAndResponseln(tokenRequest, err)
 		return err
 	}
 
-	exchangeStatus.Success("Exchanged authorization code for access token")
+	LogRequestAndResponse(tokenRequest, tokenResponse)
 
-	LogJson(output)
+	// payload
+	if tokenResponse.AccessToken != "" {
+		if _, _, err = parser.ParseUnverified(tokenResponse.AccessToken, &atClaims); err != nil {
+			return err
+		}
+
+		pterm.Println(pterm.FgGray.Sprint("Access token:"))
+		LogJson(atClaims)
+	}
+
+	if tokenResponse.IDToken != "" {
+		if _, _, err = parser.ParseUnverified(tokenResponse.IDToken, &idClaims); err != nil {
+			return err
+		}
+
+		pterm.Println(pterm.FgGray.Sprint("ID token:"))
+		LogJson(idClaims)
+	}
+
+	pterm.Println()
+
+	exchangeStatus.Success("Exchanged authorization code for access token")
 
 	return nil
 }

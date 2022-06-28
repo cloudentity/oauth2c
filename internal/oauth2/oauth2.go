@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/lithammer/shortuuid/v4"
 	"github.com/pkg/errors"
 )
 
@@ -20,23 +21,26 @@ type ClientConfig struct {
 	ClientSecret string
 }
 
-func BuildAuthorizeURL(addr string, cconfig ClientConfig, sconfig ServerConfig) (u *url.URL, err error) {
-	if u, err = url.Parse(sconfig.AuthorizationEndpoint); err != nil {
-		return nil, errors.Wrapf(err, "failed to parse authorization endpoint")
+func BuildAuthorizeRequest(addr string, cconfig ClientConfig, sconfig ServerConfig) (r Request, err error) {
+	if r.URL, err = url.Parse(sconfig.AuthorizationEndpoint); err != nil {
+		return r, errors.Wrapf(err, "failed to parse authorization endpoint")
 	}
 
 	values := url.Values{
 		"client_id":     {cconfig.ClientID},
 		"response_type": {"code"},
 		"redirect_uri":  {"http://" + addr + "/callback"},
+		"state":         {shortuuid.New()},
+		"nonce":         {shortuuid.New()},
 	}
 
-	u.RawQuery = values.Encode()
+	r.URL.RawQuery = values.Encode()
+	r.Method = http.MethodGet
 
-	return u, nil
+	return r, nil
 }
 
-func WaitForCallback(addr string) (code string, err error) {
+func WaitForCallback(addr string) (request Request, err error) {
 	var (
 		srv = http.Server{Addr: addr}
 		wg  sync.WaitGroup
@@ -45,6 +49,9 @@ func WaitForCallback(addr string) (code string, err error) {
 	wg.Add(1)
 
 	http.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
+		request.Method = r.Method
+		request.URL = r.URL
+
 		if r.URL.Query().Get("error") != "" {
 			err = &Error{
 				ErrorCode:   r.URL.Query().Get("error"),
@@ -56,8 +63,6 @@ func WaitForCallback(addr string) (code string, err error) {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte(`Authorization failed. You may close this browser.`))
 		} else {
-			code = r.URL.Query().Get("code")
-
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte(`Authorization succeeded. You may close this browser.`))
 		}
@@ -75,7 +80,17 @@ func WaitForCallback(addr string) (code string, err error) {
 
 	wg.Wait()
 
-	return code, err
+	return request, err
+}
+
+type TokenResponse struct {
+	AccessToken     string `json:"access_token,omitempty"`
+	ExpiresIn       int64  `json:"expires_in,omitempty"`
+	IDToken         string `json:"id_token,omitempty"`
+	IssuedTokenType string `json:"issued_token_type,omitempty"`
+	RefreshToken    string `json:"refresh_token,omitempty"`
+	Scope           string `json:"scope,omitempty"`
+	TokenType       string `json:"token_type,omitempty"`
 }
 
 func ExchangeCode(
@@ -85,14 +100,14 @@ func ExchangeCode(
 	cconfig ClientConfig,
 	sconfig ServerConfig,
 	hc *http.Client,
-) (output map[string]interface{}, err error) {
+) (request Request, response TokenResponse, err error) {
 	var (
 		req  *http.Request
 		resp *http.Response
 		body []byte
 	)
 
-	values := url.Values{
+	request.Form = url.Values{
 		"grant_type":    {"authorization_code"},
 		"code":          {code},
 		"client_id":     {cconfig.ClientID},
@@ -104,30 +119,34 @@ func ExchangeCode(
 		ctx,
 		http.MethodPost,
 		sconfig.TokenEndpoint,
-		strings.NewReader(values.Encode()),
+		strings.NewReader(request.Form.Encode()),
 	); err != nil {
-		return nil, err
+		return request, response, err
 	}
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
+	request.Method = req.Method
+	request.Headers = req.Header
+	request.URL = req.URL
+
 	if resp, err = hc.Do(req); err != nil {
-		return nil, err
+		return request, response, err
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, ParseError(resp)
+		return request, response, ParseError(resp)
 	}
 
 	if body, err = io.ReadAll(resp.Body); err != nil {
-		return nil, fmt.Errorf("failed to read exchange response body: %w", err)
+		return request, response, fmt.Errorf("failed to read exchange response body: %w", err)
 	}
 
-	if err = json.Unmarshal(body, &output); err != nil {
-		return nil, fmt.Errorf("failed to parse exchange response: %w", err)
+	if err = json.Unmarshal(body, &response); err != nil {
+		return request, response, fmt.Errorf("failed to parse exchange response: %w", err)
 	}
 
-	return output, nil
+	return request, response, nil
 }
