@@ -1,4 +1,4 @@
-# oauthc
+# oauth2c
 User-friendly command-line client for OAuth2
 
 [![asciicast](https://asciinema.org/a/5Y95hwfTT8DPPHtgIl9qnsPXA.svg)](https://asciinema.org/a/5Y95hwfTT8DPPHtgIl9qnsPXA)
@@ -6,7 +6,7 @@ User-friendly command-line client for OAuth2
 ## Installation
 
 ``` sh
-go install github.com/cloudentity/oauth2
+go install github.com/cloudentity/oauth2c
 ```
 
 ## Examples
