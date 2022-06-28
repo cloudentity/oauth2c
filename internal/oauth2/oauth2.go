@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -46,10 +45,22 @@ func WaitForCallback(addr string) (code string, err error) {
 	wg.Add(1)
 
 	http.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
-		code = r.URL.Query().Get("code")
+		if r.URL.Query().Get("error") != "" {
+			err = &Error{
+				ErrorCode:   r.URL.Query().Get("error"),
+				Description: r.URL.Query().Get("error_description"),
+				Hint:        r.URL.Query().Get("error_hint"),
+				TraceID:     r.URL.Query().Get("trace_id"),
+			}
 
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`You have successfully logged in. You may close this browser.`))
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(`Authorization failed. You may close this browser.`))
+		} else {
+			code = r.URL.Query().Get("code")
+
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`Authorization succeeded. You may close this browser.`))
+		}
 
 		time.AfterFunc(time.Second, func() { srv.Shutdown(context.Background()) })
 	})
@@ -107,11 +118,7 @@ func ExchangeCode(
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		if body, err = ioutil.ReadAll(resp.Body); err != nil {
-			return nil, err
-		}
-
-		return nil, fmt.Errorf("failed to exchange code for token: %d %s", resp.StatusCode, string(body))
+		return nil, ParseError(resp)
 	}
 
 	if body, err = io.ReadAll(resp.Body); err != nil {

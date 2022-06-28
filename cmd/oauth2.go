@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,7 +12,6 @@ import (
 	"github.com/pkg/browser"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
-	"github.com/tidwall/pretty"
 )
 
 var clientConfig oauth2.ClientConfig
@@ -31,7 +30,15 @@ var oauth2Cmd = &cobra.Command{
 		clientConfig.IssuerURL = args[0]
 
 		if err := Authorize(); err != nil {
-			pterm.Error.PrintOnError(err)
+			var oauthErr *oauth2.Error
+
+			if ok := errors.As(err, &oauthErr); ok {
+				pterm.Error.PrintOnError(err)
+				LogJson(oauthErr)
+			} else {
+				pterm.Error.PrintOnError(err)
+			}
+
 			os.Exit(1)
 		}
 	},
@@ -82,10 +89,7 @@ func Authorize() error {
 
 	exchangeStatus.Success("Exchanged authorization code for access token")
 
-	s, _ := json.Marshal(output)
-
-	pterm.Println("* Response")
-	pterm.Println(string(pretty.Color(pretty.Pretty(s), nil)))
+	LogJson(output)
 
 	return nil
 }

@@ -3,8 +3,6 @@ package oauth2
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -33,13 +31,7 @@ func FetchOpenIDConfiguration(ctx context.Context, issuerURL string, hc *http.Cl
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		var errorBody []byte
-
-		if errorBody, err = ioutil.ReadAll(resp.Body); err != nil {
-			return c, err
-		}
-
-		return c, fmt.Errorf("failed to get openid configuration: %d %s", resp.StatusCode, string(errorBody))
+		return c, ParseError(resp)
 	}
 
 	if err = json.NewDecoder(resp.Body).Decode(&c); err != nil {
