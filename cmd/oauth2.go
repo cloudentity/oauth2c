@@ -9,12 +9,16 @@ import (
 	"os"
 
 	"github.com/cloudentity/oauth2c/internal/oauth2"
+	"github.com/golang-jwt/jwt"
 	"github.com/pkg/browser"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 )
 
-var clientConfig oauth2.ClientConfig
+var (
+	clientConfig oauth2.ClientConfig
+	parser       jwt.Parser
+)
 
 func init() {
 	oauth2Cmd.PersistentFlags().StringVar(&clientConfig.ClientID, "client-id", "", "client identifier")
@@ -49,7 +53,9 @@ func Authorize() error {
 		serverConfig oauth2.ServerConfig
 		authorizeURL *url.URL
 		addr         = "localhost:9876"
-		output       map[string]interface{}
+		response     oauth2.TokenResponse
+		atClaims     jwt.MapClaims
+		idClaims     jwt.MapClaims
 		code         string
 		err          error
 	)
@@ -83,13 +89,32 @@ func Authorize() error {
 
 	exchangeStatus, _ := pterm.DefaultSpinner.Start("Exchaging authorization code for access token")
 
-	if output, err = oauth2.ExchangeCode(context.Background(), addr, code, clientConfig, serverConfig, http.DefaultClient); err != nil {
+	if response, err = oauth2.ExchangeCode(context.Background(), addr, code, clientConfig, serverConfig, http.DefaultClient); err != nil {
 		return err
 	}
 
 	exchangeStatus.Success("Exchanged authorization code for access token")
 
-	LogJson(output)
+	pterm.Printfln("* Token endpoint response:")
+	LogJson(response)
+
+	if response.AccessToken != "" {
+		if _, _, err = parser.ParseUnverified(response.AccessToken, &atClaims); err != nil {
+			return err
+		}
+
+		pterm.Printfln("* Access token:")
+		LogJson(atClaims)
+	}
+
+	if response.IDToken != "" {
+		if _, _, err = parser.ParseUnverified(response.IDToken, &idClaims); err != nil {
+			return err
+		}
+
+		pterm.Printfln("* ID token:")
+		LogJson(idClaims)
+	}
 
 	return nil
 }

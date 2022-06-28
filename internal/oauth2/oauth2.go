@@ -78,6 +78,16 @@ func WaitForCallback(addr string) (code string, err error) {
 	return code, err
 }
 
+type TokenResponse struct {
+	AccessToken     string `json:"access_token,omitempty"`
+	ExpiresIn       int64  `json:"expires_in,omitempty"`
+	IDToken         string `json:"id_token,omitempty"`
+	IssuedTokenType string `json:"issued_token_type,omitempty"`
+	RefreshToken    string `json:"refresh_token,omitempty"`
+	Scope           string `json:"scope,omitempty"`
+	TokenType       string `json:"token_type,omitempty"`
+}
+
 func ExchangeCode(
 	ctx context.Context,
 	addr string,
@@ -85,7 +95,7 @@ func ExchangeCode(
 	cconfig ClientConfig,
 	sconfig ServerConfig,
 	hc *http.Client,
-) (output map[string]interface{}, err error) {
+) (response TokenResponse, err error) {
 	var (
 		req  *http.Request
 		resp *http.Response
@@ -106,28 +116,28 @@ func ExchangeCode(
 		sconfig.TokenEndpoint,
 		strings.NewReader(values.Encode()),
 	); err != nil {
-		return nil, err
+		return response, err
 	}
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	if resp, err = hc.Do(req); err != nil {
-		return nil, err
+		return response, err
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, ParseError(resp)
+		return response, ParseError(resp)
 	}
 
 	if body, err = io.ReadAll(resp.Body); err != nil {
-		return nil, fmt.Errorf("failed to read exchange response body: %w", err)
+		return response, fmt.Errorf("failed to read exchange response body: %w", err)
 	}
 
-	if err = json.Unmarshal(body, &output); err != nil {
-		return nil, fmt.Errorf("failed to parse exchange response: %w", err)
+	if err = json.Unmarshal(body, &response); err != nil {
+		return response, fmt.Errorf("failed to parse exchange response: %w", err)
 	}
 
-	return output, nil
+	return response, nil
 }
