@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/lithammer/shortuuid/v4"
 	"github.com/pkg/errors"
-	"github.com/rs/xid"
 )
 
 type ClientConfig struct {
@@ -30,7 +30,8 @@ func BuildAuthorizeRequest(addr string, cconfig ClientConfig, sconfig ServerConf
 		"client_id":     {cconfig.ClientID},
 		"response_type": {"code"},
 		"redirect_uri":  {"http://" + addr + "/callback"},
-		"state":         {xid.New().String()},
+		"state":         {shortuuid.New()},
+		"nonce":         {shortuuid.New()},
 	}
 
 	r.URL.RawQuery = values.Encode()
