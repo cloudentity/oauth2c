@@ -1,7 +1,15 @@
 package main
 
-import "github.com/cloudentity/oauth2c/cmd"
+import (
+	"fmt"
+	"os"
+
+	"github.com/cloudentity/oauth2c/cmd"
+)
 
 func main() {
-	cmd.Execute()
+	if err := cmd.OAuth2Cmd.Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }
