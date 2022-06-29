@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/cloudentity/oauth2c/internal/oauth2"
+	"github.com/golang-jwt/jwt"
 	"github.com/pterm/pterm"
 	"github.com/tidwall/pretty"
 )
@@ -52,8 +53,8 @@ func LogRequest(r oauth2.Request) {
 	}
 }
 
-func LogRequestln(r oauth2.Request) {
-	LogRequest(r)
+func LogRequestln(request oauth2.Request) {
+	LogRequest(request)
 	pterm.Println()
 }
 
@@ -65,5 +66,36 @@ func LogRequestAndResponse(request oauth2.Request, response interface{}) {
 
 func LogRequestAndResponseln(request oauth2.Request, response interface{}) {
 	LogRequestAndResponse(request, response)
+	pterm.Println()
+}
+
+func LogTokenPayload(response oauth2.TokenResponse) {
+	var (
+		atClaims jwt.MapClaims
+		idClaims jwt.MapClaims
+	)
+
+	// payload
+	if response.AccessToken != "" {
+		if _, _, err := parser.ParseUnverified(response.AccessToken, &atClaims); err != nil {
+			pterm.Error.Println(err)
+		} else {
+			pterm.Println(pterm.FgGray.Sprint("Access token:"))
+			LogJson(atClaims)
+		}
+	}
+
+	if response.IDToken != "" {
+		if _, _, err := parser.ParseUnverified(response.IDToken, &idClaims); err != nil {
+			pterm.Error.Println(err)
+		} else {
+			pterm.Println(pterm.FgGray.Sprint("ID token:"))
+			LogJson(idClaims)
+		}
+	}
+}
+
+func LogTokenPayloadln(response oauth2.TokenResponse) {
+	LogTokenPayload(response)
 	pterm.Println()
 }

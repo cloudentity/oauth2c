@@ -15,13 +15,39 @@ import (
 	"github.com/pkg/errors"
 )
 
+// grant types
+const (
+	AuthorizationCodeGrantType string = "authorization_code"
+	ClientCredentialsGrantType string = "client_credentials"
+	// ImplicitGrantType          string = "implicit"
+	// RefreshTokenGrantType      string = "refresh_token"
+	// PasswordGrantType          string = "password"
+	// JWTBearerGrantType         string = "urn:ietf:params:oauth:grant-type:jwt-bearer"
+	// CIBAGrantType              string = "urn:openid:params:grant-type:ciba"
+	// TokenExchangeGrantType     string = "urn:ietf:params:oauth:grant-type:token-exchange"
+	// DeviceGrantType            string = "urn:ietf:params:oauth:grant-type:device_code"
+)
+
+// auth methods
+const (
+	ClientSecretBasicAuthMethod string = "client_secret_basic"
+	ClientSecretPostAuthMethod  string = "client_secret_post"
+	// ClientSecretJwtAuthMethod   string = "client_secret_jwt"
+	// PrivateKeyJwtAuthMethod     string = "private_key_jwt"
+	// SelfSignedTLSAuthMethod     string = "self_signed_tls_client_auth"
+	// TLSClientAuthMethod         string = "tls_client_auth"
+	// NoneAuthMethod              string = "none"
+)
+
 type ClientConfig struct {
 	IssuerURL    string
 	ClientID     string
 	ClientSecret string
+	GrantType    string
+	AuthMethod   string
 }
 
-func BuildAuthorizeRequest(addr string, cconfig ClientConfig, sconfig ServerConfig) (r Request, err error) {
+func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfig) (r Request, err error) {
 	if r.URL, err = url.Parse(sconfig.AuthorizationEndpoint); err != nil {
 		return r, errors.Wrapf(err, "failed to parse authorization endpoint")
 	}
@@ -93,26 +119,59 @@ type TokenResponse struct {
 	TokenType       string `json:"token_type,omitempty"`
 }
 
-func ExchangeCode(
+type RequestTokenParams struct {
+	Code        string
+	RedirectURL string
+}
+
+type RequestTokenOption func(*RequestTokenParams)
+
+func WithAuthorizationCode(code string) func(*RequestTokenParams) {
+	return func(opts *RequestTokenParams) {
+		opts.Code = code
+	}
+}
+
+func WithRedirectURL(url string) func(*RequestTokenParams) {
+	return func(opts *RequestTokenParams) {
+		opts.RedirectURL = url
+	}
+}
+
+func RequestToken(
 	ctx context.Context,
-	addr string,
-	code string,
 	cconfig ClientConfig,
 	sconfig ServerConfig,
 	hc *http.Client,
+	opts ...RequestTokenOption,
 ) (request Request, response TokenResponse, err error) {
 	var (
-		req  *http.Request
-		resp *http.Response
-		body []byte
+		req    *http.Request
+		resp   *http.Response
+		params RequestTokenParams
+		body   []byte
 	)
 
+	for _, opt := range opts {
+		opt(&params)
+	}
+
 	request.Form = url.Values{
-		"grant_type":    {"authorization_code"},
-		"code":          {code},
-		"client_id":     {cconfig.ClientID},
-		"client_secret": {cconfig.ClientSecret},
-		"redirect_uri":  {"http://" + addr + "/callback"},
+		"grant_type": {cconfig.GrantType},
+	}
+
+	switch cconfig.AuthMethod {
+	case ClientSecretPostAuthMethod:
+		request.Form.Set("client_id", cconfig.ClientID)
+		request.Form.Set("client_secret", cconfig.ClientSecret)
+	}
+
+	if params.RedirectURL != "" {
+		request.Form.Set("redirect_uri", params.RedirectURL)
+	}
+
+	if params.Code != "" {
+		request.Form.Set("code", params.Code)
 	}
 
 	if req, err = http.NewRequestWithContext(
@@ -122,6 +181,10 @@ func ExchangeCode(
 		strings.NewReader(request.Form.Encode()),
 	); err != nil {
 		return request, response, err
+	}
+
+	if cconfig.AuthMethod == ClientSecretBasicAuthMethod {
+		req.SetBasicAuth(cconfig.ClientID, cconfig.ClientSecret)
 	}
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
