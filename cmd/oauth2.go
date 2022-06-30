@@ -147,7 +147,7 @@ func AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig, serverConfig o
 	pterm.Println()
 
 	// callback
-	callbackStatus, _ := pterm.DefaultSpinner.Start("Waiting for callback")
+	callbackStatus, _ := pterm.DefaultSpinner.Start("Waiting for callback. Go to the browser to authenticate...")
 
 	if callbackRequest, err = oauth2.WaitForCallback(addr); err != nil {
 		LogRequestln(callbackRequest)
@@ -209,7 +209,7 @@ func ImplicitGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.Ser
 	pterm.Println()
 
 	// callback
-	callbackStatus, _ := pterm.DefaultSpinner.Start("Waiting for callback")
+	callbackStatus, _ := pterm.DefaultSpinner.Start("Waiting for callback. Go to the browser to authenticate...")
 
 	if callbackRequest, err = oauth2.WaitForCallback(addr); err != nil {
 		LogRequestln(callbackRequest)
