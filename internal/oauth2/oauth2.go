@@ -2,6 +2,8 @@ package oauth2
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -39,17 +41,22 @@ const (
 	// NoneAuthMethod              string = "none"
 )
 
+const CodeVerifierLength = 43
+
+var CodeChallengeEncoder = base64.RawURLEncoding
+
 type ClientConfig struct {
 	IssuerURL    string
 	ClientID     string
 	ClientSecret string
 	GrantType    string
 	AuthMethod   string
+	PKCE         bool
 }
 
-func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfig) (r Request, err error) {
+func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfig) (r Request, codeVerifier string, err error) {
 	if r.URL, err = url.Parse(sconfig.AuthorizationEndpoint); err != nil {
-		return r, errors.Wrapf(err, "failed to parse authorization endpoint")
+		return r, "", errors.Wrapf(err, "failed to parse authorization endpoint")
 	}
 
 	values := url.Values{
@@ -60,10 +67,25 @@ func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfi
 		"nonce":         {shortuuid.New()},
 	}
 
+	if cconfig.PKCE {
+		codeVerifier = RandomString(CodeVerifierLength)
+
+		hash := sha256.New()
+
+		if _, err = hash.Write([]byte(codeVerifier)); err != nil {
+			return r, "", err
+		}
+
+		codeChallenge := CodeChallengeEncoder.EncodeToString(hash.Sum([]byte{}))
+
+		values.Set("code_challenge", codeChallenge)
+		values.Set("code_challenge_method", "S256")
+	}
+
 	r.URL.RawQuery = values.Encode()
 	r.Method = http.MethodGet
 
-	return r, nil
+	return r, codeVerifier, nil
 }
 
 func WaitForCallback(addr string) (request Request, err error) {
@@ -120,8 +142,9 @@ type TokenResponse struct {
 }
 
 type RequestTokenParams struct {
-	Code        string
-	RedirectURL string
+	Code         string
+	CodeVerifier string
+	RedirectURL  string
 }
 
 type RequestTokenOption func(*RequestTokenParams)
@@ -129,6 +152,12 @@ type RequestTokenOption func(*RequestTokenParams)
 func WithAuthorizationCode(code string) func(*RequestTokenParams) {
 	return func(opts *RequestTokenParams) {
 		opts.Code = code
+	}
+}
+
+func WithCodeVerifier(codeVerifier string) func(*RequestTokenParams) {
+	return func(opts *RequestTokenParams) {
+		opts.CodeVerifier = codeVerifier
 	}
 }
 
@@ -172,6 +201,10 @@ func RequestToken(
 
 	if params.Code != "" {
 		request.Form.Set("code", params.Code)
+	}
+
+	if params.CodeVerifier != "" {
+		request.Form.Set("code_verifier", params.CodeVerifier)
 	}
 
 	if req, err = http.NewRequestWithContext(
