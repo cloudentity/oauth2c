@@ -26,6 +26,8 @@ Flags:
       --scopes strings         requested scopes
 ```
 
+> To make browser flows work add `http://localhost:9876/callback` redirect URL to your client.
+
 ## Grant types
 
 ### Authorization code
@@ -37,7 +39,7 @@ $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --response-types code \
   --grant-type authorization_code \
   --auth-method client_secret_basic \
-  --scopes openid,email
+  --scopes openid,email,offline_access
 ```
 
 ### Authorization code + PKCE
@@ -85,6 +87,31 @@ $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --grant-type client_credentials \
   --auth-method client_secret_basic \
   --scopes introspect_tokens,revoke_tokens
+```
+
+
+### Refresh token
+
+> For this flow request refresh token using `offline_access` scope first.
+
+``` sh
+$ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id cauktionbud6q8ftlqq0 \
+  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+  --grant-type refresh_token\
+  --auth-method client_secret_basic \
+  --refresh-token 1X1IvWR8p5rgKnH2YNmHGd4pZp8Dq-85xzUQuJejT_g.O_DS8Y4eiTS5jZ47_eBv3VbwP4zQUyxjNVW93AyU82k
+```
+
+### Resource Owner Password Credentials Flow
+
+``` sh
+$ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id cauktionbud6q8ftlqq0 \
+  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+  --grant-type password --username demo --password demo \
+  --auth-method client_secret_basic \
+  --scopes openid
 ```
 
 ## Auth methods

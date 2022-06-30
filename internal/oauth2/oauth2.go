@@ -23,8 +23,8 @@ const (
 	AuthorizationCodeGrantType string = "authorization_code"
 	ClientCredentialsGrantType string = "client_credentials"
 	ImplicitGrantType          string = "implicit"
-	// RefreshTokenGrantType      string = "refresh_token"
-	// PasswordGrantType          string = "password"
+	PasswordGrantType          string = "password"
+	RefreshTokenGrantType      string = "refresh_token"
 	// JWTBearerGrantType         string = "urn:ietf:params:oauth:grant-type:jwt-bearer"
 	// CIBAGrantType              string = "urn:openid:params:grant-type:ciba"
 	// TokenExchangeGrantType     string = "urn:ietf:params:oauth:grant-type:token-exchange"
@@ -56,6 +56,9 @@ type ClientConfig struct {
 	PKCE         bool
 	ResponseType []string
 	ResponseMode string
+	Username     string
+	Password     string
+	RefreshToken string
 }
 
 func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfig) (r Request, codeVerifier string, err error) {
@@ -226,8 +229,16 @@ func RequestToken(
 	}
 
 	switch cconfig.GrantType {
-	case ClientCredentialsGrantType:
+	case ClientCredentialsGrantType, PasswordGrantType, RefreshTokenGrantType:
 		request.Form.Set("scope", strings.Join(cconfig.Scopes, " "))
+	}
+
+	switch cconfig.GrantType {
+	case PasswordGrantType:
+		request.Form.Set("username", cconfig.Username)
+		request.Form.Set("password", cconfig.Password)
+	case RefreshTokenGrantType:
+		request.Form.Set("refresh_token", cconfig.RefreshToken)
 	}
 
 	switch cconfig.AuthMethod {

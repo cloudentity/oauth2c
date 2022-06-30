@@ -75,7 +75,6 @@ func LogTokenPayload(response oauth2.TokenResponse) {
 		idClaims jwt.MapClaims
 	)
 
-	// payload
 	if response.AccessToken != "" {
 		if _, _, err := parser.ParseUnverified(response.AccessToken, &atClaims); err != nil {
 			pterm.Error.Println(err)
