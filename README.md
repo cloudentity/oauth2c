@@ -26,7 +26,7 @@ Flags:
       --scopes strings         requested scopes
 ```
 
-## Flows
+## Grant types
 
 ### Authorization code
 
@@ -34,6 +34,7 @@ Flags:
 $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id cauktionbud6q8ftlqq0 \
   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+  --response-types code \
   --grant-type authorization_code \
   --auth-method client_secret_basic \
   --scopes openid,email
@@ -45,11 +46,35 @@ $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id cauktionbud6q8ftlqq0 \
   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+  --response-types code \
   --grant-type authorization_code \
   --auth-method client_secret_basic \
-  --scopes openid,email \
   --pkce
 ```
+
+### Implicit
+
+``` sh
+$ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id cauktionbud6q8ftlqq0 \
+  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+  --response-types token \
+  --response-mode form_post \
+  --grant-type implicit
+```
+
+### Hybrid
+
+``` sh
+$ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id cauktionbud6q8ftlqq0 \
+  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+  --response-types code,id_token \
+  --response-mode form_post \
+  --grant-type authorization_code \
+  --auth-method client_secret_basic
+```
+
 
 ### Client credentials
 
@@ -59,5 +84,29 @@ $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
   --grant-type client_credentials \
   --auth-method client_secret_basic \
+  --scopes introspect_tokens,revoke_tokens
+```
+
+## Auth methods
+
+### Client Secret Basic
+
+``` sh
+$ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id cauktionbud6q8ftlqq0 \
+  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+  --grant-type client_credentials \
+  --auth-method client_secret_basic \
+  --scopes introspect_tokens,revoke_tokens
+```
+
+### Client Secret Post
+
+``` sh
+$ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id cauosoo2omc4fr8ai1fg \
+  --client-secret ipFkA1lMomOMI_d2HcGGQ7j8oxeHFqKw3kli76g92VM \
+  --grant-type client_credentials \
+  --auth-method client_secret_post \
   --scopes introspect_tokens,revoke_tokens
 ```

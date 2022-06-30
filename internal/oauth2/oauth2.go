@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -21,7 +22,7 @@ import (
 const (
 	AuthorizationCodeGrantType string = "authorization_code"
 	ClientCredentialsGrantType string = "client_credentials"
-	// ImplicitGrantType          string = "implicit"
+	ImplicitGrantType          string = "implicit"
 	// RefreshTokenGrantType      string = "refresh_token"
 	// PasswordGrantType          string = "password"
 	// JWTBearerGrantType         string = "urn:ietf:params:oauth:grant-type:jwt-bearer"
@@ -53,6 +54,8 @@ type ClientConfig struct {
 	GrantType    string
 	AuthMethod   string
 	PKCE         bool
+	ResponseType []string
+	ResponseMode string
 }
 
 func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfig) (r Request, codeVerifier string, err error) {
@@ -61,11 +64,18 @@ func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfi
 	}
 
 	values := url.Values{
-		"client_id":     {cconfig.ClientID},
-		"response_type": {"code"},
-		"redirect_uri":  {"http://" + addr + "/callback"},
-		"state":         {shortuuid.New()},
-		"nonce":         {shortuuid.New()},
+		"client_id":    {cconfig.ClientID},
+		"redirect_uri": {"http://" + addr + "/callback"},
+		"state":        {shortuuid.New()},
+		"nonce":        {shortuuid.New()},
+	}
+
+	if len(cconfig.ResponseType) > 0 {
+		values.Set("response_type", strings.Join(cconfig.ResponseType, " "))
+	}
+
+	if cconfig.ResponseMode != "" {
+		values.Set("response_mode", cconfig.ResponseMode)
 	}
 
 	if len(cconfig.Scopes) > 0 {
@@ -102,8 +112,17 @@ func WaitForCallback(addr string) (request Request, err error) {
 	wg.Add(1)
 
 	http.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			time.AfterFunc(time.Second, func() { srv.Shutdown(context.Background()) })
+		}()
+
+		if err = r.ParseForm(); err != nil {
+			return
+		}
+
 		request.Method = r.Method
 		request.URL = r.URL
+		request.Form = r.PostForm
 
 		if r.URL.Query().Get("error") != "" {
 			err = &Error{
@@ -119,8 +138,6 @@ func WaitForCallback(addr string) (request Request, err error) {
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte(`Authorization succeeded. You may close this browser.`))
 		}
-
-		time.AfterFunc(time.Second, func() { srv.Shutdown(context.Background()) })
 	})
 
 	go func() {
@@ -144,6 +161,20 @@ type TokenResponse struct {
 	RefreshToken    string `json:"refresh_token,omitempty"`
 	Scope           string `json:"scope,omitempty"`
 	TokenType       string `json:"token_type,omitempty"`
+}
+
+func NewTokenResponseFromForm(f url.Values) TokenResponse {
+	expiresIn, _ := strconv.ParseInt(f.Get("expires_in"), 10, 64)
+
+	return TokenResponse{
+		AccessToken:     f.Get("access_token"),
+		ExpiresIn:       expiresIn,
+		IDToken:         f.Get("id_token"),
+		IssuedTokenType: f.Get("issued_token_type"),
+		RefreshToken:    f.Get("refresh_token"),
+		Scope:           f.Get("scope"),
+		TokenType:       f.Get("token_type"),
+	}
 }
 
 type RequestTokenParams struct {

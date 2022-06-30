@@ -8,3 +8,11 @@ type Request struct {
 	Headers map[string][]string
 	Form    url.Values
 }
+
+func (r *Request) Get(key string) string {
+	if v := r.URL.Query().Get(key); v != "" {
+		return v
+	}
+
+	return r.Form.Get(key)
+}
