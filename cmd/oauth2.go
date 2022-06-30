@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -25,6 +26,7 @@ func init() {
 	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.ClientSecret, "client-secret", "", "client secret")
 	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.GrantType, "grant-type", "", "grant type")
 	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.AuthMethod, "auth-method", "", "token endpoint authentication method")
+	OAuth2Cmd.PersistentFlags().BoolVar(&cconfig.PKCE, "pkce", false, "enable proof key for code exchange (PKCE)")
 }
 
 var OAuth2Cmd = &cobra.Command{
@@ -37,6 +39,15 @@ var OAuth2Cmd = &cobra.Command{
 		_ = pterm.DefaultBigText.WithLetters(putils.LettersFromString("OAuth2c")).Render()
 
 		if err := Authorize(cconfig); err != nil {
+			var oauth2Error *oauth2.Error
+
+			if errors.As(err, &oauth2Error) {
+				switch oauth2Error.Hint {
+				case "Clients must include a code_challenge when performing the authorize code flow, but it is missing.":
+					pterm.Warning.Println("Authorization server enforces PKCE. Use --pkce flag.")
+				}
+			}
+
 			pterm.Error.PrintOnError(err)
 			os.Exit(1)
 		}
@@ -108,6 +119,7 @@ func AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig, serverConfig o
 		callbackRequest  oauth2.Request
 		tokenRequest     oauth2.Request
 		tokenResponse    oauth2.TokenResponse
+		codeVerifier     string
 		err              error
 	)
 
@@ -116,11 +128,16 @@ func AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig, serverConfig o
 	// authorize endpoint
 	pterm.DefaultSection.Println("Request authorization")
 
-	if authorizeRequest, err = oauth2.RequestAuthorization(addr, clientConfig, serverConfig); err != nil {
+	if authorizeRequest, codeVerifier, err = oauth2.RequestAuthorization(addr, clientConfig, serverConfig); err != nil {
 		return err
 	}
 
 	LogRequest(authorizeRequest)
+
+	if codeVerifier != "" {
+		pterm.Println()
+		pterm.DefaultBox.WithTitle("PKCE").Printfln("code_verifier = %s\ncode_challenge = BASE64URL-ENCODE(SHA256(ASCII(code_verifier)))", codeVerifier)
+	}
 
 	pterm.Printfln("\nOpen the following URL:\n\n%s\n", authorizeRequest.URL.String())
 	browser.OpenURL(authorizeRequest.URL.String())
@@ -151,6 +168,7 @@ func AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig, serverConfig o
 		http.DefaultClient,
 		oauth2.WithAuthorizationCode(callbackRequest.URL.Query().Get("code")),
 		oauth2.WithRedirectURL("http://"+addr+"/callback"),
+		oauth2.WithCodeVerifier(codeVerifier),
 	); err != nil {
 		LogRequestAndResponseln(tokenRequest, err)
 		return err
