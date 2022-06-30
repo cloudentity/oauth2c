@@ -12,9 +12,9 @@ go install github.com/cloudentity/oauth2c@latest
 ### Authorization code
 
 ``` sh
-$ oauth2c https://mbdesign.eu.authz.cloudentity.io/mbdesign/sdafsdfsf \
-  --client-id casoe9uvn3otr0gm4rl0 \
-  --client-secret XOXtcz8I9ZdCFAAcxtYmYfJ6K1iBqng0CfQ724CG0o0 \
+$ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id cauktionbud6q8ftlqq0 \
+  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
   --grant-type authorization_code \
   --auth-method client_secret_basic
 ```
@@ -22,9 +22,9 @@ $ oauth2c https://mbdesign.eu.authz.cloudentity.io/mbdesign/sdafsdfsf \
 ### Authorization code + PKCE
 
 ``` sh
-$ oauth2c https://mbdesign.eu.authz.cloudentity.io/mbdesign/sdafsdfsf \
-  --client-id casoe9uvn3otr0gm4rl0 \
-  --client-secret XOXtcz8I9ZdCFAAcxtYmYfJ6K1iBqng0CfQ724CG0o0 \
+$ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id cauktionbud6q8ftlqq0 \
+  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
   --grant-type authorization_code \
   --auth-method client_secret_basic \
   --pkce
@@ -33,9 +33,9 @@ $ oauth2c https://mbdesign.eu.authz.cloudentity.io/mbdesign/sdafsdfsf \
 ### Client credentials
 
 ``` sh
-$ oauth2c https://mbdesign.eu.authz.cloudentity.io/mbdesign/sdafsdfsf \
-  --client-id casoe9uvn3otr0gm4rl0 \
-  --client-secret XOXtcz8I9ZdCFAAcxtYmYfJ6K1iBqng0CfQ724CG0o0 \
+$ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id cauktionbud6q8ftlqq0 \
+  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
   --grant-type client_credentials \
   --auth-method client_secret_basic
 ```
