@@ -49,6 +49,7 @@ type ClientConfig struct {
 	IssuerURL    string
 	ClientID     string
 	ClientSecret string
+	Scopes       []string
 	GrantType    string
 	AuthMethod   string
 	PKCE         bool
@@ -65,6 +66,10 @@ func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfi
 		"redirect_uri":  {"http://" + addr + "/callback"},
 		"state":         {shortuuid.New()},
 		"nonce":         {shortuuid.New()},
+	}
+
+	if len(cconfig.Scopes) > 0 {
+		values.Set("scope", strings.Join(cconfig.Scopes, " "))
 	}
 
 	if cconfig.PKCE {
@@ -187,6 +192,11 @@ func RequestToken(
 
 	request.Form = url.Values{
 		"grant_type": {cconfig.GrantType},
+	}
+
+	switch cconfig.GrantType {
+	case ClientCredentialsGrantType:
+		request.Form.Set("scope", strings.Join(cconfig.Scopes, " "))
 	}
 
 	switch cconfig.AuthMethod {
