@@ -99,3 +99,11 @@ func LogTokenPayloadln(response oauth2.TokenResponse) {
 	LogTokenPayload(response)
 	pterm.Println()
 }
+
+func LogAuthMethod(config oauth2.ClientConfig) {
+	switch config.AuthMethod {
+	case oauth2.ClientSecretBasicAuthMethod:
+		pterm.DefaultBox.WithTitle("Client Secret Basic").Printfln("Authorization = Basic BASE64-ENCODE(ClientID:ClientSecret)")
+		pterm.Println()
+	}
+}
