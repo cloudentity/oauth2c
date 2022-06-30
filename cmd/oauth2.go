@@ -25,6 +25,9 @@ func init() {
 	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.ClientSecret, "client-secret", "", "client secret")
 	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.GrantType, "grant-type", "", "grant type")
 	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.AuthMethod, "auth-method", "", "token endpoint authentication method")
+	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.Username, "username", "", "resource owner password credentials grant flow username")
+	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.Password, "password", "", "resource owner password credentials grant flow password")
+	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.RefreshToken, "refresh-token", "", "refresh token")
 	OAuth2Cmd.PersistentFlags().StringSliceVar(&cconfig.ResponseType, "response-types", []string{""}, "response type")
 	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.ResponseMode, "response-mode", "", "response mode")
 	OAuth2Cmd.PersistentFlags().StringSliceVar(&cconfig.Scopes, "scopes", []string{}, "requested scopes")
@@ -78,42 +81,13 @@ func Authorize(clientConfig oauth2.ClientConfig) error {
 		return ImplicitGrantFlow(clientConfig, serverConfig)
 	case oauth2.ClientCredentialsGrantType:
 		return ClientCredentialsGrantFlow(clientConfig, serverConfig)
+	case oauth2.PasswordGrantType:
+		return PasswordGrantFlow(clientConfig, serverConfig)
+	case oauth2.RefreshTokenGrantType:
+		return RefreshTokenGrantFlow(clientConfig, serverConfig)
 	}
 
 	return fmt.Errorf("Unknown grant type: %s", clientConfig.GrantType)
-}
-
-func ClientCredentialsGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig) error {
-	var (
-		tokenRequest  oauth2.Request
-		tokenResponse oauth2.TokenResponse
-		err           error
-	)
-
-	pterm.DefaultHeader.WithFullWidth().Println("Client Credentials Flow")
-
-	// request token
-	pterm.DefaultSection.Println("Request authorization")
-
-	tokenStatus, _ := pterm.DefaultSpinner.Start("Requesting authorization")
-
-	if tokenRequest, tokenResponse, err = oauth2.RequestToken(
-		context.Background(),
-		clientConfig,
-		serverConfig,
-		http.DefaultClient,
-	); err != nil {
-		LogRequestAndResponseln(tokenRequest, err)
-		return err
-	}
-
-	LogAuthMethod(clientConfig)
-	LogRequestAndResponse(tokenRequest, tokenResponse)
-	LogTokenPayloadln(tokenResponse)
-
-	tokenStatus.Success("Authorization completed")
-
-	return nil
 }
 
 func AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig) error {
@@ -221,6 +195,51 @@ func ImplicitGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.Ser
 	pterm.Println()
 
 	callbackStatus.Success("Obtained authorization")
+
+	return nil
+}
+
+func ClientCredentialsGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig) error {
+	return tokenEndpointFlow("Client Credentials Flow", clientConfig, serverConfig)
+}
+
+func PasswordGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig) error {
+	return tokenEndpointFlow("Resource Owner Password Credentials Flow", clientConfig, serverConfig)
+}
+
+func RefreshTokenGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig) error {
+	return tokenEndpointFlow("Refresh Token Flow", clientConfig, serverConfig)
+}
+
+func tokenEndpointFlow(name string, clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig) error {
+	var (
+		tokenRequest  oauth2.Request
+		tokenResponse oauth2.TokenResponse
+		err           error
+	)
+
+	pterm.DefaultHeader.WithFullWidth().Println(name)
+
+	// request token
+	pterm.DefaultSection.Println("Request authorization")
+
+	tokenStatus, _ := pterm.DefaultSpinner.Start("Requesting authorization")
+
+	if tokenRequest, tokenResponse, err = oauth2.RequestToken(
+		context.Background(),
+		clientConfig,
+		serverConfig,
+		http.DefaultClient,
+	); err != nil {
+		LogRequestAndResponseln(tokenRequest, err)
+		return err
+	}
+
+	LogAuthMethod(clientConfig)
+	LogRequestAndResponse(tokenRequest, tokenResponse)
+	LogTokenPayloadln(tokenResponse)
+
+	tokenStatus.Success("Authorization completed")
 
 	return nil
 }
