@@ -48,12 +48,13 @@ var CodeChallengeEncoder = base64.RawURLEncoding
 
 type ClientConfig struct {
 	IssuerURL    string
+	GrantType    string
 	ClientID     string
 	ClientSecret string
 	Scopes       []string
-	GrantType    string
 	AuthMethod   string
 	PKCE         bool
+	NoPKCE       bool
 	ResponseType []string
 	ResponseMode string
 	Username     string

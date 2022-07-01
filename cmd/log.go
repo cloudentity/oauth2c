@@ -22,6 +22,10 @@ func LogJson(value interface{}) {
 }
 
 func LogRequest(r oauth2.Request) {
+	if r.URL == nil {
+		return
+	}
+
 	if r.URL.Scheme != "" {
 		pterm.Println(pterm.FgLightMagenta.Sprint(r.Method) + " " + pterm.FgYellow.Sprintf("%s://%s%s", r.URL.Scheme, r.URL.Host, r.URL.Path))
 	} else {

@@ -37,9 +37,11 @@ $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id cauktionbud6q8ftlqq0 \
   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
   --response-types code \
+  --response-mode query \
   --grant-type authorization_code \
   --auth-method client_secret_basic \
-  --scopes openid,email,offline_access
+  --scopes openid,email,offline_access \
+  --no-pkce
 ```
 
 ### Authorization code + PKCE
@@ -49,8 +51,10 @@ $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id cauktionbud6q8ftlqq0 \
   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
   --response-types code \
+  --response-mode query \
   --grant-type authorization_code \
   --auth-method client_secret_basic \
+  --scopes openid,email,offline_access \
   --pkce
 ```
 
@@ -59,10 +63,10 @@ $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 ``` sh
 $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id cauktionbud6q8ftlqq0 \
-  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
   --response-types token \
   --response-mode form_post \
-  --grant-type implicit
+  --grant-type implicit \
+  --scopes openid,email,offline_access
 ```
 
 ### Hybrid
@@ -74,7 +78,9 @@ $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --response-types code,id_token \
   --response-mode form_post \
   --grant-type authorization_code \
-  --auth-method client_secret_basic
+  --auth-method client_secret_basic \
+  --scopes openid,email,offline_access \
+  --no-pkce
 ```
 
 
