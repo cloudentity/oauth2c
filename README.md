@@ -14,16 +14,22 @@ $ oauth2c -h
 User-friendly command-line for OAuth2
 
 Usage:
-  oauthc [issuer-url] [flags]
+  oauthc [issuer url or json config file] [flags]
 
 Flags:
-      --auth-method string     token endpoint authentication method
-      --client-id string       client identifier
-      --client-secret string   client secret
-      --grant-type string      grant type
-  -h, --help                   help for oauthc
-      --pkce                   enable proof key for code exchange (PKCE)
-      --scopes strings         requested scopes
+      --auth-method string       token endpoint authentication method
+      --client-id string         client identifier
+      --client-secret string     client secret
+      --grant-type string        grant type
+  -h, --help                     help for oauthc
+      --no-pkce                  disable proof key for code exchange (PKCE)
+      --password string          resource owner password credentials grant flow password
+      --pkce                     enable proof key for code exchange (PKCE)
+      --refresh-token string     refresh token
+      --response-mode string     response mode
+      --response-types strings   response type
+      --scopes strings           requested scopes
+      --username string          resource owner password credentials grant flow username
 ```
 
 > To make browser flows work add `http://localhost:9876/callback` redirect URL to your client.

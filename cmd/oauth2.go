@@ -39,7 +39,7 @@ func init() {
 }
 
 var OAuth2Cmd = &cobra.Command{
-	Use:   "oauthc [issuer-url or json config file]",
+	Use:   "oauthc [issuer url or json config file]",
 	Short: "User-friendly command-line for OAuth2",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
