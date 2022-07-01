@@ -1,6 +1,9 @@
 # oauth2c
 User-friendly command-line client for OAuth2
 
+![demo](https://user-images.githubusercontent.com/909896/176916616-36d803ef-832a-4bd8-ba8d-f6689e31ed22.gif)
+
+
 ## Installation
 
 ``` sh
@@ -14,16 +17,22 @@ $ oauth2c -h
 User-friendly command-line for OAuth2
 
 Usage:
-  oauthc [issuer-url] [flags]
+  oauthc [issuer url or json config file] [flags]
 
 Flags:
-      --auth-method string     token endpoint authentication method
-      --client-id string       client identifier
-      --client-secret string   client secret
-      --grant-type string      grant type
-  -h, --help                   help for oauthc
-      --pkce                   enable proof key for code exchange (PKCE)
-      --scopes strings         requested scopes
+      --auth-method string       token endpoint authentication method
+      --client-id string         client identifier
+      --client-secret string     client secret
+      --grant-type string        grant type
+  -h, --help                     help for oauthc
+      --no-pkce                  disable proof key for code exchange (PKCE)
+      --password string          resource owner password credentials grant flow password
+      --pkce                     enable proof key for code exchange (PKCE)
+      --refresh-token string     refresh token
+      --response-mode string     response mode
+      --response-types strings   response type
+      --scopes strings           requested scopes
+      --username string          resource owner password credentials grant flow username
 ```
 
 > To make browser flows work add `http://localhost:9876/callback` redirect URL to your client.
@@ -37,9 +46,11 @@ $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id cauktionbud6q8ftlqq0 \
   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
   --response-types code \
+  --response-mode query \
   --grant-type authorization_code \
   --auth-method client_secret_basic \
-  --scopes openid,email,offline_access
+  --scopes openid,email,offline_access \
+  --no-pkce
 ```
 
 ### Authorization code + PKCE
@@ -49,8 +60,10 @@ $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id cauktionbud6q8ftlqq0 \
   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
   --response-types code \
+  --response-mode query \
   --grant-type authorization_code \
   --auth-method client_secret_basic \
+  --scopes openid,email,offline_access \
   --pkce
 ```
 
@@ -59,10 +72,10 @@ $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 ``` sh
 $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id cauktionbud6q8ftlqq0 \
-  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
   --response-types token \
   --response-mode form_post \
-  --grant-type implicit
+  --grant-type implicit \
+  --scopes openid,email,offline_access
 ```
 
 ### Hybrid
@@ -74,7 +87,9 @@ $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --response-types code,id_token \
   --response-mode form_post \
   --grant-type authorization_code \
-  --auth-method client_secret_basic
+  --auth-method client_secret_basic \
+  --scopes openid,email,offline_access \
+  --no-pkce
 ```
 
 

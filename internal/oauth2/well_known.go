@@ -9,9 +9,14 @@ import (
 const OpenIDConfigurationPath = "/.well-known/openid-configuration"
 
 type ServerConfig struct {
-	Issuer                string `json:"issuer"`
-	AuthorizationEndpoint string `json:"authorization_endpoint"`
-	TokenEndpoint         string `json:"token_endpoint"`
+	Issuer                            string   `json:"issuer"`
+	SupportedGrantTypes               []string `json:"grant_types_supported"`
+	SupportedResponseTypes            []string `json:"response_types_supported"`
+	SupportedTokenEndpointAuthMethods []string `json:"token_endpoint_auth_methods_supported"`
+	SupportedScopes                   []string `json:"scopes_supported"`
+	SupportedResponseModes            []string `json:"response_modes_supported"`
+	AuthorizationEndpoint             string   `json:"authorization_endpoint"`
+	TokenEndpoint                     string   `json:"token_endpoint"`
 }
 
 func FetchOpenIDConfiguration(ctx context.Context, issuerURL string, hc *http.Client) (request Request, c ServerConfig, err error) {
