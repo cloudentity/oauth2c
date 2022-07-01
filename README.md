@@ -1,7 +1,7 @@
 # oauth2c
 User-friendly command-line client for OAuth2
 
-![demo](https://user-images.githubusercontent.com/909896/176915708-d78d9653-ab60-4efe-9632-0e743780a50c.gif)
+![demo](https://user-images.githubusercontent.com/909896/176916616-36d803ef-832a-4bd8-ba8d-f6689e31ed22.gif)
 
 
 ## Installation
