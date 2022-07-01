@@ -48,8 +48,7 @@ var OAuth2Cmd = &cobra.Command{
 			data   []byte
 			err    error
 		)
-		// IF url set issuer url (remove /.well-known/openid-configuration)
-		// IF file read and set client config
+
 		if data, err = os.ReadFile(args[0]); err == nil {
 			if err = json.Unmarshal(data, &config); err != nil {
 				pterm.Error.PrintOnError(err)
