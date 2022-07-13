@@ -42,7 +42,7 @@ Flags:
 ### Authorization code
 
 ``` sh
-$ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id cauktionbud6q8ftlqq0 \
   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
   --response-types code \
@@ -56,7 +56,7 @@ $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 ### Authorization code + PKCE
 
 ``` sh
-$ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id cauktionbud6q8ftlqq0 \
   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
   --response-types code \
@@ -70,7 +70,7 @@ $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 ### Implicit
 
 ``` sh
-$ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id cauktionbud6q8ftlqq0 \
   --response-types token \
   --response-mode form_post \
@@ -81,7 +81,7 @@ $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 ### Hybrid
 
 ``` sh
-$ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id cauktionbud6q8ftlqq0 \
   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
   --response-types code,id_token \
@@ -96,7 +96,7 @@ $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 ### Client credentials
 
 ``` sh
-$ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id cauktionbud6q8ftlqq0 \
   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
   --grant-type client_credentials \
@@ -110,7 +110,7 @@ $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 > For this flow request refresh token using `offline_access` scope first.
 
 ``` sh
-$ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id cauktionbud6q8ftlqq0 \
   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
   --grant-type refresh_token\
@@ -121,7 +121,7 @@ $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 ### Resource Owner Password Credentials Flow
 
 ``` sh
-$ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id cauktionbud6q8ftlqq0 \
   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
   --grant-type password --username demo --password demo \
@@ -129,12 +129,28 @@ $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --scopes openid
 ```
 
+### JWT Bearer
+
+> jwks.json can be generated using https://mkjwk.org/
+> public part of the key must be configured in the client
+
+``` sh
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id cauktionbud6q8ftlqq0 \
+  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+  --grant-type urn:ietf:params:oauth:grant-type:jwt-bearer \
+  --auth-method client_secret_basic \
+  --scopes email \
+  --signing-key jwks.json \
+  --assertion-extra-claims '{"sub":"jdoe@example.com"}'
+```
+
 ## Auth methods
 
 ### Client Secret Basic
 
 ``` sh
-$ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id cauktionbud6q8ftlqq0 \
   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
   --grant-type client_credentials \
@@ -145,7 +161,7 @@ $ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 ### Client Secret Post
 
 ``` sh
-$ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id cauosoo2omc4fr8ai1fg \
   --client-secret ipFkA1lMomOMI_d2HcGGQ7j8oxeHFqKw3kli76g92VM \
   --grant-type client_credentials \
