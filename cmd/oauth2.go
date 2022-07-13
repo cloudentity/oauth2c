@@ -371,11 +371,12 @@ func JWTBearerGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.Se
 
 	claims := oauth2.WithStandardClaims(extraClaims, serverConfig)
 
+	pterm.Println(pterm.FgGray.Sprint("Assertion:"))
+	LogJson(claims)
+
 	if assertion, err = oauth2.SignJWT(claims, key); err != nil {
 		return fmt.Errorf("failed to read signing key: %s", clientConfig.SigningKey)
 	}
-
-	pterm.Println("XXX assertion: %s", assertion)
 
 	return tokenEndpointFlow("JWT Bearer Grant Flow", clientConfig, serverConfig, hc, oauth2.WithAssertion(assertion))
 }
@@ -424,6 +425,3 @@ func tokenEndpointFlow(
 
 	return nil
 }
-
-// metrics authentications
-//
