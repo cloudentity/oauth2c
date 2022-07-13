@@ -3,6 +3,8 @@ package oauth2
 import (
 	"encoding/json"
 	"io/ioutil"
+	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/pkg/errors"
@@ -10,19 +12,35 @@ import (
 	jose "github.com/go-jose/go-jose/v3"
 )
 
-func ReadKey(file string) (jose.JSONWebKey, error) {
+func ReadKey(location string, hc *http.Client) (jose.JSONWebKey, error) {
 	var (
 		keys jose.JSONWebKeySet
 		bs   []byte
+		resp *http.Response
 		err  error
 	)
 
-	if bs, err = ioutil.ReadFile(file); err != nil {
-		return jose.JSONWebKey{}, errors.Wrapf(err, "failed to read file: %s", file)
+	if _, err = url.Parse(location); err == nil {
+		if resp, err = hc.Get(location); err != nil {
+			return jose.JSONWebKey{}, errors.Wrapf(err, "failed to call: %s", location)
+		}
+		defer resp.Body.Close()
+
+		if bs, err = ioutil.ReadAll(resp.Body); err != nil {
+			return jose.JSONWebKey{}, errors.Wrapf(err, "failed to read response body from: %s", location)
+		}
+
+		if resp.StatusCode != 200 {
+			return jose.JSONWebKey{}, errors.Wrapf(err, "url: %s responded with invalid status code: %s, body: %s", location, resp.StatusCode, string(bs))
+		}
+	} else if err != nil {
+		if bs, err = ioutil.ReadFile(location); err != nil {
+			return jose.JSONWebKey{}, errors.Wrapf(err, "failed to read file: %s", location)
+		}
 	}
 
 	if err = json.Unmarshal(bs, &keys); err != nil {
-		return jose.JSONWebKey{}, errors.Wrapf(err, "failed to parse jwks keys: %s", file)
+		return jose.JSONWebKey{}, errors.Wrapf(err, "failed to parse jwks keys: %s", location)
 	}
 
 	if len(keys.Keys) == 0 {

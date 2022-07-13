@@ -47,22 +47,22 @@ const CodeVerifierLength = 43
 var CodeChallengeEncoder = base64.RawURLEncoding
 
 type ClientConfig struct {
-	IssuerURL            string
-	GrantType            string
-	ClientID             string
-	ClientSecret         string
-	Scopes               []string
-	AuthMethod           string
-	PKCE                 bool
-	NoPKCE               bool
-	Insecure             bool
-	ResponseType         []string
-	ResponseMode         string
-	Username             string
-	Password             string
-	RefreshToken         string
-	AssertionExtraClaims string
-	SigningKey           string
+	IssuerURL    string
+	GrantType    string
+	ClientID     string
+	ClientSecret string
+	Scopes       []string
+	AuthMethod   string
+	PKCE         bool
+	NoPKCE       bool
+	Insecure     bool
+	ResponseType []string
+	ResponseMode string
+	Username     string
+	Password     string
+	RefreshToken string
+	Assertion    string
+	SigningKey   string
 }
 
 func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfig) (r Request, codeVerifier string, err error) {

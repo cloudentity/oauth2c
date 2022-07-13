@@ -38,8 +38,8 @@ func init() {
 	OAuth2Cmd.PersistentFlags().StringSliceVar(&cconfig.Scopes, "scopes", []string{}, "requested scopes")
 	OAuth2Cmd.PersistentFlags().BoolVar(&cconfig.PKCE, "pkce", false, "enable proof key for code exchange (PKCE)")
 	OAuth2Cmd.PersistentFlags().BoolVar(&cconfig.NoPKCE, "no-pkce", false, "disable proof key for code exchange (PKCE)")
-	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.AssertionExtraClaims, "assertion-extra-claims", "", "extra claims for jwt bearer assertion")
-	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.SigningKey, "signing-key", "", "path to signing key in jwks format")
+	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.Assertion, "assertion", "", "claims for jwt bearer assertion (standard claims such as iss, aud, iat, exp, jti are automatically generated)")
+	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.SigningKey, "signing-key", "", "path or url to signing key in jwks format")
 	OAuth2Cmd.PersistentFlags().BoolVar(&cconfig.Insecure, "insecure", false, "flag to allow insecure connections")
 }
 
@@ -353,11 +353,11 @@ func JWTBearerGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.Se
 		err         error
 	)
 
-	if clientConfig.AssertionExtraClaims == "" {
-		clientConfig.AssertionExtraClaims = "{}"
+	if clientConfig.Assertion == "" {
+		clientConfig.Assertion = "{}"
 	}
 
-	if err = json.Unmarshal([]byte(clientConfig.AssertionExtraClaims), &extraClaims); err != nil {
+	if err = json.Unmarshal([]byte(clientConfig.Assertion), &extraClaims); err != nil {
 		return fmt.Errorf("failed to parse assertion extra claims, it must be a valid JSON: %+v", err)
 	}
 
@@ -365,9 +365,12 @@ func JWTBearerGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.Se
 		return errors.New("path to signing key must be provided")
 	}
 
-	if key, err = oauth2.ReadKey(clientConfig.SigningKey); err != nil {
-		return fmt.Errorf("failed to read signing key: %s", clientConfig.SigningKey)
+	if key, err = oauth2.ReadKey(clientConfig.SigningKey, hc); err != nil {
+		return fmt.Errorf("failed to read signing key: %s, %+v", clientConfig.SigningKey, err)
 	}
+
+	pterm.Println(pterm.FgGray.Sprint("Configure client to use the following public key as jwks"))
+	LogJson(key.Public())
 
 	claims := oauth2.WithStandardClaims(extraClaims, serverConfig)
 
