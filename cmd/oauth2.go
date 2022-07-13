@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/cloudentity/oauth2c/internal/oauth2"
+	"github.com/go-jose/go-jose/v3"
 	"github.com/golang-jwt/jwt"
 	"github.com/pkg/browser"
 	"github.com/pterm/pterm"
@@ -36,6 +38,9 @@ func init() {
 	OAuth2Cmd.PersistentFlags().StringSliceVar(&cconfig.Scopes, "scopes", []string{}, "requested scopes")
 	OAuth2Cmd.PersistentFlags().BoolVar(&cconfig.PKCE, "pkce", false, "enable proof key for code exchange (PKCE)")
 	OAuth2Cmd.PersistentFlags().BoolVar(&cconfig.NoPKCE, "no-pkce", false, "disable proof key for code exchange (PKCE)")
+	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.AssertionExtraClaims, "assertion-extra-claims", "", "extra claims for jwt bearer assertion")
+	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.SigningKey, "signing-key", "", "path to signing key in jwks format")
+	OAuth2Cmd.PersistentFlags().BoolVar(&cconfig.Insecure, "insecure", false, "flag to allow insecure connections")
 }
 
 var OAuth2Cmd = &cobra.Command{
@@ -60,7 +65,15 @@ var OAuth2Cmd = &cobra.Command{
 			cconfig.IssuerURL = strings.TrimSuffix(args[0], oauth2.OpenIDConfigurationPath)
 		}
 
-		if err := Authorize(cconfig); err != nil {
+		hc := &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: cconfig.Insecure,
+				},
+			},
+		}
+
+		if err := Authorize(cconfig, hc); err != nil {
 			var oauth2Error *oauth2.Error
 
 			if errors.As(err, &oauth2Error) {
@@ -84,7 +97,7 @@ func PromptForClientConfig(client oauth2.ClientConfig, server oauth2.ServerConfi
 
 	// auth method
 	switch client.GrantType {
-	case oauth2.AuthorizationCodeGrantType, oauth2.ClientCredentialsGrantType, oauth2.RefreshTokenGrantType, oauth2.PasswordGrantType:
+	case oauth2.AuthorizationCodeGrantType, oauth2.ClientCredentialsGrantType, oauth2.RefreshTokenGrantType, oauth2.PasswordGrantType, oauth2.JWTBearerGrantType:
 		if client.AuthMethod == "" {
 			client.AuthMethod = PromptStringSlice("Token endpoint auth method", server.SupportedTokenEndpointAuthMethods)
 		}
@@ -92,7 +105,7 @@ func PromptForClientConfig(client oauth2.ClientConfig, server oauth2.ServerConfi
 
 	// scopes
 	switch client.GrantType {
-	case oauth2.AuthorizationCodeGrantType, oauth2.ClientCredentialsGrantType, oauth2.ImplicitGrantType, oauth2.PasswordGrantType:
+	case oauth2.AuthorizationCodeGrantType, oauth2.ClientCredentialsGrantType, oauth2.ImplicitGrantType, oauth2.PasswordGrantType, oauth2.JWTBearerGrantType:
 		if len(client.Scopes) == 0 || client.Scopes[0] == "" {
 			client.Scopes = PromptMultiStringSlice("Scopes", server.SupportedScopes)
 		}
@@ -152,7 +165,7 @@ func PromptForClientConfig(client oauth2.ClientConfig, server oauth2.ServerConfi
 	return client
 }
 
-func Authorize(clientConfig oauth2.ClientConfig) error {
+func Authorize(clientConfig oauth2.ClientConfig, hc *http.Client) error {
 	var (
 		serverRequest oauth2.Request
 		serverConfig  oauth2.ServerConfig
@@ -163,7 +176,7 @@ func Authorize(clientConfig oauth2.ClientConfig) error {
 	if serverRequest, serverConfig, err = oauth2.FetchOpenIDConfiguration(
 		context.Background(),
 		clientConfig.IssuerURL,
-		http.DefaultClient,
+		hc,
 	); err != nil {
 		LogRequestAndResponseln(serverRequest, err)
 		return err
@@ -199,21 +212,23 @@ func Authorize(clientConfig oauth2.ClientConfig) error {
 
 	switch clientConfig.GrantType {
 	case oauth2.AuthorizationCodeGrantType:
-		return AuthorizationCodeGrantFlow(clientConfig, serverConfig)
+		return AuthorizationCodeGrantFlow(clientConfig, serverConfig, hc)
 	case oauth2.ImplicitGrantType:
-		return ImplicitGrantFlow(clientConfig, serverConfig)
+		return ImplicitGrantFlow(clientConfig, serverConfig, hc)
 	case oauth2.ClientCredentialsGrantType:
-		return ClientCredentialsGrantFlow(clientConfig, serverConfig)
+		return ClientCredentialsGrantFlow(clientConfig, serverConfig, hc)
 	case oauth2.PasswordGrantType:
-		return PasswordGrantFlow(clientConfig, serverConfig)
+		return PasswordGrantFlow(clientConfig, serverConfig, hc)
 	case oauth2.RefreshTokenGrantType:
-		return RefreshTokenGrantFlow(clientConfig, serverConfig)
+		return RefreshTokenGrantFlow(clientConfig, serverConfig, hc)
+	case oauth2.JWTBearerGrantType:
+		return JWTBearerGrantFlow(clientConfig, serverConfig, hc)
 	}
 
 	return fmt.Errorf("Unknown grant type: %s", clientConfig.GrantType)
 }
 
-func AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig) error {
+func AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
 	var (
 		authorizeRequest oauth2.Request
 		callbackRequest  oauth2.Request
@@ -265,7 +280,7 @@ func AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig, serverConfig o
 		context.Background(),
 		clientConfig,
 		serverConfig,
-		http.DefaultClient,
+		hc,
 		oauth2.WithAuthorizationCode(callbackRequest.Get("code")),
 		oauth2.WithRedirectURL("http://"+addr+"/callback"),
 		oauth2.WithCodeVerifier(codeVerifier),
@@ -283,7 +298,7 @@ func AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig, serverConfig o
 	return nil
 }
 
-func ImplicitGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig) error {
+func ImplicitGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
 	var (
 		authorizeRequest oauth2.Request
 		callbackRequest  oauth2.Request
@@ -322,19 +337,61 @@ func ImplicitGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.Ser
 	return nil
 }
 
-func ClientCredentialsGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig) error {
-	return tokenEndpointFlow("Client Credentials Flow", clientConfig, serverConfig)
+func ClientCredentialsGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
+	return tokenEndpointFlow("Client Credentials Flow", clientConfig, serverConfig, hc)
 }
 
-func PasswordGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig) error {
-	return tokenEndpointFlow("Resource Owner Password Credentials Flow", clientConfig, serverConfig)
+func PasswordGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
+	return tokenEndpointFlow("Resource Owner Password Credentials Flow", clientConfig, serverConfig, hc)
 }
 
-func RefreshTokenGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig) error {
-	return tokenEndpointFlow("Refresh Token Flow", clientConfig, serverConfig)
+func JWTBearerGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
+	var (
+		extraClaims map[string]interface{}
+		key         jose.JSONWebKey
+		assertion   string
+		err         error
+	)
+
+	if clientConfig.AssertionExtraClaims == "" {
+		clientConfig.AssertionExtraClaims = "{}"
+	}
+
+	if err = json.Unmarshal([]byte(clientConfig.AssertionExtraClaims), &extraClaims); err != nil {
+		return fmt.Errorf("failed to parse assertion extra claims, it must be a valid JSON: %+v", err)
+	}
+
+	if clientConfig.SigningKey == "" {
+		return errors.New("path to signing key must be provided")
+	}
+
+	if key, err = oauth2.ReadKey(clientConfig.SigningKey); err != nil {
+		return fmt.Errorf("failed to read signing key: %s", clientConfig.SigningKey)
+	}
+
+	claims := oauth2.WithStandardClaims(extraClaims, serverConfig)
+
+	if assertion, err = oauth2.SignJWT(claims, key); err != nil {
+		return fmt.Errorf("failed to read signing key: %s", clientConfig.SigningKey)
+	}
+
+	pterm.Println("XXX assertion: %s", assertion)
+
+	return tokenEndpointFlow("JWT Bearer Grant Flow", clientConfig, serverConfig, hc, oauth2.WithAssertion(assertion))
 }
 
-func tokenEndpointFlow(name string, clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig) error {
+func RefreshTokenGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
+	return tokenEndpointFlow("Refresh Token Flow", clientConfig, serverConfig, hc)
+}
+
+func tokenEndpointFlow(
+	name string,
+	clientConfig oauth2.ClientConfig,
+	serverConfig oauth2.ServerConfig,
+	hc *http.Client,
+	requestTokenOpts ...oauth2.RequestTokenOption,
+) error {
+
 	var (
 		tokenRequest  oauth2.Request
 		tokenResponse oauth2.TokenResponse
@@ -352,7 +409,8 @@ func tokenEndpointFlow(name string, clientConfig oauth2.ClientConfig, serverConf
 		context.Background(),
 		clientConfig,
 		serverConfig,
-		http.DefaultClient,
+		hc,
+		requestTokenOpts...,
 	); err != nil {
 		LogRequestAndResponseln(tokenRequest, err)
 		return err
@@ -366,3 +424,6 @@ func tokenEndpointFlow(name string, clientConfig oauth2.ClientConfig, serverConf
 
 	return nil
 }
+
+// metrics authentications
+//
