@@ -40,7 +40,7 @@ func init() {
 	OAuth2Cmd.PersistentFlags().BoolVar(&cconfig.NoPKCE, "no-pkce", false, "disable proof key for code exchange (PKCE)")
 	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.Assertion, "assertion", "", "claims for jwt bearer assertion (standard claims such as iss, aud, iat, exp, jti are automatically generated)")
 	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.SigningKey, "signing-key", "", "path or url to signing key in jwks format")
-	OAuth2Cmd.PersistentFlags().BoolVar(&cconfig.Insecure, "insecure", false, "flag to allow insecure connections")
+	OAuth2Cmd.PersistentFlags().BoolVar(&cconfig.Insecure, "insecure", false, "allow insecure connections")
 }
 
 var OAuth2Cmd = &cobra.Command{
@@ -369,16 +369,10 @@ func JWTBearerGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.Se
 		return fmt.Errorf("failed to read signing key: %s, %+v", clientConfig.SigningKey, err)
 	}
 
-	pterm.Println(pterm.FgGray.Sprint("Configure client to use the following public key as jwks"))
-	LogJson(key.Public())
-
 	claims := oauth2.WithStandardClaims(extraClaims, serverConfig)
 
-	pterm.Println(pterm.FgGray.Sprint("Assertion:"))
-	LogJson(claims)
-
 	if assertion, err = oauth2.SignJWT(claims, key); err != nil {
-		return fmt.Errorf("failed to read signing key: %s", clientConfig.SigningKey)
+		return fmt.Errorf("failed to sign assertion: %s", clientConfig.SigningKey)
 	}
 
 	return tokenEndpointFlow("JWT Bearer Grant Flow", clientConfig, serverConfig, hc, oauth2.WithAssertion(assertion))
@@ -420,6 +414,7 @@ func tokenEndpointFlow(
 		return err
 	}
 
+	LogAssertion(tokenRequest)
 	LogAuthMethod(clientConfig)
 	LogRequestAndResponse(tokenRequest, tokenResponse)
 	LogTokenPayloadln(tokenResponse)
