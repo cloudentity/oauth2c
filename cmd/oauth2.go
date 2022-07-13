@@ -425,6 +425,3 @@ func tokenEndpointFlow(
 
 	return nil
 }
-
-// metrics authentications
-//
