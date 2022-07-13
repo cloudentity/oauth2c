@@ -110,3 +110,21 @@ func LogAuthMethod(config oauth2.ClientConfig) {
 		pterm.Println()
 	}
 }
+
+func LogAssertion(request oauth2.Request) {
+	assertion := request.Form.Get("assertion")
+
+	if assertion != "" {
+		var claims jwt.MapClaims
+
+		if token, _, err := parser.ParseUnverified(assertion, &claims); err != nil {
+			pterm.Error.Println(err)
+		} else {
+			pterm.DefaultBox.WithTitle("JWT Bearer assertion").Printfln("assertion = JWT-%s(payload)", token.Header["alg"])
+			pterm.Println("")
+			pterm.Println("Payload")
+			LogJson(claims)
+			pterm.Println("")
+		}
+	}
+}

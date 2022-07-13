@@ -25,7 +25,7 @@ const (
 	ImplicitGrantType          string = "implicit"
 	PasswordGrantType          string = "password"
 	RefreshTokenGrantType      string = "refresh_token"
-	// JWTBearerGrantType         string = "urn:ietf:params:oauth:grant-type:jwt-bearer"
+	JWTBearerGrantType         string = "urn:ietf:params:oauth:grant-type:jwt-bearer"
 	// CIBAGrantType              string = "urn:openid:params:grant-type:ciba"
 	// TokenExchangeGrantType     string = "urn:ietf:params:oauth:grant-type:token-exchange"
 	// DeviceGrantType            string = "urn:ietf:params:oauth:grant-type:device_code"
@@ -55,11 +55,14 @@ type ClientConfig struct {
 	AuthMethod   string
 	PKCE         bool
 	NoPKCE       bool
+	Insecure     bool
 	ResponseType []string
 	ResponseMode string
 	Username     string
 	Password     string
 	RefreshToken string
+	Assertion    string
+	SigningKey   string
 }
 
 func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfig) (r Request, codeVerifier string, err error) {
@@ -185,6 +188,7 @@ type RequestTokenParams struct {
 	Code         string
 	CodeVerifier string
 	RedirectURL  string
+	Assertion    string
 }
 
 type RequestTokenOption func(*RequestTokenParams)
@@ -204,6 +208,12 @@ func WithCodeVerifier(codeVerifier string) func(*RequestTokenParams) {
 func WithRedirectURL(url string) func(*RequestTokenParams) {
 	return func(opts *RequestTokenParams) {
 		opts.RedirectURL = url
+	}
+}
+
+func WithAssertion(assertion string) func(*RequestTokenParams) {
+	return func(opts *RequestTokenParams) {
+		opts.Assertion = assertion
 	}
 }
 
@@ -230,7 +240,7 @@ func RequestToken(
 	}
 
 	switch cconfig.GrantType {
-	case ClientCredentialsGrantType, PasswordGrantType, RefreshTokenGrantType:
+	case ClientCredentialsGrantType, PasswordGrantType, RefreshTokenGrantType, JWTBearerGrantType:
 		request.Form.Set("scope", strings.Join(cconfig.Scopes, " "))
 	}
 
@@ -258,6 +268,10 @@ func RequestToken(
 
 	if params.CodeVerifier != "" {
 		request.Form.Set("code_verifier", params.CodeVerifier)
+	}
+
+	if params.Assertion != "" {
+		request.Form.Set("assertion", params.Assertion)
 	}
 
 	if req, err = http.NewRequestWithContext(
