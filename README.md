@@ -138,7 +138,7 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --grant-type urn:ietf:params:oauth:grant-type:jwt-bearer \
   --auth-method client_secret_basic \
   --scopes email \
-  --signing-key https://www.toptal.com/developers/hastebin/raw/ojeruqulid.json \
+  --signing-key https://pastebin.com/raw/WMkzhjhm \
   --assertion '{"sub":"jdoe@example.com"}'
 ```
 
