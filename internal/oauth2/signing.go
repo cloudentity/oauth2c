@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"net/url"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -20,7 +20,7 @@ func ReadKey(location string, hc *http.Client) (jose.JSONWebKey, error) {
 		err  error
 	)
 
-	if _, err = url.Parse(location); err == nil {
+	if strings.HasPrefix(location, "http") {
 		if resp, err = hc.Get(location); err != nil {
 			return jose.JSONWebKey{}, errors.Wrapf(err, "failed to call: %s", location)
 		}
@@ -33,7 +33,7 @@ func ReadKey(location string, hc *http.Client) (jose.JSONWebKey, error) {
 		if resp.StatusCode != 200 {
 			return jose.JSONWebKey{}, errors.Wrapf(err, "url: %s responded with invalid status code: %s, body: %s", location, resp.StatusCode, string(bs))
 		}
-	} else if err != nil {
+	} else {
 		if bs, err = ioutil.ReadFile(location); err != nil {
 			return jose.JSONWebKey{}, errors.Wrapf(err, "failed to read file: %s", location)
 		}
