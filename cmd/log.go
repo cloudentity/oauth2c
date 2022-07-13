@@ -121,8 +121,10 @@ func LogAssertion(request oauth2.Request) {
 			pterm.Error.Println(err)
 		} else {
 			pterm.DefaultBox.WithTitle("JWT Bearer assertion").Printfln("assertion = JWT-%s(payload)", token.Header["alg"])
+			pterm.Println("")
 			pterm.Println("Payload")
 			LogJson(claims)
+			pterm.Println("")
 		}
 	}
 }
