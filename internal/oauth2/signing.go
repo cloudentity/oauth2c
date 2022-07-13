@@ -2,6 +2,7 @@ package oauth2
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -31,7 +32,7 @@ func ReadKey(location string, hc *http.Client) (jose.JSONWebKey, error) {
 		}
 
 		if resp.StatusCode != 200 {
-			return jose.JSONWebKey{}, errors.Wrapf(err, "url: %s responded with invalid status code: %s, body: %s", location, resp.StatusCode, string(bs))
+			return jose.JSONWebKey{}, fmt.Errorf("received unexpected status code: %d, body: %s", resp.StatusCode, string(bs))
 		}
 	} else {
 		if bs, err = ioutil.ReadFile(location); err != nil {
