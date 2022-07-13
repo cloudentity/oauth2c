@@ -131,9 +131,6 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 
 ### JWT Bearer
 
-> jwks.json can be generated using https://mkjwk.org/
-> public part of the key must be configured in the client
-
 ``` sh
 oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id cauktionbud6q8ftlqq0 \
@@ -141,9 +138,12 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --grant-type urn:ietf:params:oauth:grant-type:jwt-bearer \
   --auth-method client_secret_basic \
   --scopes email \
-  --signing-key jwks.json \
-  --assertion-extra-claims '{"sub":"jdoe@example.com"}'
+  --signing-key https://pastebin.com/raw/WMkzhjhm \
+  --assertion '{"sub":"jdoe@example.com"}'
 ```
+
+> --signing-key can be also a local file. You can use https://mkjwk.org/ to generate it
+> remember to public part of the key in the client jwks
 
 ## Auth methods
 
