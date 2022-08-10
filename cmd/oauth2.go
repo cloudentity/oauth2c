@@ -14,6 +14,7 @@ import (
 	"github.com/cloudentity/oauth2c/internal/oauth2"
 	"github.com/go-jose/go-jose/v3"
 	"github.com/golang-jwt/jwt"
+	"github.com/imdario/mergo"
 	"github.com/pkg/browser"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
@@ -60,7 +61,10 @@ var OAuth2Cmd = &cobra.Command{
 				os.Exit(1)
 			}
 
-			cconfig = config.ToClientConfig()
+			if err := mergo.Merge(&cconfig, config.ToClientConfig()); err != nil {
+				pterm.Error.PrintOnError(err)
+				os.Exit(1)
+			}
 		} else {
 			cconfig.IssuerURL = strings.TrimSuffix(args[0], oauth2.OpenIDConfigurationPath)
 		}
@@ -178,7 +182,7 @@ func Authorize(clientConfig oauth2.ClientConfig, hc *http.Client) error {
 		clientConfig.IssuerURL,
 		hc,
 	); err != nil {
-		LogRequestAndResponseln(serverRequest, err)
+		LogRequestln(serverRequest)
 		return err
 	}
 
