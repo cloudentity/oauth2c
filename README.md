@@ -142,9 +142,6 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --assertion '{"sub":"jdoe@example.com"}'
 ```
 
-> --signing-key can be also a local file. You can use https://mkjwk.org/ to generate it
-> remember to public part of the key in the client jwks
-
 ## Auth methods
 
 ### Client Secret Basic
