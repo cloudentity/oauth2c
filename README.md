@@ -12,7 +12,8 @@ User-friendly command-line client for OAuth2
 ## Installation
 
 ``` sh
-curl -sSfL https://raw.githubusercontent.com/cloudentity/oauth2c/master/install.sh | sudo sh -s -- -b /usr/local/bin latest
+curl -sSfL https://raw.githubusercontent.com/cloudentity/oauth2c/master/install.sh | \
+  sudo sh -s -- -b /usr/local/bin latest
 ```
 
 Binaries are also available on the [releases page].
