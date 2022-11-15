@@ -1,6 +1,6 @@
 # oauth2c
 
-[![status](https://github.com/cloudentity/oauth2c/workflows/test/badge.svg)](https://github.com/cloudentity/oauthc/actions)
+[![status](https://github.com/cloudentity/oauth2c/workflows/build/badge.svg)](https://github.com/cloudentity/oauthc/actions)
 [![license](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![release](https://img.shields.io/github/release-pre/cloudentity/oauth2c.svg)](https://github.com/cloudentity/oauth2c/releases)
 
