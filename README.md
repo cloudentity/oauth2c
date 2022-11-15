@@ -1,4 +1,9 @@
 # oauth2c
+
+[![status](https://github.com/cloudentity/oauth2c/workflows/build/badge.svg)](https://github.com/cloudentity/oauthc/actions)
+[![license](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
+[![release](https://img.shields.io/github/release-pre/cloudentity/oauth2c.svg)](https://github.com/cloudentity/oauth2c/releases)
+
 User-friendly command-line client for OAuth2
 
 ![demo](https://user-images.githubusercontent.com/909896/176916616-36d803ef-832a-4bd8-ba8d-f6689e31ed22.gif)
@@ -7,8 +12,13 @@ User-friendly command-line client for OAuth2
 ## Installation
 
 ``` sh
-go install github.com/cloudentity/oauth2c@latest
+curl -sSfL https://raw.githubusercontent.com/cloudentity/oauth2c/master/install.sh | \
+  sudo sh -s -- -b /usr/local/bin latest
 ```
+
+Binaries are also available on the [releases page].
+
+[releases page]: https://github.com/cloudentity/oauth2c/releases
 
 ## Usage
 
