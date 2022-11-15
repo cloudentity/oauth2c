@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -120,7 +121,11 @@ func WaitForCallback(addr string) (request Request, err error) {
 
 	http.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
-			time.AfterFunc(time.Second, func() { srv.Shutdown(context.Background()) })
+			time.AfterFunc(time.Second, func() {
+				if err := srv.Shutdown(context.Background()); err != nil {
+					log.Fatal(err)
+				}
+			})
 		}()
 
 		if err = r.ParseForm(); err != nil {
@@ -140,10 +145,15 @@ func WaitForCallback(addr string) (request Request, err error) {
 			}
 
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte(`Authorization failed. You may close this browser.`))
+
+			if _, err := w.Write([]byte(`Authorization failed. You may close this browser.`)); err != nil {
+				log.Fatal(err)
+			}
 		} else {
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`Authorization succeeded. You may close this browser.`))
+			if _, err := w.Write([]byte(`Authorization succeeded. You may close this browser.`)); err != nil {
+				log.Fatal(err)
+			}
 		}
 	})
 

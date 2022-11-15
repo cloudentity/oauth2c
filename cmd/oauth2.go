@@ -211,7 +211,10 @@ func Authorize(clientConfig oauth2.ClientConfig, hc *http.Client) error {
 		}
 	}
 
-	pterm.DefaultTable.WithData(nonEmptyData).WithBoxed().Render()
+	if err := pterm.DefaultTable.WithData(nonEmptyData).WithBoxed().Render(); err != nil {
+		return err
+	}
+
 	pterm.Println()
 
 	switch clientConfig.GrantType {
@@ -259,7 +262,11 @@ func AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig, serverConfig o
 	}
 
 	pterm.Printfln("\nOpen the following URL:\n\n%s\n", authorizeRequest.URL.String())
-	browser.OpenURL(authorizeRequest.URL.String())
+
+	if err = browser.OpenURL(authorizeRequest.URL.String()); err != nil {
+		pterm.Warning.PrintOnError(err)
+	}
+
 	pterm.Println()
 
 	// callback
@@ -321,7 +328,11 @@ func ImplicitGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.Ser
 	LogRequest(authorizeRequest)
 
 	pterm.Printfln("\nOpen the following URL:\n\n%s\n", authorizeRequest.URL.String())
-	browser.OpenURL(authorizeRequest.URL.String())
+
+	if err = browser.OpenURL(authorizeRequest.URL.String()); err != nil {
+		pterm.Warning.PrintOnError(err)
+	}
+
 	pterm.Println()
 
 	// callback

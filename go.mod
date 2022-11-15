@@ -1,6 +1,6 @@
 module github.com/cloudentity/oauth2c
 
-go 1.18
+go 1.19
 
 require (
 	github.com/go-jose/go-jose/v3 v3.0.0
