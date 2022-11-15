@@ -3,8 +3,9 @@ package oauth2
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -27,7 +28,7 @@ func ReadKey(location string, hc *http.Client) (jose.JSONWebKey, error) {
 		}
 		defer resp.Body.Close()
 
-		if bs, err = ioutil.ReadAll(resp.Body); err != nil {
+		if bs, err = io.ReadAll(resp.Body); err != nil {
 			return jose.JSONWebKey{}, errors.Wrapf(err, "failed to read response body from: %s", location)
 		}
 
@@ -35,7 +36,7 @@ func ReadKey(location string, hc *http.Client) (jose.JSONWebKey, error) {
 			return jose.JSONWebKey{}, fmt.Errorf("received unexpected status code: %d, body: %s", resp.StatusCode, string(bs))
 		}
 	} else {
-		if bs, err = ioutil.ReadFile(location); err != nil {
+		if bs, err = os.ReadFile(location); err != nil {
 			return jose.JSONWebKey{}, errors.Wrapf(err, "failed to read file: %s", location)
 		}
 	}

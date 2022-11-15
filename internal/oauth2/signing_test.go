@@ -2,6 +2,7 @@ package oauth2_test
 
 import (
 	"encoding/json"
+	"net/http"
 	"testing"
 
 	"github.com/cloudentity/oauth2c/internal/oauth2"
@@ -11,14 +12,14 @@ import (
 )
 
 func TestReadKey(t *testing.T) {
-	key, err := oauth2.ReadKey("./testdata/jwks-private.json")
+	key, err := oauth2.ReadKey("./testdata/jwks-private.json", http.DefaultClient)
 	require.NoError(t, err)
 
 	require.NotNil(t, key)
 }
 
 func TestSignJWT(t *testing.T) {
-	key, err := oauth2.ReadKey("./testdata/jwks-private.json")
+	key, err := oauth2.ReadKey("./testdata/jwks-private.json", http.DefaultClient)
 	require.NoError(t, err)
 
 	claims := oauth2.WithStandardClaims(
