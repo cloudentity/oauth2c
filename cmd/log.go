@@ -1,7 +1,12 @@
 package cmd
 
 import (
+	"bytes"
+	"crypto/ecdsa"
+	"crypto/rsa"
+	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"strings"
 
 	"github.com/cloudentity/oauth2c/internal/oauth2"
@@ -135,13 +140,49 @@ func LogClientAssertion(request oauth2.Request) {
 	if assertion != "" {
 		var claims jwt.MapClaims
 
-		if _, _, err := parser.ParseUnverified(assertion, &claims); err != nil {
+		if token, _, err := parser.ParseUnverified(assertion, &claims); err != nil {
 			pterm.Error.Println(err)
 		} else {
-			pterm.DefaultBox.WithTitle("client_assertion").Printfln("client_assertion = JWT-HS256(payload)")
+			pterm.DefaultBox.WithTitle("Client assertion").Printfln("client_assertion = JWT-%s(payload)", token.Header["alg"])
 			pterm.Println("")
 			pterm.Println("Payload")
 			LogJson(claims)
+			pterm.Println("")
+
+			pterm.Println("Key")
+			switch key := request.Key.(type) {
+			case *rsa.PrivateKey:
+				p := bytes.Buffer{}
+
+				if err = pem.Encode(&p, &pem.Block{
+					Type:  "RSA PRIVATE KEY",
+					Bytes: x509.MarshalPKCS1PrivateKey(key),
+				}); err != nil {
+					pterm.Error.Println(err)
+				}
+
+				pterm.FgGray.Printfln(p.String())
+			case *ecdsa.PrivateKey:
+				b, err := x509.MarshalECPrivateKey(key)
+
+				if err != nil {
+					pterm.Error.Println(err)
+				}
+
+				p := bytes.Buffer{}
+
+				if err = pem.Encode(&p, &pem.Block{
+					Type:  "EC PRIVATE KEY",
+					Bytes: b,
+				}); err != nil {
+					pterm.Error.Println(err)
+				}
+
+				pterm.FgGray.Printfln(p.String())
+			case []byte:
+				pterm.FgGray.Println(string(key))
+			}
+
 			pterm.Println("")
 		}
 	}

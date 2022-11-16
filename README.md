@@ -186,3 +186,14 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --auth-method client_secret_jwt \
   --scopes introspect_tokens,revoke_tokens
 ```
+
+### Private Key JWT
+
+``` sh
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id 582af0afb0d74554aa7af47849edb222 \
+  --signing-key https://pastebin.com/raw/WMkzhjhm \
+  --grant-type client_credentials \
+  --auth-method private_key_jwt \
+  --scopes introspect_tokens,revoke_tokens
+```

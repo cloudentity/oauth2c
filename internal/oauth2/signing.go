@@ -52,35 +52,41 @@ func ReadKey(location string, hc *http.Client) (jose.JSONWebKey, error) {
 	return keys.Keys[0], nil
 }
 
-type SignerProvider func() (jose.Signer, error)
+type SignerProvider func() (jose.Signer, interface{}, error)
 
 func JWKSigner(clientConfig ClientConfig, hc *http.Client) SignerProvider {
-	return func() (signer jose.Signer, err error) {
+	return func() (signer jose.Signer, _ interface{}, err error) {
 		var key jose.JSONWebKey
 
 		if clientConfig.SigningKey == "" {
-			return nil, errors.New("no signing key path")
+			return nil, nil, errors.New("no signing key path")
 		}
 
 		if key, err = ReadKey(clientConfig.SigningKey, hc); err != nil {
-			return nil, errors.Wrapf(err, "failed to read signing key from %s", clientConfig.SigningKey)
+			return nil, nil, errors.Wrapf(err, "failed to read signing key from %s", clientConfig.SigningKey)
 		}
 
-		return jose.NewSigner(jose.SigningKey{
+		if signer, err = jose.NewSigner(jose.SigningKey{
 			Algorithm: jose.SignatureAlgorithm(key.Algorithm),
 			Key:       key.Key,
 		}, &jose.SignerOptions{
 			ExtraHeaders: map[jose.HeaderKey]interface{}{"kid": key.KeyID},
-		})
+		}); err != nil {
+			return nil, nil, errors.Wrapf(err, "failed to create a signer")
+		}
+
+		return signer, key.Key, nil
 	}
 }
 
 func SecretSigner(secret []byte) SignerProvider {
-	return func() (jose.Signer, error) {
-		return jose.NewSigner(jose.SigningKey{
+	return func() (jose.Signer, interface{}, error) {
+		signer, err := jose.NewSigner(jose.SigningKey{
 			Algorithm: jose.HS256,
 			Key:       secret,
 		}, nil)
+
+		return signer, secret, err
 	}
 }
 
@@ -123,30 +129,33 @@ func ClientAssertionClaims(serverConfig ServerConfig, clientConfig ClientConfig)
 	}
 }
 
-func SignJWT(claimsProvider ClaimsProvider, signerProvider SignerProvider) (string, error) {
+func SignJWT(claimsProvider ClaimsProvider, signerProvider SignerProvider) (jwt string, key interface{}, err error) {
 	var (
 		signer jose.Signer
 		claims map[string]interface{}
 		jws    *jose.JSONWebSignature
 		bs     []byte
-		err    error
 	)
 
-	if signer, err = signerProvider(); err != nil {
-		return "", errors.Wrapf(err, "failed to create signer")
+	if signer, key, err = signerProvider(); err != nil {
+		return "", nil, errors.Wrapf(err, "failed to create signer")
 	}
 
 	if claims, err = claimsProvider(); err != nil {
-		return "", errors.Wrapf(err, "failed to build claims")
+		return "", nil, errors.Wrapf(err, "failed to build claims")
 	}
 
 	if bs, err = json.Marshal(claims); err != nil {
-		return "", errors.Wrapf(err, "failed to serialize claims")
+		return "", nil, errors.Wrapf(err, "failed to serialize claims")
 	}
 
 	if jws, err = signer.Sign(bs); err != nil {
-		return "", errors.Wrapf(err, "failed to sign jwt")
+		return "", nil, errors.Wrapf(err, "failed to sign jwt")
 	}
 
-	return jws.CompactSerialize()
+	if jwt, err = jws.CompactSerialize(); err != nil {
+		return "", nil, err
+	}
+
+	return jwt, key, nil
 }
