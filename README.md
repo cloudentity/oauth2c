@@ -175,3 +175,14 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --auth-method client_secret_post \
   --scopes introspect_tokens,revoke_tokens
 ```
+
+### Client Secret JWT
+
+``` sh
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id ab966ce4f2ac4f4aa641582b099c32d3 \
+  --client-secret 578-WfFYfBheWb8gJpHYXMRRqR5HN0qv7d7xIolJnIE \
+  --grant-type client_credentials \
+  --auth-method client_secret_jwt \
+  --scopes introspect_tokens,revoke_tokens
+```

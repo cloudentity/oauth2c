@@ -128,3 +128,21 @@ func LogAssertion(request oauth2.Request) {
 		}
 	}
 }
+
+func LogClientAssertion(request oauth2.Request) {
+	assertion := request.Form.Get("client_assertion")
+
+	if assertion != "" {
+		var claims jwt.MapClaims
+
+		if _, _, err := parser.ParseUnverified(assertion, &claims); err != nil {
+			pterm.Error.Println(err)
+		} else {
+			pterm.DefaultBox.WithTitle("client_assertion").Printfln("client_assertion = JWT-HS256(payload)")
+			pterm.Println("")
+			pterm.Println("Payload")
+			LogJson(claims)
+			pterm.Println("")
+		}
+	}
+}

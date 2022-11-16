@@ -36,11 +36,16 @@ const (
 const (
 	ClientSecretBasicAuthMethod string = "client_secret_basic"
 	ClientSecretPostAuthMethod  string = "client_secret_post"
-	// ClientSecretJwtAuthMethod   string = "client_secret_jwt"
+	ClientSecretJwtAuthMethod   string = "client_secret_jwt"
 	// PrivateKeyJwtAuthMethod     string = "private_key_jwt"
 	// SelfSignedTLSAuthMethod     string = "self_signed_tls_client_auth"
 	// TLSClientAuthMethod         string = "tls_client_auth"
 	// NoneAuthMethod              string = "none"
+)
+
+// client assertion types
+const (
+	JwtBearerClientAssertion string = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
 )
 
 const CodeVerifierLength = 43
@@ -198,7 +203,6 @@ type RequestTokenParams struct {
 	Code         string
 	CodeVerifier string
 	RedirectURL  string
-	Assertion    string
 }
 
 type RequestTokenOption func(*RequestTokenParams)
@@ -218,12 +222,6 @@ func WithCodeVerifier(codeVerifier string) func(*RequestTokenParams) {
 func WithRedirectURL(url string) func(*RequestTokenParams) {
 	return func(opts *RequestTokenParams) {
 		opts.RedirectURL = url
-	}
-}
-
-func WithAssertion(assertion string) func(*RequestTokenParams) {
-	return func(opts *RequestTokenParams) {
-		opts.Assertion = assertion
 	}
 }
 
@@ -260,12 +258,35 @@ func RequestToken(
 		request.Form.Set("password", cconfig.Password)
 	case RefreshTokenGrantType:
 		request.Form.Set("refresh_token", cconfig.RefreshToken)
+	case JWTBearerGrantType:
+		var assertion string
+
+		if assertion, err = SignJWT(
+			AssertionClaims(sconfig, cconfig),
+			JWKSigner(cconfig, hc),
+		); err != nil {
+			return request, response, err
+		}
+
+		request.Form.Set("assertion", assertion)
 	}
 
 	switch cconfig.AuthMethod {
 	case ClientSecretPostAuthMethod:
 		request.Form.Set("client_id", cconfig.ClientID)
 		request.Form.Set("client_secret", cconfig.ClientSecret)
+	case ClientSecretJwtAuthMethod:
+		var clientAssertion string
+
+		if clientAssertion, err = SignJWT(
+			ClientAssertionClaims(sconfig, cconfig),
+			SecretSigner([]byte(cconfig.ClientSecret)),
+		); err != nil {
+			return request, response, err
+		}
+
+		request.Form.Set("client_assertion_type", JwtBearerClientAssertion)
+		request.Form.Set("client_assertion", clientAssertion)
 	}
 
 	if params.RedirectURL != "" {
@@ -278,10 +299,6 @@ func RequestToken(
 
 	if params.CodeVerifier != "" {
 		request.Form.Set("code_verifier", params.CodeVerifier)
-	}
-
-	if params.Assertion != "" {
-		request.Form.Set("assertion", params.Assertion)
 	}
 
 	if req, err = http.NewRequestWithContext(

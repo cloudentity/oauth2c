@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/cloudentity/oauth2c/internal/oauth2"
-	"github.com/go-jose/go-jose/v3"
 	"github.com/golang-jwt/jwt"
 	"github.com/imdario/mergo"
 	"github.com/pkg/browser"
@@ -145,7 +144,7 @@ func PromptForClientConfig(client oauth2.ClientConfig, server oauth2.ServerConfi
 
 	// client secret
 	switch client.AuthMethod {
-	case oauth2.ClientSecretBasicAuthMethod, oauth2.ClientSecretPostAuthMethod:
+	case oauth2.ClientSecretBasicAuthMethod, oauth2.ClientSecretPostAuthMethod, oauth2.ClientSecretJwtAuthMethod:
 		if client.ClientSecret == "" {
 			client.ClientSecret = PromptString("Client secret")
 		}
@@ -360,41 +359,12 @@ func PasswordGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.Ser
 	return tokenEndpointFlow("Resource Owner Password Credentials Flow", clientConfig, serverConfig, hc)
 }
 
-func JWTBearerGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
-	var (
-		extraClaims map[string]interface{}
-		key         jose.JSONWebKey
-		assertion   string
-		err         error
-	)
-
-	if clientConfig.Assertion == "" {
-		clientConfig.Assertion = "{}"
-	}
-
-	if err = json.Unmarshal([]byte(clientConfig.Assertion), &extraClaims); err != nil {
-		return fmt.Errorf("failed to parse assertion extra claims, it must be a valid JSON: %+v", err)
-	}
-
-	if clientConfig.SigningKey == "" {
-		return errors.New("path to signing key must be provided")
-	}
-
-	if key, err = oauth2.ReadKey(clientConfig.SigningKey, hc); err != nil {
-		return fmt.Errorf("failed to read signing key: %s, %+v", clientConfig.SigningKey, err)
-	}
-
-	claims := oauth2.WithStandardClaims(extraClaims, serverConfig)
-
-	if assertion, err = oauth2.SignJWT(claims, key); err != nil {
-		return fmt.Errorf("failed to sign assertion: %s", clientConfig.SigningKey)
-	}
-
-	return tokenEndpointFlow("JWT Bearer Grant Flow", clientConfig, serverConfig, hc, oauth2.WithAssertion(assertion))
-}
-
 func RefreshTokenGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
 	return tokenEndpointFlow("Refresh Token Flow", clientConfig, serverConfig, hc)
+}
+
+func JWTBearerGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
+	return tokenEndpointFlow("JWT Bearer Grant Flow", clientConfig, serverConfig, hc)
 }
 
 func tokenEndpointFlow(
@@ -430,6 +400,7 @@ func tokenEndpointFlow(
 	}
 
 	LogAssertion(tokenRequest)
+	LogClientAssertion(tokenRequest)
 	LogAuthMethod(clientConfig)
 	LogRequestAndResponse(tokenRequest, tokenResponse)
 	LogTokenPayloadln(tokenResponse)

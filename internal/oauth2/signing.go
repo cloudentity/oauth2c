@@ -52,21 +52,92 @@ func ReadKey(location string, hc *http.Client) (jose.JSONWebKey, error) {
 	return keys.Keys[0], nil
 }
 
-func SignJWT(claims map[string]interface{}, key jose.JSONWebKey) (string, error) {
+type SignerProvider func() (jose.Signer, error)
+
+func JWKSigner(clientConfig ClientConfig, hc *http.Client) SignerProvider {
+	return func() (signer jose.Signer, err error) {
+		var key jose.JSONWebKey
+
+		if clientConfig.SigningKey == "" {
+			return nil, errors.New("no signing key path")
+		}
+
+		if key, err = ReadKey(clientConfig.SigningKey, hc); err != nil {
+			return nil, errors.Wrapf(err, "failed to read signing key from %s", clientConfig.SigningKey)
+		}
+
+		return jose.NewSigner(jose.SigningKey{
+			Algorithm: jose.SignatureAlgorithm(key.Algorithm),
+			Key:       key.Key,
+		}, &jose.SignerOptions{
+			ExtraHeaders: map[jose.HeaderKey]interface{}{"kid": key.KeyID},
+		})
+	}
+}
+
+func SecretSigner(secret []byte) SignerProvider {
+	return func() (jose.Signer, error) {
+		return jose.NewSigner(jose.SigningKey{
+			Algorithm: jose.HS256,
+			Key:       secret,
+		}, nil)
+	}
+}
+
+type ClaimsProvider func() (map[string]interface{}, error)
+
+func AssertionClaims(serverConfig ServerConfig, clientConfig ClientConfig) ClaimsProvider {
+	return func() (map[string]interface{}, error) {
+		var err error
+
+		claims := map[string]interface{}{
+			"iss": serverConfig.TokenEndpoint,
+			"aud": serverConfig.TokenEndpoint,
+			"iat": time.Now().Unix(),
+			"exp": time.Now().Add(time.Minute * 10).Unix(),
+			"jti": RandomString(20),
+		}
+
+		if clientConfig.Assertion == "" {
+			clientConfig.Assertion = "{}"
+		}
+
+		if err = json.Unmarshal([]byte(clientConfig.Assertion), &claims); err != nil {
+			return nil, err
+		}
+
+		return claims, nil
+	}
+}
+
+func ClientAssertionClaims(serverConfig ServerConfig, clientConfig ClientConfig) ClaimsProvider {
+	return func() (map[string]interface{}, error) {
+		return map[string]interface{}{
+			"iss": clientConfig.ClientID,
+			"sub": clientConfig.ClientID,
+			"aud": serverConfig.TokenEndpoint,
+			"iat": time.Now().Unix(),
+			"exp": time.Now().Add(time.Minute * 10).Unix(),
+			"jti": RandomString(20),
+		}, nil
+	}
+}
+
+func SignJWT(claimsProvider ClaimsProvider, signerProvider SignerProvider) (string, error) {
 	var (
 		signer jose.Signer
+		claims map[string]interface{}
 		jws    *jose.JSONWebSignature
 		bs     []byte
 		err    error
 	)
 
-	if signer, err = jose.NewSigner(jose.SigningKey{
-		Algorithm: jose.SignatureAlgorithm(key.Algorithm),
-		Key:       key.Key,
-	}, &jose.SignerOptions{
-		ExtraHeaders: map[jose.HeaderKey]interface{}{"kid": key.KeyID},
-	}); err != nil {
+	if signer, err = signerProvider(); err != nil {
 		return "", errors.Wrapf(err, "failed to create signer")
+	}
+
+	if claims, err = claimsProvider(); err != nil {
+		return "", errors.Wrapf(err, "failed to build claims")
 	}
 
 	if bs, err = json.Marshal(claims); err != nil {
@@ -78,20 +149,4 @@ func SignJWT(claims map[string]interface{}, key jose.JSONWebKey) (string, error)
 	}
 
 	return jws.CompactSerialize()
-}
-
-func WithStandardClaims(extra map[string]interface{}, serverConfig ServerConfig) map[string]interface{} {
-	claims := map[string]interface{}{
-		"iss": serverConfig.TokenEndpoint,
-		"aud": serverConfig.TokenEndpoint,
-		"iat": time.Now().Unix(),
-		"exp": time.Now().Add(time.Minute * 10).Unix(),
-		"jti": RandomString(20),
-	}
-
-	for k, v := range extra {
-		claims[k] = v
-	}
-
-	return claims
 }
