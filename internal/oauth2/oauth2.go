@@ -203,7 +203,6 @@ type RequestTokenParams struct {
 	Code         string
 	CodeVerifier string
 	RedirectURL  string
-	Assertion    string
 }
 
 type RequestTokenOption func(*RequestTokenParams)
@@ -223,12 +222,6 @@ func WithCodeVerifier(codeVerifier string) func(*RequestTokenParams) {
 func WithRedirectURL(url string) func(*RequestTokenParams) {
 	return func(opts *RequestTokenParams) {
 		opts.RedirectURL = url
-	}
-}
-
-func WithAssertion(assertion string) func(*RequestTokenParams) {
-	return func(opts *RequestTokenParams) {
-		opts.Assertion = assertion
 	}
 }
 
@@ -265,6 +258,17 @@ func RequestToken(
 		request.Form.Set("password", cconfig.Password)
 	case RefreshTokenGrantType:
 		request.Form.Set("refresh_token", cconfig.RefreshToken)
+	case JWTBearerGrantType:
+		var assertion string
+
+		if assertion, err = SignJWT(
+			AssertionClaims(sconfig, cconfig),
+			JWKSigner(cconfig, hc),
+		); err != nil {
+			return request, response, err
+		}
+
+		request.Form.Set("assertion", assertion)
 	}
 
 	switch cconfig.AuthMethod {
@@ -295,10 +299,6 @@ func RequestToken(
 
 	if params.CodeVerifier != "" {
 		request.Form.Set("code_verifier", params.CodeVerifier)
-	}
-
-	if params.Assertion != "" {
-		request.Form.Set("assertion", params.Assertion)
 	}
 
 	if req, err = http.NewRequestWithContext(

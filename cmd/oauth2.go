@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/cloudentity/oauth2c/internal/oauth2"
-	"github.com/go-jose/go-jose/v3"
 	"github.com/golang-jwt/jwt"
 	"github.com/imdario/mergo"
 	"github.com/pkg/browser"
@@ -365,37 +364,7 @@ func RefreshTokenGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2
 }
 
 func JWTBearerGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
-	var (
-		extraClaims map[string]interface{}
-		key         jose.JSONWebKey
-		assertion   string
-		err         error
-	)
-
-	if clientConfig.Assertion == "" {
-		clientConfig.Assertion = "{}"
-	}
-
-	if err = json.Unmarshal([]byte(clientConfig.Assertion), &extraClaims); err != nil {
-		return fmt.Errorf("failed to parse assertion extra claims, it must be a valid JSON: %+v", err)
-	}
-
-	if clientConfig.SigningKey == "" {
-		return errors.New("path to signing key must be provided")
-	}
-
-	if key, err = oauth2.ReadKey(clientConfig.SigningKey, hc); err != nil {
-		return fmt.Errorf("failed to read signing key: %s, %+v", clientConfig.SigningKey, err)
-	}
-
-	if assertion, err = oauth2.SignJWT(
-		oauth2.AssertionClaims(extraClaims, serverConfig),
-		oauth2.JWKSigner(key),
-	); err != nil {
-		return fmt.Errorf("failed to sign assertion: %s", clientConfig.SigningKey)
-	}
-
-	return tokenEndpointFlow("JWT Bearer Grant Flow", clientConfig, serverConfig, hc, oauth2.WithAssertion(assertion))
+	return tokenEndpointFlow("JWT Bearer Grant Flow", clientConfig, serverConfig, hc)
 }
 
 func tokenEndpointFlow(
