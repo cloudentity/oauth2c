@@ -36,11 +36,16 @@ const (
 const (
 	ClientSecretBasicAuthMethod string = "client_secret_basic"
 	ClientSecretPostAuthMethod  string = "client_secret_post"
-	// ClientSecretJwtAuthMethod   string = "client_secret_jwt"
+	ClientSecretJwtAuthMethod   string = "client_secret_jwt"
 	// PrivateKeyJwtAuthMethod     string = "private_key_jwt"
 	// SelfSignedTLSAuthMethod     string = "self_signed_tls_client_auth"
 	// TLSClientAuthMethod         string = "tls_client_auth"
 	// NoneAuthMethod              string = "none"
+)
+
+// client assertion types
+const (
+	JwtBearerClientAssertion string = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
 )
 
 const CodeVerifierLength = 43
@@ -266,6 +271,18 @@ func RequestToken(
 	case ClientSecretPostAuthMethod:
 		request.Form.Set("client_id", cconfig.ClientID)
 		request.Form.Set("client_secret", cconfig.ClientSecret)
+	case ClientSecretJwtAuthMethod:
+		var clientAssertion string
+
+		if clientAssertion, err = SignJWT(
+			ClientAssertionClaims(sconfig, cconfig),
+			SecretSigner([]byte(cconfig.ClientSecret)),
+		); err != nil {
+			return request, response, err
+		}
+
+		request.Form.Set("client_assertion_type", JwtBearerClientAssertion)
+		request.Form.Set("client_assertion", clientAssertion)
 	}
 
 	if params.RedirectURL != "" {

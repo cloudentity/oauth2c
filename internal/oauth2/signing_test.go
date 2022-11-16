@@ -22,16 +22,17 @@ func TestSignJWT(t *testing.T) {
 	key, err := oauth2.ReadKey("./testdata/jwks-private.json", http.DefaultClient)
 	require.NoError(t, err)
 
-	claims := oauth2.WithStandardClaims(
+	claims := oauth2.AssertionClaims(
 		map[string]interface{}{
 			"sub": "jdoe@example.com",
 		},
 		oauth2.ServerConfig{
 			Issuer:        "https://example.com/tid/aid",
 			TokenEndpoint: "https://example.com/tid/aid/oauth2/token",
-		})
+		},
+	)
 
-	jwt, err := oauth2.SignJWT(claims, key)
+	jwt, err := oauth2.SignJWT(claims, oauth2.JWKSigner(key))
 	require.NoError(t, err)
 
 	jws, err := jose.ParseSigned(jwt)
@@ -40,7 +41,7 @@ func TestSignJWT(t *testing.T) {
 	bs, err := jws.Verify(key.Public())
 	require.NoError(t, err)
 
-	var m map[string]interface{}
+	m := map[string]interface{}{}
 
 	err = json.Unmarshal(bs, &m)
 	require.NoError(t, err)

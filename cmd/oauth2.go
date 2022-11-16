@@ -145,7 +145,7 @@ func PromptForClientConfig(client oauth2.ClientConfig, server oauth2.ServerConfi
 
 	// client secret
 	switch client.AuthMethod {
-	case oauth2.ClientSecretBasicAuthMethod, oauth2.ClientSecretPostAuthMethod:
+	case oauth2.ClientSecretBasicAuthMethod, oauth2.ClientSecretPostAuthMethod, oauth2.ClientSecretJwtAuthMethod:
 		if client.ClientSecret == "" {
 			client.ClientSecret = PromptString("Client secret")
 		}
@@ -360,6 +360,10 @@ func PasswordGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.Ser
 	return tokenEndpointFlow("Resource Owner Password Credentials Flow", clientConfig, serverConfig, hc)
 }
 
+func RefreshTokenGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
+	return tokenEndpointFlow("Refresh Token Flow", clientConfig, serverConfig, hc)
+}
+
 func JWTBearerGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
 	var (
 		extraClaims map[string]interface{}
@@ -384,17 +388,14 @@ func JWTBearerGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.Se
 		return fmt.Errorf("failed to read signing key: %s, %+v", clientConfig.SigningKey, err)
 	}
 
-	claims := oauth2.WithStandardClaims(extraClaims, serverConfig)
-
-	if assertion, err = oauth2.SignJWT(claims, key); err != nil {
+	if assertion, err = oauth2.SignJWT(
+		oauth2.AssertionClaims(extraClaims, serverConfig),
+		oauth2.JWKSigner(key),
+	); err != nil {
 		return fmt.Errorf("failed to sign assertion: %s", clientConfig.SigningKey)
 	}
 
 	return tokenEndpointFlow("JWT Bearer Grant Flow", clientConfig, serverConfig, hc, oauth2.WithAssertion(assertion))
-}
-
-func RefreshTokenGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
-	return tokenEndpointFlow("Refresh Token Flow", clientConfig, serverConfig, hc)
 }
 
 func tokenEndpointFlow(
@@ -430,6 +431,7 @@ func tokenEndpointFlow(
 	}
 
 	LogAssertion(tokenRequest)
+	LogClientAssertion(tokenRequest)
 	LogAuthMethod(clientConfig)
 	LogRequestAndResponse(tokenRequest, tokenResponse)
 	LogTokenPayloadln(tokenResponse)
