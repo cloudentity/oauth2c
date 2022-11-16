@@ -37,7 +37,7 @@ const (
 	ClientSecretBasicAuthMethod string = "client_secret_basic"
 	ClientSecretPostAuthMethod  string = "client_secret_post"
 	ClientSecretJwtAuthMethod   string = "client_secret_jwt"
-	// PrivateKeyJwtAuthMethod     string = "private_key_jwt"
+	PrivateKeyJwtAuthMethod     string = "private_key_jwt"
 	// SelfSignedTLSAuthMethod     string = "self_signed_tls_client_auth"
 	// TLSClientAuthMethod         string = "tls_client_auth"
 	// NoneAuthMethod              string = "none"
@@ -261,7 +261,7 @@ func RequestToken(
 	case JWTBearerGrantType:
 		var assertion string
 
-		if assertion, err = SignJWT(
+		if assertion, request.Key, err = SignJWT(
 			AssertionClaims(sconfig, cconfig),
 			JWKSigner(cconfig, hc),
 		); err != nil {
@@ -278,9 +278,21 @@ func RequestToken(
 	case ClientSecretJwtAuthMethod:
 		var clientAssertion string
 
-		if clientAssertion, err = SignJWT(
+		if clientAssertion, request.Key, err = SignJWT(
 			ClientAssertionClaims(sconfig, cconfig),
 			SecretSigner([]byte(cconfig.ClientSecret)),
+		); err != nil {
+			return request, response, err
+		}
+
+		request.Form.Set("client_assertion_type", JwtBearerClientAssertion)
+		request.Form.Set("client_assertion", clientAssertion)
+	case PrivateKeyJwtAuthMethod:
+		var clientAssertion string
+
+		if clientAssertion, request.Key, err = SignJWT(
+			ClientAssertionClaims(sconfig, cconfig),
+			JWKSigner(cconfig, hc),
 		); err != nil {
 			return request, response, err
 		}

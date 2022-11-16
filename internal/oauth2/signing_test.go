@@ -32,7 +32,7 @@ func TestSignJWT(t *testing.T) {
 		},
 	)
 
-	jwt, err := oauth2.SignJWT(claims, oauth2.JWKSigner(oauth2.ClientConfig{
+	jwt, _, err := oauth2.SignJWT(claims, oauth2.JWKSigner(oauth2.ClientConfig{
 		SigningKey: "./testdata/jwks-private.json",
 	}, http.DefaultClient))
 	require.NoError(t, err)

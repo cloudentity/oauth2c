@@ -7,6 +7,7 @@ type Request struct {
 	URL     *url.URL
 	Headers map[string][]string
 	Form    url.Values
+	Key     interface{}
 }
 
 func (r *Request) Get(key string) string {
