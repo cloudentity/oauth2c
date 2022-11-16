@@ -116,74 +116,62 @@ func LogAuthMethod(config oauth2.ClientConfig) {
 	}
 }
 
-func LogAssertion(request oauth2.Request) {
-	assertion := request.Form.Get("assertion")
+func LogAssertion(request oauth2.Request, title string, name string) {
+	var (
+		assertion = request.Form.Get(name)
+		token     *jwt.Token
+		claims    jwt.MapClaims
+		err       error
+	)
 
-	if assertion != "" {
-		var claims jwt.MapClaims
-
-		if token, _, err := parser.ParseUnverified(assertion, &claims); err != nil {
-			pterm.Error.Println(err)
-		} else {
-			pterm.DefaultBox.WithTitle("JWT Bearer assertion").Printfln("assertion = JWT-%s(payload)", token.Header["alg"])
-			pterm.Println("")
-			pterm.Println("Payload")
-			LogJson(claims)
-			pterm.Println("")
-		}
+	if assertion == "" {
+		return
 	}
-}
 
-func LogClientAssertion(request oauth2.Request) {
-	assertion := request.Form.Get("client_assertion")
-
-	if assertion != "" {
-		var claims jwt.MapClaims
-
-		if token, _, err := parser.ParseUnverified(assertion, &claims); err != nil {
-			pterm.Error.Println(err)
-		} else {
-			pterm.DefaultBox.WithTitle("Client assertion").Printfln("client_assertion = JWT-%s(payload)", token.Header["alg"])
-			pterm.Println("")
-			pterm.Println("Payload")
-			LogJson(claims)
-			pterm.Println("")
-
-			pterm.Println("Key")
-			switch key := request.Key.(type) {
-			case *rsa.PrivateKey:
-				p := bytes.Buffer{}
-
-				if err = pem.Encode(&p, &pem.Block{
-					Type:  "RSA PRIVATE KEY",
-					Bytes: x509.MarshalPKCS1PrivateKey(key),
-				}); err != nil {
-					pterm.Error.Println(err)
-				}
-
-				pterm.FgGray.Printfln(p.String())
-			case *ecdsa.PrivateKey:
-				b, err := x509.MarshalECPrivateKey(key)
-
-				if err != nil {
-					pterm.Error.Println(err)
-				}
-
-				p := bytes.Buffer{}
-
-				if err = pem.Encode(&p, &pem.Block{
-					Type:  "EC PRIVATE KEY",
-					Bytes: b,
-				}); err != nil {
-					pterm.Error.Println(err)
-				}
-
-				pterm.FgGray.Printfln(p.String())
-			case []byte:
-				pterm.FgGray.Println(string(key))
-			}
-
-			pterm.Println("")
-		}
+	if token, _, err = parser.ParseUnverified(assertion, &claims); err != nil {
+		pterm.Error.Println(err)
+		return
 	}
+
+	pterm.DefaultBox.WithTitle(title).Printfln("%s = JWT-%s(payload)", name, token.Header["alg"])
+	pterm.Println("")
+	pterm.Println("Payload")
+	LogJson(claims)
+	pterm.Println("")
+
+	pterm.Println("Key")
+	switch key := request.Key.(type) {
+	case *rsa.PrivateKey:
+		p := bytes.Buffer{}
+
+		if err = pem.Encode(&p, &pem.Block{
+			Type:  "RSA PRIVATE KEY",
+			Bytes: x509.MarshalPKCS1PrivateKey(key),
+		}); err != nil {
+			pterm.Error.Println(err)
+		}
+
+		pterm.FgGray.Printfln(p.String())
+	case *ecdsa.PrivateKey:
+		b, err := x509.MarshalECPrivateKey(key)
+
+		if err != nil {
+			pterm.Error.Println(err)
+		}
+
+		p := bytes.Buffer{}
+
+		if err = pem.Encode(&p, &pem.Block{
+			Type:  "EC PRIVATE KEY",
+			Bytes: b,
+		}); err != nil {
+			pterm.Error.Println(err)
+		}
+
+		pterm.FgGray.Printfln(p.String())
+	case []byte:
+		pterm.FgGray.Println(string(key))
+	}
+
+	pterm.Println("")
 }

@@ -399,8 +399,8 @@ func tokenEndpointFlow(
 		return err
 	}
 
-	LogAssertion(tokenRequest)
-	LogClientAssertion(tokenRequest)
+	LogAssertion(tokenRequest, "Assertion", "assertion")
+	LogAssertion(tokenRequest, "Client assertion", "client_assertion")
 	LogAuthMethod(clientConfig)
 	LogRequestAndResponse(tokenRequest, tokenResponse)
 	LogTokenPayloadln(tokenResponse)
