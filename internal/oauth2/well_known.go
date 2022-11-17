@@ -17,6 +17,9 @@ type ServerConfig struct {
 	SupportedResponseModes            []string `json:"response_modes_supported"`
 	AuthorizationEndpoint             string   `json:"authorization_endpoint"`
 	TokenEndpoint                     string   `json:"token_endpoint"`
+	MTLsEndpointAliases               struct {
+		TokenEndpoint string `json:"token_endpoint"`
+	} `json:"mtls_endpoint_aliases"`
 }
 
 func FetchOpenIDConfiguration(ctx context.Context, issuerURL string, hc *http.Client) (request Request, c ServerConfig, err error) {

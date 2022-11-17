@@ -11,6 +11,7 @@ import (
 
 	"github.com/cloudentity/oauth2c/internal/oauth2"
 	"github.com/golang-jwt/jwt"
+	"github.com/grantae/certinfo"
 	"github.com/pterm/pterm"
 	"github.com/tidwall/pretty"
 )
@@ -59,6 +60,13 @@ func LogRequest(r oauth2.Request) {
 
 	for k, vs := range r.Form {
 		pterm.Println(pterm.FgLightBlue.Sprintf("  %s: ", k) + strings.Join(vs, ", "))
+	}
+
+	if r.Cert != nil {
+		if info, err := certinfo.CertificateText(r.Cert); err == nil {
+			pterm.Println()
+			pterm.FgGray.Println(info)
+		}
 	}
 }
 

@@ -10,6 +10,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/cloudentity/oauth2c/internal/oauth2"
 	"github.com/golang-jwt/jwt"
@@ -40,6 +41,9 @@ func init() {
 	OAuth2Cmd.PersistentFlags().BoolVar(&cconfig.NoPKCE, "no-pkce", false, "disable proof key for code exchange (PKCE)")
 	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.Assertion, "assertion", "", "claims for jwt bearer assertion (standard claims such as iss, aud, iat, exp, jti are automatically generated)")
 	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.SigningKey, "signing-key", "", "path or url to signing key in jwks format")
+	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.TLSCert, "tls-cert", "", "path to tls cert pem file")
+	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.TLSKey, "tls-key", "", "path to tls key pem file")
+	OAuth2Cmd.PersistentFlags().StringVar(&cconfig.TLSRootCA, "tls-root-ca", "", "path to tls root ca pem file")
 	OAuth2Cmd.PersistentFlags().BoolVar(&cconfig.Insecure, "insecure", false, "allow insecure connections")
 }
 
@@ -51,6 +55,7 @@ var OAuth2Cmd = &cobra.Command{
 		var (
 			config Config
 			data   []byte
+			cert   tls.Certificate
 			err    error
 		)
 
@@ -68,12 +73,29 @@ var OAuth2Cmd = &cobra.Command{
 			cconfig.IssuerURL = strings.TrimSuffix(args[0], oauth2.OpenIDConfigurationPath)
 		}
 
-		hc := &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: cconfig.Insecure,
-				},
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: cconfig.Insecure,
+				MinVersion:         tls.VersionTLS12,
 			},
+		}
+
+		hc := &http.Client{Timeout: 10 * time.Second, Transport: tr}
+
+		if cconfig.TLSCert != "" && cconfig.TLSKey != "" {
+			if cert, err = oauth2.ReadKeyPair(cconfig.TLSCert, cconfig.TLSKey, hc); err != nil {
+				pterm.Error.PrintOnError(err)
+				os.Exit(1)
+			}
+
+			tr.TLSClientConfig.Certificates = []tls.Certificate{cert}
+		}
+
+		if cconfig.TLSRootCA != "" {
+			if tr.TLSClientConfig.RootCAs, err = oauth2.ReadRootCA(cconfig.TLSRootCA, hc); err != nil {
+				pterm.Error.PrintOnError(err)
+				os.Exit(1)
+			}
 		}
 
 		if err := Authorize(cconfig, hc); err != nil {

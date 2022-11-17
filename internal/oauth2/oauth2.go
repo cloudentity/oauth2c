@@ -3,6 +3,7 @@ package oauth2
 import (
 	"context"
 	"crypto/sha256"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -38,9 +39,8 @@ const (
 	ClientSecretPostAuthMethod  string = "client_secret_post"
 	ClientSecretJwtAuthMethod   string = "client_secret_jwt"
 	PrivateKeyJwtAuthMethod     string = "private_key_jwt"
-	// SelfSignedTLSAuthMethod     string = "self_signed_tls_client_auth"
-	// TLSClientAuthMethod         string = "tls_client_auth"
-	// NoneAuthMethod              string = "none"
+	SelfSignedTLSAuthMethod     string = "self_signed_tls_client_auth"
+	TLSClientAuthMethod         string = "tls_client_auth"
 )
 
 // client assertion types
@@ -69,6 +69,9 @@ type ClientConfig struct {
 	RefreshToken string
 	Assertion    string
 	SigningKey   string
+	TLSCert      string
+	TLSKey       string
+	TLSRootCA    string
 }
 
 func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfig) (r Request, codeVerifier string, err error) {
@@ -233,10 +236,11 @@ func RequestToken(
 	opts ...RequestTokenOption,
 ) (request Request, response TokenResponse, err error) {
 	var (
-		req    *http.Request
-		resp   *http.Response
-		params RequestTokenParams
-		body   []byte
+		req      *http.Request
+		resp     *http.Response
+		params   RequestTokenParams
+		endpoint = sconfig.TokenEndpoint
+		body     []byte
 	)
 
 	for _, opt := range opts {
@@ -299,6 +303,15 @@ func RequestToken(
 
 		request.Form.Set("client_assertion_type", JwtBearerClientAssertion)
 		request.Form.Set("client_assertion", clientAssertion)
+	case TLSClientAuthMethod, SelfSignedTLSAuthMethod:
+		endpoint = sconfig.MTLsEndpointAliases.TokenEndpoint
+		request.Form.Set("client_id", cconfig.ClientID)
+
+		if tr, ok := hc.Transport.(*http.Transport); ok {
+			if len(tr.TLSClientConfig.Certificates) > 0 {
+				request.Cert, _ = x509.ParseCertificate(tr.TLSClientConfig.Certificates[0].Certificate[0])
+			}
+		}
 	}
 
 	if params.RedirectURL != "" {
@@ -316,7 +329,7 @@ func RequestToken(
 	if req, err = http.NewRequestWithContext(
 		ctx,
 		http.MethodPost,
-		sconfig.TokenEndpoint,
+		endpoint,
 		strings.NewReader(request.Form.Encode()),
 	); err != nil {
 		return request, response, err

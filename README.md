@@ -148,7 +148,7 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --grant-type urn:ietf:params:oauth:grant-type:jwt-bearer \
   --auth-method client_secret_basic \
   --scopes email \
-  --signing-key https://pastebin.com/raw/WMkzhjhm \
+  --signing-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.json \
   --assertion '{"sub":"jdoe@example.com"}'
 ```
 
@@ -192,8 +192,20 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 ``` sh
 oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id 582af0afb0d74554aa7af47849edb222 \
-  --signing-key https://pastebin.com/raw/WMkzhjhm \
+  --signing-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.json \
   --grant-type client_credentials \
   --auth-method private_key_jwt \
+  --scopes introspect_tokens,revoke_tokens
+```
+
+### TLS Client Auth
+
+``` sh
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id 3f07a8c2adea4c1ab353f3ca8e16b8fd \
+  --tls-cert https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/cert.pem \
+  --tls-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.pem \
+  --grant-type client_credentials \
+  --auth-method tls_client_auth \
   --scopes introspect_tokens,revoke_tokens
 ```
