@@ -30,11 +30,13 @@ Usage:
   oauthc [issuer url or json config file] [flags]
 
 Flags:
+      --assertion string         claims for jwt bearer assertion (standard claims such as iss, aud, iat, exp, jti are automatically generated)
       --auth-method string       token endpoint authentication method
       --client-id string         client identifier
       --client-secret string     client secret
       --grant-type string        grant type
   -h, --help                     help for oauthc
+      --insecure                 allow insecure connections
       --no-pkce                  disable proof key for code exchange (PKCE)
       --password string          resource owner password credentials grant flow password
       --pkce                     enable proof key for code exchange (PKCE)
@@ -42,6 +44,10 @@ Flags:
       --response-mode string     response mode
       --response-types strings   response type
       --scopes strings           requested scopes
+      --signing-key string       path or url to signing key in jwks format
+      --tls-cert string          path to tls cert pem file
+      --tls-key string           path to tls key pem file
+      --tls-root-ca string       path to tls root ca pem file
       --username string          resource owner password credentials grant flow username
 ```
 
