@@ -18,6 +18,9 @@ jobs:
           fetch-depth: 0
       - run: git fetch --force --tags
       - uses: actions/setup-go@v3
+        with:
+          go-version: '>=1.19.3'
+          cache: true
       - uses: goreleaser/goreleaser-action@v2
         with:
           distribution: goreleaser
