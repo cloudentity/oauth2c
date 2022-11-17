@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/go-jose/go-jose/v3 v3.0.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/grantae/certinfo v0.0.0-20170412194111-59d56a35515b
 	github.com/imdario/mergo v0.3.13
 	github.com/lithammer/shortuuid/v4 v4.0.0
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8

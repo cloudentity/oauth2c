@@ -3,6 +3,7 @@ package oauth2
 import (
 	"context"
 	"crypto/sha256"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -305,6 +306,12 @@ func RequestToken(
 	case TLSClientAuthMethod, SelfSignedTLSAuthMethod:
 		endpoint = sconfig.MTLsEndpointAliases.TokenEndpoint
 		request.Form.Set("client_id", cconfig.ClientID)
+
+		if tr, ok := hc.Transport.(*http.Transport); ok {
+			if len(tr.TLSClientConfig.Certificates) > 0 {
+				request.Cert, _ = x509.ParseCertificate(tr.TLSClientConfig.Certificates[0].Certificate[0])
+			}
+		}
 	}
 
 	if params.RedirectURL != "" {

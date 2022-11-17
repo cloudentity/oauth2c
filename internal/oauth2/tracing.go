@@ -1,6 +1,9 @@
 package oauth2
 
-import "net/url"
+import (
+	"crypto/x509"
+	"net/url"
+)
 
 type Request struct {
 	Method  string
@@ -8,6 +11,7 @@ type Request struct {
 	Headers map[string][]string
 	Form    url.Values
 	Key     interface{}
+	Cert    *x509.Certificate
 }
 
 func (r *Request) Get(key string) string {
