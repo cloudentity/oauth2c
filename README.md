@@ -5,54 +5,41 @@
 [![release](https://img.shields.io/github/release-pre/cloudentity/oauth2c.svg)](https://github.com/cloudentity/oauth2c/releases)
 [![downloads](https://img.shields.io/github/downloads/cloudentity/oauth2c/total)](https://github.com/cloudentity/oauth2c/releases)
 
-User-friendly command-line client for OAuth2
+`oauth2c` is a powerful and flexible command-line tool for authenticating with OAuth2 providers. It supports all of the modern OAuth2
+grant types, as well as all client authentication methods.
 
 ![demo](https://user-images.githubusercontent.com/909896/176916616-36d803ef-832a-4bd8-ba8d-f6689e31ed22.gif)
 
-
 ## Installation
+
+To install `oauth2c`, simply run the following command:
 
 ``` sh
 curl -sSfL https://raw.githubusercontent.com/cloudentity/oauth2c/master/install.sh | \
   sudo sh -s -- -b /usr/local/bin latest
 ```
 
-Binaries are also available on the [releases page].
+Alternatively, you can download a pre-built binary from the [releases page].
 
 [releases page]: https://github.com/cloudentity/oauth2c/releases
 
 ## Usage
 
+To use oauth2c, simply run the following command and follow the prompts:
+
 ``` sh
-$ oauth2c -h
-User-friendly command-line for OAuth2
-
-Usage:
-  oauthc [issuer url or json config file] [flags]
-
-Flags:
-      --assertion string         claims for jwt bearer assertion (standard claims such as iss, aud, iat, exp, jti are automatically generated)
-      --auth-method string       token endpoint authentication method
-      --client-id string         client identifier
-      --client-secret string     client secret
-      --grant-type string        grant type
-  -h, --help                     help for oauthc
-      --insecure                 allow insecure connections
-      --no-pkce                  disable proof key for code exchange (PKCE)
-      --password string          resource owner password credentials grant flow password
-      --pkce                     enable proof key for code exchange (PKCE)
-      --refresh-token string     refresh token
-      --response-mode string     response mode
-      --response-types strings   response type
-      --scopes strings           requested scopes
-      --signing-key string       path or url to signing key in jwks format
-      --tls-cert string          path to tls cert pem file
-      --tls-key string           path to tls key pem file
-      --tls-root-ca string       path to tls root ca pem file
-      --username string          resource owner password credentials grant flow username
+oauth2c [issuer url] [flags]
 ```
 
-> To make browser flows work add `http://localhost:9876/callback` redirect URL to your client.
+You will be asked to provide the necessary information, such as the grant type, client authentication method, and any other relevant details.
+Once authenticated, you will be able to use the access token to access the OAuth2 provider's API.
+
+For more information on the available options and arguments for each grant type, run `oauth2c --help`.
+
+> **Note**: To make browser flows work add `http://localhost:9876/callback` as a redirect URL to your client.
+
+## Features
+
 
 ## Grant types
 
@@ -216,3 +203,11 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --auth-method tls_client_auth \
   --scopes introspect_tokens,revoke_tokens
 ```
+
+## License
+
+`oauth2c` is released under the [Apache v2.0](http://www.apache.org/licenses/LICENSE-2.0).
+
+## Contributing
+
+We welcome contributions! If you have an idea for a new feature or have found a bug, please open an issue on GitHub.
