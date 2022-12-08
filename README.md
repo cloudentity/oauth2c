@@ -110,16 +110,11 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 
 #### Hybrid
 
-The hybrid grant type is a combination of the authorization code grant and the implicit grant in OAuth2. 
-In the hybrid flow, the client first sends an authorization request to the OAuth2 provider, which returns 
-an authorization code and an access token. The client can then use the access token to access the 
-OAuth2 provider's API, while the authorization code can be exchanged for a new access token when the 
-original token expires.
+To use the OAuth2 hybrid flow to obtain an authorization code and an ID token, the client first sends an authorization request to the OAuth2 provider. The request should include the client's ID, the desired response types.
 
-The hybrid grant type provides the benefits of both the authorization code and implicit grant types. 
-Like the authorization code grant, the hybrid flow allows the client to securely store the client secret 
-and refresh the access token when it expires. Like the implicit grant, the hybrid flow provides the 
-access token immediately, allowing the client to access the API without an additional request. 
+The OAuth2 provider will then return an authorization code and an ID token to the client, either in the response body or as fragment parameters in the redirect URL, depending on the response mode specified in the request. The client can then use the authorization code to obtain an access token by sending a token request to the OAuth2 provider.
+
+The ID token can be used to verify the identity of the authenticated user, as it contains information such as the user's name and email address. The ID token is typically signed by the OAuth2 provider, so the client can verify its authenticity using the provider's public key.
 
 ``` sh
 oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
