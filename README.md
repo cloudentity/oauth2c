@@ -12,7 +12,7 @@
 ## Features
 
 * Supports all modern OAuth 2.0 grant types: authorization code, implicit, password, client credentials, refresh token, jwt bearer
-* Supports all client authentication methods: client secrets, private keys, client assertions
+* Supports all client authentication methods: client secrets, private keys, client assertions, mtls
 
 ## Installation
 
@@ -51,8 +51,8 @@ Here are a few examples of using oauth2c with different grant types and client a
 
 #### Authorization code
 
-This grant type involves a two-step process where the user first grants permission to access their data, and 
-then the client exchanges the authorization code for an access token. This grant type is typically used 
+This grant type involves a two-step process where the user first grants permission to access their data, and
+then the client exchanges the authorization code for an access token. This grant type is typically used
 in server-side applications.
 
 ``` sh
@@ -69,16 +69,16 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 
 #### Authorization code + PKCE
 
-The Proof Key for Code Exchange (PKCE) is an extension to the OAuth2 authorization code grant flow that 
-provides additional security when authenticating with an OAuth2 provider. In the PKCE flow, the client 
-generates a code verifier and a code challenge, which are then sent to the OAuth2 provider during 
-the authorization request. The provider returns an authorization code, which the client then exchanges for 
-an access token along with the code verifier. The provider verifies the code verifier to ensure that the 
+The Proof Key for Code Exchange (PKCE) is an extension to the OAuth2 authorization code grant flow that
+provides additional security when authenticating with an OAuth2 provider. In the PKCE flow, the client
+generates a code verifier and a code challenge, which are then sent to the OAuth2 provider during
+the authorization request. The provider returns an authorization code, which the client then exchanges for
+an access token along with the code verifier. The provider verifies the code verifier to ensure that the
 request is coming from the same client that initiated the authorization request.
 
-This additional step helps to prevent attackers from intercepting the authorization code and using it to 
-obtain an access token. PKCE is recommended for all public clients, such as single-page or mobile 
-applications, where the client secret cannot be securely stored. oauth2c supports PKCE as an optional 
+This additional step helps to prevent attackers from intercepting the authorization code and using it to
+obtain an access token. PKCE is recommended for all public clients, such as single-page or mobile
+applications, where the client secret cannot be securely stored. oauth2c supports PKCE as an optional
 parameter when using the authorization code grant type.
 
 ``` sh
@@ -95,9 +95,11 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 
 #### Implicit
 
-This grant type is similar to the authorization code grant, but the access token is returned directly to 
-the client without an intermediate authorization code. This grant type is typically used in single-page or 
+This grant type is similar to the authorization code grant, but the access token is returned directly to
+the client without an intermediate authorization code. This grant type is typically used in single-page or
 mobile applications.
+
+> **Note**: The implicit flow is not recommended for use in modern OAuth2 applications. It does not provide a secure method for obtaining new access tokens. Instead, it is recommended to use the authorization code flow with PKCE (Proof Key for Code Exchange) for added security.
 
 ``` sh
 oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
@@ -130,8 +132,8 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 
 #### Client credentials
 
-This grant type involves the client providing its own credentials (i.e. client ID and client secret) to 
-the OAuth2 server, which then returns an access token. This grant type is typically used for 
+This grant type involves the client providing its own credentials (i.e. client ID and client secret) to
+the OAuth2 server, which then returns an access token. This grant type is typically used for
 server-to-server communication, where the client is a trusted server rather than a user.
 
 ``` sh
@@ -146,8 +148,8 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 
 #### Refresh token
 
-This grant type involves the client providing a refresh token to the OAuth2 server, which then returns 
-a new access token. This grant type is used to obtain new access tokens when the original access 
+This grant type involves the client providing a refresh token to the OAuth2 server, which then returns
+a new access token. This grant type is used to obtain new access tokens when the original access
 token has expired.
 
 ``` sh
@@ -159,10 +161,10 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --refresh-token 1X1IvWR8p5rgKnH2YNmHGd4pZp8Dq-85xzUQuJejT_g.O_DS8Y4eiTS5jZ47_eBv3VbwP4zQUyxjNVW93AyU82k
 ```
 
-#### Password 
+#### Password
 
-This grant type involves the client providing the user's username and password to the OAuth2 server, which 
-then returns an access token. This grant type should only be used in secure environments, as it involves 
+This grant type involves the client providing the user's username and password to the OAuth2 server, which
+then returns an access token. This grant type should only be used in secure environments, as it involves
 sending the user's credentials to the OAuth2 server.
 
 ``` sh
@@ -176,8 +178,8 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 
 #### JWT Bearer
 
-This grant type involves the client providing a JSON Web Token (JWT) to the OAuth2 server, which then returns 
-an access token. This grant type is typically used when the client is a trusted third-party, such as a JWT 
+This grant type involves the client providing a JSON Web Token (JWT) to the OAuth2 server, which then returns
+an access token. This grant type is typically used when the client is a trusted third-party, such as a JWT
 issuer.
 
 ``` sh
@@ -195,8 +197,8 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 
 #### Client Secret Basic
 
-This client authentication method involves the client sending its client ID and client secret as part of the 
-HTTP Basic authentication header in the request to the OAuth2 server. This method is simple and widely 
+This client authentication method involves the client sending its client ID and client secret as part of the
+HTTP Basic authentication header in the request to the OAuth2 server. This method is simple and widely
 supported, but it is less secure than other methods because the client secret is sent in the clear.
 
 ``` sh
@@ -210,9 +212,9 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 
 #### Client Secret Post
 
-This client authentication method involves the client sending its client ID and client secret as part of 
-the request body in the request to the OAuth2 server. This method provides more security than the 
-basic authentication method, but it requires the request to be sent via HTTPS to prevent the client secret 
+This client authentication method involves the client sending its client ID and client secret as part of
+the request body in the request to the OAuth2 server. This method provides more security than the
+basic authentication method, but it requires the request to be sent via HTTPS to prevent the client secret
 from being intercepted.
 
 ``` sh
@@ -226,8 +228,8 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 
 #### Client Secret JWT
 
-This client authentication method involves the client signing a JSON Web Token (JWT) using its client secret, 
-and then sending the JWT to the OAuth2 server. This method provides a higher level of security than the 
+This client authentication method involves the client signing a JSON Web Token (JWT) using its client secret,
+and then sending the JWT to the OAuth2 server. This method provides a higher level of security than the
 basic or post methods, as the client secret is never sent in the clear.
 
 ``` sh
@@ -241,8 +243,8 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 
 #### Private Key JWT
 
-This client authentication method involves the client signing a JSON Web Token (JWT) using its private key, 
-and then sending the JWT to the OAuth2 server. This method provides a higher level of security than the 
+This client authentication method involves the client signing a JSON Web Token (JWT) using its private key,
+and then sending the JWT to the OAuth2 server. This method provides a higher level of security than the
 JWT methods using a client secret, as the private key is never shared with the OAuth2 server.
 
 ``` sh
@@ -256,9 +258,9 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 
 #### TLS Client Auth
 
-This client authentication method involves the client providing its own certificate as part of the TLS 
-handshake when connecting to the OAuth2 server. This method provides a high level of security, as the 
-client's identity is verified using a trusted certificate authority. However, it requires the OAuth2 
+This client authentication method involves the client providing its own certificate as part of the TLS
+handshake when connecting to the OAuth2 server. This method provides a high level of security, as the
+client's identity is verified using a trusted certificate authority. However, it requires the OAuth2
 server to support TLS client authentication, which may not be supported by all OAuth2 providers.
 
 ``` sh
