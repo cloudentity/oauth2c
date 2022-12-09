@@ -39,7 +39,7 @@ oauth2c [issuer url] [flags]
 The available flags are:
 
 ``` sh
-      --assertion string         claims for jwt bearer assertion (standard claims such as iss, aud, iat, exp, jti are automatically generated)
+      --assertion string         claims for jwt bearer assertion
       --auth-method string       token endpoint authentication method
       --client-id string         client identifier
       --client-secret string     client secret
