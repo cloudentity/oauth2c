@@ -112,7 +112,7 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 
 #### Hybrid
 
-To use the OAuth2 hybrid flow to obtain an authorization code and an ID token, the client first sends an authorization request to the OAuth2 provider. The request should include the client's ID, the desired response types.
+To use the OAuth2 hybrid flow to obtain an authorization code and an ID token, the client first sends an authorization request to the OAuth2 provider. The request should include the code and id_token response types.
 
 The OAuth2 provider will then return an authorization code and an ID token to the client, either in the response body or as fragment parameters in the redirect URL, depending on the response mode specified in the request. The client can then use the authorization code to obtain an access token by sending a token request to the OAuth2 provider.
 
