@@ -12,7 +12,7 @@
 ## Features
 
 * Simple and intuitive interface for quickly experimenting with different OAuth 2.0 grant types and client authentication methods
-* Supports all modern OAuth 2.0 grant types: authorization code, implicit, password, client credentials, refresh token, JWT bearer
+* Supports all modern OAuth 2.0 grant types: authorization code, implicit, password, client credentials, refresh token, JWT bearer, token exchange
 * Supports all client authentication methods: client secret basic, client secret post, client secret JWT, private key JWT, TLS client auth
 
 ## Installation
