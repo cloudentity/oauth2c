@@ -111,6 +111,10 @@ func OAuth2Cmd() *cobra.Command {
 	cmd.PersistentFlags().BoolVar(&cconfig.NoPKCE, "no-pkce", false, "disable proof key for code exchange (PKCE)")
 	cmd.PersistentFlags().StringVar(&cconfig.Assertion, "assertion", "", "claims for jwt bearer assertion (standard claims such as iss, aud, iat, exp, jti are automatically generated)")
 	cmd.PersistentFlags().StringVar(&cconfig.SigningKey, "signing-key", "", "path or url to signing key in jwks format")
+	cmd.PersistentFlags().StringVar(&cconfig.SubjectToken, "subject-token", "", "third party access token")
+	cmd.PersistentFlags().StringVar(&cconfig.SubjectTokenType, "subject-token-type", "", "third party access token type")
+	cmd.PersistentFlags().StringVar(&cconfig.ActorToken, "actor-token", "", "acting party access token")
+	cmd.PersistentFlags().StringVar(&cconfig.ActorTokenType, "actor-token-type", "", "acting party access token type")
 	cmd.PersistentFlags().StringVar(&cconfig.TLSCert, "tls-cert", "", "path to tls cert pem file")
 	cmd.PersistentFlags().StringVar(&cconfig.TLSKey, "tls-key", "", "path to tls key pem file")
 	cmd.PersistentFlags().StringVar(&cconfig.TLSRootCA, "tls-root-ca", "", "path to tls root ca pem file")
@@ -180,6 +184,8 @@ func Authorize(clientConfig oauth2.ClientConfig, hc *http.Client) error {
 		return RefreshTokenGrantFlow(clientConfig, serverConfig, hc)
 	case oauth2.JWTBearerGrantType:
 		return JWTBearerGrantFlow(clientConfig, serverConfig, hc)
+	case oauth2.TokenExchangeGrantType:
+		return TokenExchangeGrantFlow(clientConfig, serverConfig, hc)
 	}
 
 	return fmt.Errorf("Unknown grant type: %s", clientConfig.GrantType)

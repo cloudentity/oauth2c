@@ -24,6 +24,10 @@ func JWTBearerGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.Se
 	return tokenEndpointFlow("JWT Bearer Grant Flow", clientConfig, serverConfig, hc)
 }
 
+func TokenExchangeGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
+	return tokenEndpointFlow("Token Exchange Grant Flow", clientConfig, serverConfig, hc)
+}
+
 func tokenEndpointFlow(
 	name string,
 	clientConfig oauth2.ClientConfig,

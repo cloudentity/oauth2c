@@ -28,8 +28,8 @@ const (
 	PasswordGrantType          string = "password"
 	RefreshTokenGrantType      string = "refresh_token"
 	JWTBearerGrantType         string = "urn:ietf:params:oauth:grant-type:jwt-bearer"
+	TokenExchangeGrantType     string = "urn:ietf:params:oauth:grant-type:token-exchange"
 	// CIBAGrantType              string = "urn:openid:params:grant-type:ciba"
-	// TokenExchangeGrantType     string = "urn:ietf:params:oauth:grant-type:token-exchange"
 	// DeviceGrantType            string = "urn:ietf:params:oauth:grant-type:device_code"
 )
 
@@ -53,25 +53,29 @@ const CodeVerifierLength = 43
 var CodeChallengeEncoder = base64.RawURLEncoding
 
 type ClientConfig struct {
-	IssuerURL    string
-	GrantType    string
-	ClientID     string
-	ClientSecret string
-	Scopes       []string
-	AuthMethod   string
-	PKCE         bool
-	NoPKCE       bool
-	Insecure     bool
-	ResponseType []string
-	ResponseMode string
-	Username     string
-	Password     string
-	RefreshToken string
-	Assertion    string
-	SigningKey   string
-	TLSCert      string
-	TLSKey       string
-	TLSRootCA    string
+	IssuerURL        string
+	GrantType        string
+	ClientID         string
+	ClientSecret     string
+	Scopes           []string
+	AuthMethod       string
+	PKCE             bool
+	NoPKCE           bool
+	Insecure         bool
+	ResponseType     []string
+	ResponseMode     string
+	Username         string
+	Password         string
+	RefreshToken     string
+	Assertion        string
+	SigningKey       string
+	SubjectToken     string
+	SubjectTokenType string
+	ActorToken       string
+	ActorTokenType   string
+	TLSCert          string
+	TLSKey           string
+	TLSRootCA        string
 }
 
 func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfig) (r Request, codeVerifier string, err error) {
@@ -273,6 +277,14 @@ func RequestToken(
 		}
 
 		request.Form.Set("assertion", assertion)
+	case TokenExchangeGrantType:
+		request.Form.Set("subject_token", cconfig.SubjectToken)
+		request.Form.Set("subject_token_type", cconfig.SubjectTokenType)
+
+		if cconfig.ActorToken != "" {
+			request.Form.Set("actor_token", cconfig.ActorToken)
+			request.Form.Set("actor_token_type", cconfig.ActorTokenType)
+		}
 	}
 
 	switch cconfig.AuthMethod {

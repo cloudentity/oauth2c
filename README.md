@@ -168,7 +168,7 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
   --grant-type refresh_token\
   --auth-method client_secret_basic \
-  --refresh-token 1X1IvWR8p5rgKnH2YNmHGd4pZp8Dq-85xzUQuJejT_g.O_DS8Y4eiTS5jZ47_eBv3VbwP4zQUyxjNVW93AyU82k
+  --refresh-token $REFRESH_TOKEN
 ```
 
 [Learn more about the refresh token flow](https://cloudentity.com/developers/basics/oauth-grant-types/refresh-token-flow/)
@@ -208,6 +208,27 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 ```
 
 [Learn more about the jwt bearer flow](https://cloudentity.com/developers/basics/oauth-grant-types/using-jwt-profile-for-authorization-flows/)
+
+#### Token exchange
+
+The token exchange OAuth2 grant flow involves the client providing an access token to the OAuth2 server,
+which then returns a new access token. This grant type is typically used when the client and the OAuth2
+server have a pre-existing trust relationship, such as when the client is a trusted third-party.
+
+``` sh
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id cauktionbud6q8ftlqq0 \
+  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+  --grant-type urn:ietf:params:oauth:grant-type:token-exchange \
+  --auth-method client_secret_basic \
+  --scopes email \
+  --subject-token $SUBJECT_TOKEN \
+  --subject-token-type urn:ietf:params:oauth:token-type:access_token \
+  --actor-token $ACTOR_TOKEN \
+  --actor-token-type urn:ietf:params:oauth:token-type:access_token
+```
+
+[Learn more about the jwt bearer flow](https://cloudentity.com/developers/basics/oauth-grant-types/token-exchange/)
 
 ### Auth methods
 
