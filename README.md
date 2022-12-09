@@ -5,14 +5,14 @@
 [![release](https://img.shields.io/github/release-pre/cloudentity/oauth2c.svg)](https://github.com/cloudentity/oauth2c/releases)
 [![downloads](https://img.shields.io/github/downloads/cloudentity/oauth2c/total)](https://github.com/cloudentity/oauth2c/releases)
 
-`oauth2c` is a command-line tool for authenticating with OAuth2 providers. It supports all modern OAuth2 grant types and client authentication methods, allowing users to easily authenticate and access an OAuth2 provider's API.
+`oauth2c` provides a simple and intuitive interface that allows developers to quickly and easily experiment with different grant types and client authentication methods.
 
 ![demo](https://user-images.githubusercontent.com/909896/176916616-36d803ef-832a-4bd8-ba8d-f6689e31ed22.gif)
 
 ## Features
 
 * Supports all modern OAuth 2.0 grant types: authorization code, implicit, password, client credentials, refresh token, jwt bearer
-* Supports all client authentication methods: client secrets, private keys, client assertions, mtls
+* Supports all client authentication methods: client secret basic, client secret post, client secret jwt, private key jwt, tls client auth
 
 ## Installation
 
