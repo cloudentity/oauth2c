@@ -28,6 +28,11 @@ Alternatively, you can download a pre-built binary from the [releases page].
 
 [releases page]: https://github.com/cloudentity/oauth2c/releases
 
+If using homebrew:
+```sh
+brew install oauth2c
+```
+
 ## Usage
 
 To use `oauth2c`, run the following command and follow the prompts:
