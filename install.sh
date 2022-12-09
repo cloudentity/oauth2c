@@ -64,6 +64,7 @@ get_binaries() {
   case "$PLATFORM" in
     darwin/386) BINARIES="oauth2c" ;;
     darwin/amd64) BINARIES="oauth2c" ;;
+    darwin/arm64) BINARIES="oauth2c" ;;
     linux/386) BINARIES="oauth2c" ;;
     linux/amd64) BINARIES="oauth2c" ;;
     windows/386) BINARIES="oauth2c" ;;
