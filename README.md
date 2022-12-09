@@ -5,14 +5,15 @@
 [![release](https://img.shields.io/github/release-pre/cloudentity/oauth2c.svg)](https://github.com/cloudentity/oauth2c/releases)
 [![downloads](https://img.shields.io/github/downloads/cloudentity/oauth2c/total)](https://github.com/cloudentity/oauth2c/releases)
 
-`oauth2c` provides a simple and intuitive interface that allows developers to quickly and easily experiment with different grant types and client authentication methods.
+`oauth2c` is a command-line tool that simplifies the process of experimenting with different grant types and client authentication methods for OAuth 2.0.
 
 ![demo](https://user-images.githubusercontent.com/909896/176916616-36d803ef-832a-4bd8-ba8d-f6689e31ed22.gif)
 
 ## Features
 
-* Supports all modern OAuth 2.0 grant types: authorization code, implicit, password, client credentials, refresh token, jwt bearer
-* Supports all client authentication methods: client secret basic, client secret post, client secret jwt, private key jwt, tls client auth
+* Simple and intuitive interface for quickly experimenting with different OAuth 2.0 grant types and client authentication methods
+* Supports all modern OAuth 2.0 grant types: authorization code, implicit, password, client credentials, refresh token, JWT bearer
+* Supports all client authentication methods: client secret basic, client secret post, client secret JWT, private key JWT, TLS client auth
 
 ## Installation
 
@@ -29,7 +30,7 @@ Alternatively, you can download a pre-built binary from the [releases page].
 
 ## Usage
 
-To use `oauth2c`, simply run the following command and follow the prompts:
+To use `oauth2c`, run the following command and follow the prompts:
 
 ``` sh
 oauth2c [issuer url] [flags]
@@ -67,6 +68,8 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --no-pkce
 ```
 
+[Learn more about authorization code flow](https://cloudentity.com/developers/basics/oauth-grant-types/authorization-code-flow/)
+
 #### Authorization code + PKCE
 
 The Proof Key for Code Exchange (PKCE) is an extension to the OAuth2 authorization code grant flow that
@@ -93,6 +96,8 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --pkce
 ```
 
+[Learn more about authorization code flow with pkce](https://cloudentity.com/developers/basics/oauth-grant-types/authorization-code-with-pkce/)
+
 #### Implicit
 
 This grant type is similar to the authorization code grant, but the access token is returned directly to
@@ -109,6 +114,8 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --grant-type implicit \
   --scopes openid,email,offline_access
 ```
+
+[Learn more about implicit flow](https://cloudentity.com/developers/basics/oauth-grant-types/implicit-flow/)
 
 #### Hybrid
 
@@ -130,6 +137,8 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --no-pkce
 ```
 
+[Learn more about the hybrid flow](https://cloudentity.com/developers/basics/oauth-grant-types/hybrid-flow/)
+
 #### Client credentials
 
 This grant type involves the client providing its own credentials (i.e. client ID and client secret) to
@@ -145,6 +154,7 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --scopes introspect_tokens,revoke_tokens
 ```
 
+[Learn more about the client credentials flow](https://cloudentity.com/developers/basics/oauth-grant-types/client-credentials-flow/)
 
 #### Refresh token
 
@@ -161,6 +171,8 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --refresh-token 1X1IvWR8p5rgKnH2YNmHGd4pZp8Dq-85xzUQuJejT_g.O_DS8Y4eiTS5jZ47_eBv3VbwP4zQUyxjNVW93AyU82k
 ```
 
+[Learn more about the refresh token flow](https://cloudentity.com/developers/basics/oauth-grant-types/refresh-token-flow/)
+
 #### Password
 
 This grant type involves the client providing the user's username and password to the OAuth2 server, which
@@ -175,6 +187,8 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --auth-method client_secret_basic \
   --scopes openid
 ```
+
+[Learn more about the password flow](https://cloudentity.com/developers/basics/oauth-grant-types/resource-owner-password-credentials/)
 
 #### JWT Bearer
 
@@ -193,6 +207,8 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --assertion '{"sub":"jdoe@example.com"}'
 ```
 
+[Learn more about the jwt bearer flow](https://cloudentity.com/developers/basics/oauth-grant-types/using-jwt-profile-for-authorization-flows/)
+
 ### Auth methods
 
 #### Client Secret Basic
@@ -210,6 +226,8 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --scopes introspect_tokens,revoke_tokens
 ```
 
+[Learn more about client secret basic](https://cloudentity.com/developers/basics/oauth-client-authentication/client-secret-authentication/#process-of-authentication-with-client_secret_basic)
+
 #### Client Secret Post
 
 This client authentication method involves the client sending its client ID and client secret as part of
@@ -226,6 +244,8 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --scopes introspect_tokens,revoke_tokens
 ```
 
+[Learn more about client secret post](https://cloudentity.com/developers/basics/oauth-client-authentication/client-secret-authentication/#process-of-authentication-with-client_secret_post)
+
 #### Client Secret JWT
 
 This client authentication method involves the client signing a JSON Web Token (JWT) using its client secret,
@@ -241,6 +261,8 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --scopes introspect_tokens,revoke_tokens
 ```
 
+[Learn more about client secret jwt](https://cloudentity.com/developers/basics/oauth-client-authentication/client-secret-authentication/#process-of-authentication-with-client_secret_jwt)
+
 #### Private Key JWT
 
 This client authentication method involves the client signing a JSON Web Token (JWT) using its private key,
@@ -255,6 +277,8 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --auth-method private_key_jwt \
   --scopes introspect_tokens,revoke_tokens
 ```
+
+[Learn more about private key jwt](https://cloudentity.com/developers/basics/oauth-client-authentication/private-key-jwt-client-authentication/)
 
 #### TLS Client Auth
 
@@ -272,6 +296,8 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --auth-method tls_client_auth \
   --scopes introspect_tokens,revoke_tokens
 ```
+
+[Learn more about tls client auth](https://cloudentity.com/developers/basics/oauth-client-authentication/oauth-mtls-client-authentication/)
 
 ## License
 
