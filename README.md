@@ -38,27 +38,28 @@ oauth2c [issuer url] [flags]
 
 The available flags are:
 
-* --grant-type: the grant type to use for authentication (e.g. client_credentials, authorization_code, refresh_token, password, implicit, or urn:ietf:params:oauth:grant-type:jwt-bearer)
-* --client-id: the client ID provided by the OAuth2 provider
-* --client-secret: the client secret provided by the OAuth2 provider
-* --redirect-uri: the redirect URI for the authorization code flow
-* --refresh-token: the refresh token to use for the refresh token grant flow (required for refresh_token grant type)
-* --username: the username to use for the password grant flow (required for password grant type)
-* --password: the password to use for the password grant flow (required for password grant type)
-* --assertion: the claims for jwt bearer assertion
-* --auth-method: the token endpoint authentication method
-* --no-pkce: disable proof key for code exchange (PKCE)
-* --pkce: enable proof key for code exchange (PKCE)
-* --response-mode: the mechanism to return an access token to the client
-* --response-types: code, token or id_token
-* --scopes: the requested scopes
-* --signing-key: the path or url to signing key in jwks format
-* --tls-cert: the path to tls cert pem file
-* --tls-key: the path to tls key pem file
-* --tls-root-ca: the path to tls root ca pem file
-* --insecure: allow insecure connections
+``` sh
+      --assertion string         claims for jwt bearer assertion (standard claims such as iss, aud, iat, exp, jti are automatically generated)
+      --auth-method string       token endpoint authentication method
+      --client-id string         client identifier
+      --client-secret string     client secret
+      --grant-type string        grant type
+      --insecure                 allow insecure connections
+      --no-pkce                  disable proof key for code exchange (PKCE)
+      --password string          resource owner password credentials grant flow password
+      --pkce                     enable proof key for code exchange (PKCE)
+      --refresh-token string     refresh token
+      --response-mode string     response mode
+      --response-types strings   response type
+      --scopes strings           requested scopes
+      --signing-key string       path or url to signing key in jwks format
+      --tls-cert string          path to tls cert pem file
+      --tls-key string           path to tls key pem file
+      --tls-root-ca string       path to tls root ca pem file
+      --username string          resource owner password credentials grant flow username
+```
 
-You will be asked to provide the necessary information, such as the grant type, client authentication method, and any other relevant details.
+You will be asked to provide the necessary information, such as the grant type, client authentication method, and any other relevant details (if not already provided).
 
 Once authenticated, you will be able to use the access token to access the OAuth2 provider's API.
 
