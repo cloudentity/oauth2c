@@ -36,7 +36,7 @@ brews:
   - tap:
       owner: cloudentity
       name: homebrew-tap
-      token: "{{ .Env.GITHUB_TOKEN }}"
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     folder: Formula
     homepage: "https://github.com/cloudentity/oauth2c"
     description: "CLI for OAuth2"
