@@ -2,9 +2,7 @@
 # Make sure to check the documentation at https://goreleaser.com
 before:
   hooks:
-    # You may remove this if you don't use go modules.
     - go mod tidy
-    # you may remove this if you don't need go generate
     - go generate ./...
 builds:
   - env:
@@ -13,6 +11,10 @@ builds:
       - linux
       - windows
       - darwin
+    goarch:
+      - amd64
+      - arm
+      - arm64
 archives:
   - replacements:
       darwin: Darwin
@@ -32,29 +34,12 @@ changelog:
       - '^test:'
 brews:
   - tap:
-      owner: "cloudentity"
-      name: "homebrew-tap"
+      owner: cloudentity
+      name: homebrew-tap
       token: "{{ .Env.GITHUB_TOKEN }}"
-    ids: ["gnu", "other"]
-    url_template: "https://github.com/cloudentity/oauth2c/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-    download_strategy: "CurlDownloadStrategy"
-    commit_author:
-      name: "cloudentity-ci"
-      email: "ci@cloudentity.com"
-    commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
-    homepage: "https://cloudentity.com/"
+    folder: Formula
+    homepage: "https://github.com/cloudentity/oauth2c"
     description: "CLI for OAuth2"
-    license: "Apache-2.0"
-    folder: "Formula"
-    custom_block: |
-      head "https://github.com/cloudentity/oauth2c.git", :branch => "main"
-    dependencies:
-      - name: "go"
-        type: "build"
-    test: |
-      system "#{bin}/oauth2c -h"
-    install: |
-      bin.install "oauth2c"
 
 # modelines, feel free to remove those if you don't want/use them:
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
