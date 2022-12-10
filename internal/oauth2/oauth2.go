@@ -41,6 +41,7 @@ const (
 	PrivateKeyJwtAuthMethod     string = "private_key_jwt"
 	SelfSignedTLSAuthMethod     string = "self_signed_tls_client_auth"
 	TLSClientAuthMethod         string = "tls_client_auth"
+	NoneAuthMethod              string = "none"
 )
 
 // client assertion types
@@ -276,6 +277,8 @@ func RequestToken(
 	}
 
 	switch cconfig.AuthMethod {
+	case NoneAuthMethod:
+		request.Form.Set("client_id", cconfig.ClientID)
 	case ClientSecretPostAuthMethod:
 		request.Form.Set("client_id", cconfig.ClientID)
 		request.Form.Set("client_secret", cconfig.ClientSecret)

@@ -124,18 +124,16 @@ request is coming from the same client that initiated the authorization request.
 
 This additional step helps to prevent attackers from intercepting the authorization code and using it to
 obtain an access token. PKCE is recommended for all public clients, such as single-page or mobile
-applications, where the client secret cannot be securely stored. oauth2c supports PKCE as an optional
-parameter when using the authorization code grant type.
+applications, where the client secret cannot be securely stored.
 
 ``` sh
 oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
-  --client-id cauktionbud6q8ftlqq0 \
-  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+  --client-id db5e375e7b634095b24bbb683fcb955b \
   --response-types code \
   --response-mode query \
   --grant-type authorization_code \
-  --auth-method client_secret_basic \
-  --scopes openid,email,offline_access \
+  --auth-method none \
+  --scopes openid,email \
   --pkce
 ```
 
@@ -341,6 +339,23 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 ```
 
 [Learn more about tls client auth](https://cloudentity.com/developers/basics/oauth-client-authentication/oauth-mtls-client-authentication/)
+
+#### None with PKCE
+
+Public clients, such as mobile apps, are unable to authenticate themselves to the authorization server in the same way that confidential clients can because they do not have a client secret. To protect themselves from having their authorization codes intercepted and used by attackers, public clients can use PKCE (Proof Key for Code Exchange) during the authorization process. PKCE provides an additional layer of security by ensuring that the authorization code can only be exchanged for a token by the same client that initially requested it. This helps prevent unauthorized access to the token.
+
+``` sh
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id db5e375e7b634095b24bbb683fcb955b \
+  --response-types code \
+  --response-mode query \
+  --grant-type authorization_code \
+  --auth-method none \
+  --scopes openid,email \
+  --pkce
+```
+
+[Lean more about none with PKCE](https://cloudentity.com/developers/basics/oauth-client-authentication/client-auth-set-to-none-with-pkce/)
 
 ## License
 
