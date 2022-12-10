@@ -17,11 +17,31 @@
 
 ## Installation
 
-To install `oauth2c`, simply run the following command:
+To install `oauth2c`, you have several options depending on your operating system.
+
+### Install on Mac
+
+On Mac, you can install `oauth2c` using `brew` by running the following command:
+
+``` sh
+brew install cloudentity/tap/oauth2c
+```
+
+### Install on Linux
+
+On linux, you can install `oauth2c` using the installation script by running the following command:
 
 ``` sh
 curl -sSfL https://raw.githubusercontent.com/cloudentity/oauth2c/master/install.sh | \
   sudo sh -s -- -b /usr/local/bin latest
+```
+
+### Compile from source
+
+You can also compile `oauth2c` from source using `go`. To do this run the following command:
+
+``` sh
+go install github.com/cloudentity/oauth2c@latest
 ```
 
 Alternatively, you can download a pre-built binary from the [releases page].
