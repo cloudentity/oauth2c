@@ -64,6 +64,7 @@ The available flags are:
       --client-id string         client identifier
       --client-secret string     client secret
       --grant-type string        grant type
+  -h, --help                     help for oauthc
       --insecure                 allow insecure connections
       --no-pkce                  disable proof key for code exchange (PKCE)
       --password string          resource owner password credentials grant flow password
@@ -73,6 +74,7 @@ The available flags are:
       --response-types strings   response type
       --scopes strings           requested scopes
       --signing-key string       path or url to signing key in jwks format
+  -s, --silent                   silent mode
       --tls-cert string          path to tls cert pem file
       --tls-key string           path to tls key pem file
       --tls-root-ca string       path to tls root ca pem file
@@ -209,8 +211,23 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
   --grant-type refresh_token\
   --auth-method client_secret_basic \
-  --refresh-token 1X1IvWR8p5rgKnH2YNmHGd4pZp8Dq-85xzUQuJejT_g.O_DS8Y4eiTS5jZ47_eBv3VbwP4zQUyxjNVW93AyU82k
+  --refresh-token $REFRESH_TOKEN
 ```
+
+> **Note** In order to use this command, you must first set the REFRESH_TOKEN environment variable
+>
+> ``` sh
+> export REFRESH_TOKEN=`oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+>   --client-id cauktionbud6q8ftlqq0 \
+>   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+>   --response-types code \
+>   --response-mode query \
+>   --grant-type authorization_code \
+>   --auth-method client_secret_basic \
+>   --scopes openid,email,offline_access \
+>   --no-pkce \
+>   --silent | jq -r .refresh_token`
+> ```
 
 [Learn more about the refresh token flow](https://cloudentity.com/developers/basics/oauth-grant-types/refresh-token-flow/)
 

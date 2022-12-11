@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/cloudentity/oauth2c/internal/oauth2"
-	"github.com/pterm/pterm"
 )
 
 func ClientCredentialsGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
@@ -38,12 +37,12 @@ func tokenEndpointFlow(
 		err           error
 	)
 
-	pterm.DefaultHeader.WithFullWidth().Println(name)
+	LogHeader(name)
 
 	// request token
-	pterm.DefaultSection.Println("Request authorization")
+	LogSection("Request authorization")
 
-	tokenStatus, _ := pterm.DefaultSpinner.Start("Requesting authorization")
+	authorizationStatus := LogAction("Requesting authorization")
 
 	if tokenRequest, tokenResponse, err = oauth2.RequestToken(
 		context.Background(),
@@ -61,8 +60,9 @@ func tokenEndpointFlow(
 	LogAuthMethod(clientConfig)
 	LogRequestAndResponse(tokenRequest, tokenResponse)
 	LogTokenPayloadln(tokenResponse)
+	LogResult(tokenResponse)
 
-	tokenStatus.Success("Authorization completed")
+	authorizationStatus("Authorization completed")
 
 	return nil
 }

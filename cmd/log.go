@@ -7,6 +7,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
+	"strconv"
 	"strings"
 
 	"github.com/cloudentity/oauth2c/internal/oauth2"
@@ -16,7 +17,110 @@ import (
 	"github.com/tidwall/pretty"
 )
 
+func Logln() {
+	if silent {
+		return
+	}
+
+	pterm.Println()
+}
+
+func Logfln(msg string, args ...interface{}) {
+	if silent {
+		return
+	}
+
+	pterm.Printfln(msg, args...)
+}
+
+func LogHeader(msg string) {
+	if silent {
+		return
+	}
+
+	pterm.DefaultHeader.WithFullWidth().Println(msg)
+}
+
+func LogSection(msg string) {
+	if silent {
+		return
+	}
+
+	pterm.DefaultSection.Println(msg)
+}
+
+func LogAction(msg string) func(string) {
+	if silent {
+		return func(string) {}
+	}
+
+	done, _ := pterm.DefaultSpinner.Start(msg)
+	return func(s string) {
+		done.Success(s)
+	}
+}
+
+func LogBox(title string, msg string, args ...interface{}) {
+	if silent {
+		return
+	}
+
+	pterm.DefaultBox.WithTitle(title).Printfln(msg, args...)
+}
+
+func LogError(err error) {
+	pterm.Error.PrintOnError(err)
+}
+
+func LogWarning(msg string) {
+	if silent {
+		return
+	}
+
+	pterm.Warning.Println(msg)
+}
+
+func LogInputData(cc oauth2.ClientConfig) {
+	if silent {
+		return
+	}
+
+	data := pterm.TableData{
+		{"Issuer URL", cc.IssuerURL},
+		{"Grant type", cc.GrantType},
+		{"Auth method", cc.AuthMethod},
+		{"Scopes", strings.Join(cc.Scopes, ", ")},
+		{"Response types", strings.Join(cc.ResponseType, ", ")},
+		{"Response mode", cc.ResponseMode},
+		{"PKCE", strconv.FormatBool(cc.PKCE)},
+		{"Client ID", cc.ClientID},
+		{"Client secret", cc.ClientSecret},
+		{"Username", cc.Username},
+		{"Password", cc.Password},
+		{"Refresh token", cc.RefreshToken},
+	}
+
+	nonEmptyData := pterm.TableData{}
+
+	for _, vs := range data {
+		if vs[1] != "" {
+			nonEmptyData = append(nonEmptyData, vs)
+		}
+	}
+
+	if err := pterm.DefaultTable.WithData(nonEmptyData).WithBoxed().Render(); err != nil {
+		pterm.Error.Println(err)
+		return
+	}
+
+	pterm.Println()
+}
+
 func LogJson(value interface{}) {
+	if silent {
+		return
+	}
+
 	output, err := json.Marshal(value)
 
 	if err != nil {
@@ -28,6 +132,10 @@ func LogJson(value interface{}) {
 }
 
 func LogRequest(r oauth2.Request) {
+	if silent {
+		return
+	}
+
 	if r.URL == nil {
 		return
 	}
@@ -71,17 +179,29 @@ func LogRequest(r oauth2.Request) {
 }
 
 func LogRequestln(request oauth2.Request) {
+	if silent {
+		return
+	}
+
 	LogRequest(request)
 	pterm.Println()
 }
 
 func LogRequestAndResponse(request oauth2.Request, response interface{}) {
+	if silent {
+		return
+	}
+
 	LogRequest(request)
 	pterm.Println(pterm.FgGray.Sprint("Response:"))
 	LogJson(response)
 }
 
 func LogRequestAndResponseln(request oauth2.Request, response interface{}) {
+	if silent {
+		return
+	}
+
 	LogRequestAndResponse(request, response)
 	pterm.Println()
 }
@@ -91,6 +211,10 @@ func LogTokenPayload(response oauth2.TokenResponse) {
 		atClaims jwt.MapClaims
 		idClaims jwt.MapClaims
 	)
+
+	if silent {
+		return
+	}
 
 	if response.AccessToken != "" {
 		if _, _, err := parser.ParseUnverified(response.AccessToken, &atClaims); err != nil {
@@ -112,11 +236,19 @@ func LogTokenPayload(response oauth2.TokenResponse) {
 }
 
 func LogTokenPayloadln(response oauth2.TokenResponse) {
+	if silent {
+		return
+	}
+
 	LogTokenPayload(response)
 	pterm.Println()
 }
 
 func LogAuthMethod(config oauth2.ClientConfig) {
+	if silent {
+		return
+	}
+
 	switch config.AuthMethod {
 	case oauth2.ClientSecretBasicAuthMethod:
 		pterm.DefaultBox.WithTitle("Client Secret Basic").Printfln("Authorization = Basic BASE64-ENCODE(ClientID:ClientSecret)")
@@ -131,6 +263,10 @@ func LogAssertion(request oauth2.Request, title string, name string) {
 		claims    jwt.MapClaims
 		err       error
 	)
+
+	if silent {
+		return
+	}
 
 	if assertion == "" {
 		return
@@ -182,4 +318,19 @@ func LogAssertion(request oauth2.Request, title string, name string) {
 	}
 
 	pterm.Println("")
+}
+
+func LogResult(result interface{}) {
+	if !silent {
+		return
+	}
+
+	output, err := json.Marshal(result)
+
+	if err != nil {
+		pterm.Error.Println(err)
+		return
+	}
+
+	pterm.Println(string(output))
 }

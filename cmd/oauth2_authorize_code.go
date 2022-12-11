@@ -6,7 +6,6 @@ import (
 
 	"github.com/cloudentity/oauth2c/internal/oauth2"
 	"github.com/pkg/browser"
-	"github.com/pterm/pterm"
 )
 
 func AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
@@ -19,10 +18,10 @@ func AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig, serverConfig o
 		err              error
 	)
 
-	pterm.DefaultHeader.WithFullWidth().Println("Authorization Code Flow")
+	LogHeader("Authorization Code Flow")
 
 	// authorize endpoint
-	pterm.DefaultSection.Println("Request authorization")
+	LogSection("Request authorization")
 
 	if authorizeRequest, codeVerifier, err = oauth2.RequestAuthorization(addr, clientConfig, serverConfig); err != nil {
 		return err
@@ -31,20 +30,20 @@ func AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig, serverConfig o
 	LogRequest(authorizeRequest)
 
 	if codeVerifier != "" {
-		pterm.Println()
-		pterm.DefaultBox.WithTitle("PKCE").Printfln("code_verifier = %s\ncode_challenge = BASE64URL-ENCODE(SHA256(ASCII(code_verifier)))", codeVerifier)
+		Logln()
+		LogBox("PKCE", "code_verifier = %s\ncode_challenge = BASE64URL-ENCODE(SHA256(ASCII(code_verifier)))", codeVerifier)
 	}
 
-	pterm.Printfln("\nOpen the following URL:\n\n%s\n", authorizeRequest.URL.String())
+	Logfln("\nOpen the following URL:\n\n%s\n", authorizeRequest.URL.String())
 
 	if err = browser.OpenURL(authorizeRequest.URL.String()); err != nil {
-		pterm.Warning.PrintOnError(err)
+		LogError(err)
 	}
 
-	pterm.Println()
+	Logln()
 
 	// callback
-	callbackStatus, _ := pterm.DefaultSpinner.Start("Waiting for callback. Go to the browser to authenticate...")
+	callbackStatus := LogAction("Waiting for callback. Go to the browser to authenticate...")
 
 	if callbackRequest, err = oauth2.WaitForCallback(addr); err != nil {
 		LogRequestln(callbackRequest)
@@ -52,14 +51,14 @@ func AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig, serverConfig o
 	}
 
 	LogRequest(callbackRequest)
-	pterm.Println()
+	Logln()
 
-	callbackStatus.Success("Obtained authorization code")
+	callbackStatus("Obtained authorization code")
 
-	pterm.DefaultSection.Println("Exchange authorization code for token")
+	LogSection("Exchange authorization code for token")
 
 	// token exchange
-	exchangeStatus, _ := pterm.DefaultSpinner.Start("Exchaging authorization code for access token")
+	exchangeStatus := LogAction("Exchaging authorization code for access token")
 
 	if tokenRequest, tokenResponse, err = oauth2.RequestToken(
 		context.Background(),
@@ -77,8 +76,9 @@ func AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig, serverConfig o
 	LogAuthMethod(clientConfig)
 	LogRequestAndResponse(tokenRequest, tokenResponse)
 	LogTokenPayloadln(tokenResponse)
+	LogResult(tokenResponse)
 
-	exchangeStatus.Success("Exchanged authorization code for access token")
+	exchangeStatus("Exchanged authorization code for access token")
 
 	return nil
 }
