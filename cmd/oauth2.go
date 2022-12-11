@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -14,6 +15,7 @@ import (
 	"github.com/cloudentity/oauth2c/internal/oauth2"
 	"github.com/golang-jwt/jwt"
 	"github.com/imdario/mergo"
+	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 )
 
@@ -53,6 +55,10 @@ func OAuth2Cmd() *cobra.Command {
 				}
 			} else {
 				cconfig.IssuerURL = strings.TrimSuffix(args[0], oauth2.OpenIDConfigurationPath)
+			}
+
+			if silent {
+				browser.Stdout = ioutil.Discard
 			}
 
 			tr := &http.Transport{
