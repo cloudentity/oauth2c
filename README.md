@@ -214,7 +214,7 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --refresh-token $REFRESH_TOKEN
 ```
 
-> **Note** For this command to work you need to set REFRESH_TOKEN env variable first
+> **Note** In order to use this command, you must first set the REFRESH_TOKEN environment variable
 >
 > ``` sh
 > export REFRESH_TOKEN=`oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
