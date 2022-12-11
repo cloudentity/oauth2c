@@ -96,6 +96,8 @@ func OAuth2Cmd() *cobra.Command {
 		},
 	}
 
+	cmd.AddCommand(versionCmd)
+
 	cmd.PersistentFlags().StringVar(&cconfig.ClientID, "client-id", "", "client identifier")
 	cmd.PersistentFlags().StringVar(&cconfig.ClientSecret, "client-secret", "", "client secret")
 	cmd.PersistentFlags().StringVar(&cconfig.GrantType, "grant-type", "", "grant type")
