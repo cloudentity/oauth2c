@@ -12,7 +12,7 @@
 ## Features
 
 * A simple and intuitive interface for quickly trying out different OAuth 2.0 grant types and client authentication methods
-* Supports all modern OAuth 2.0 grant types: authorization code, implicit, password, client credentials, refresh token, JWT bearer
+* Supports all modern OAuth 2.0 grant types: authorization code, implicit, password, client credentials, refresh token, JWT bearer, token exchange
 * Supports all client authentication methods: client secret basic, client secret post, client secret JWT, private key JWT, TLS client auth
 
 ## Installation
@@ -59,26 +59,30 @@ oauth2c [issuer url] [flags]
 The available flags are:
 
 ``` sh
-      --assertion string         claims for jwt bearer assertion
-      --auth-method string       token endpoint authentication method
-      --client-id string         client identifier
-      --client-secret string     client secret
-      --grant-type string        grant type
-  -h, --help                     help for oauthc
-      --insecure                 allow insecure connections
-      --no-pkce                  disable proof key for code exchange (PKCE)
-      --password string          resource owner password credentials grant flow password
-      --pkce                     enable proof key for code exchange (PKCE)
-      --refresh-token string     refresh token
-      --response-mode string     response mode
-      --response-types strings   response type
-      --scopes strings           requested scopes
-      --signing-key string       path or url to signing key in jwks format
-  -s, --silent                   silent mode
-      --tls-cert string          path to tls cert pem file
-      --tls-key string           path to tls key pem file
-      --tls-root-ca string       path to tls root ca pem file
-      --username string          resource owner password credentials grant flow username
+      --actor-token string          acting party access token
+      --actor-token-type string     acting party access token type
+      --assertion string            claims for jwt bearer assertion
+      --auth-method string          token endpoint authentication method
+      --client-id string            client identifier
+      --client-secret string        client secret
+      --grant-type string           grant type
+  -h, --help                        help for oauthc
+      --insecure                    allow insecure connections
+      --no-pkce                     disable proof key for code exchange (PKCE)
+      --password string             resource owner password credentials grant flow password
+      --pkce                        enable proof key for code exchange (PKCE)
+      --refresh-token string        refresh token
+      --response-mode string        response mode
+      --response-types strings      response type
+      --scopes strings              requested scopes
+      --signing-key string          path or url to signing key in jwks format
+  -s, --silent                      silent mode
+      --subject-token string        third party access token
+      --subject-token-type string   third party access token type
+      --tls-cert string             path to tls cert pem file
+      --tls-key string              path to tls key pem file
+      --tls-root-ca string          path to tls root ca pem file
+      --username string             resource owner password credentials grant flow username
 ```
 
 You will be asked to provide the necessary information, such as the grant type, client authentication method, and any other relevant details (if not already provided).
@@ -266,6 +270,52 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 ```
 
 [Learn more about the jwt bearer flow](https://cloudentity.com/developers/basics/oauth-grant-types/using-jwt-profile-for-authorization-flows/)
+
+#### Token exchange
+
+The token exchange OAuth2 grant flow involves the client providing an access token to the OAuth2 server,
+which then returns a new access token. This grant type is typically used when the client and the OAuth2
+server have a pre-existing trust relationship, such as when the client is a trusted third-party.
+
+``` sh
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id cauktionbud6q8ftlqq0 \
+  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+  --grant-type urn:ietf:params:oauth:grant-type:token-exchange \
+  --auth-method client_secret_basic \
+  --scopes email \
+  --subject-token $SUBJECT_TOKEN \
+  --subject-token-type urn:ietf:params:oauth:token-type:access_token \
+  --actor-token $ACTOR_TOKEN \
+  --actor-token-type urn:ietf:params:oauth:token-type:access_token
+```
+
+> **Note** In order to use this command, you must first set the SUBJECT_TOKEN and ACTOR_TOKEN environment variables
+>
+> ``` sh
+> export SUBJECT_TOKEN=`oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+>   --client-id cauktionbud6q8ftlqq0 \
+>   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+>   --response-types code \
+>   --response-mode query \
+>   --grant-type authorization_code \
+>   --auth-method client_secret_basic \
+>   --scopes openid,email,offline_access \
+>   --no-pkce \
+>   --silent | jq -r .access_token`
+> ```
+
+> ``` sh
+> export ACTOR_TOKEN=`oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+>   --client-id cauktionbud6q8ftlqq0 \
+>   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+>   --grant-type client_credentials \
+>   --auth-method client_secret_basic \
+>   --scopes introspect_tokens,revoke_tokens \
+>   --silent | jq -r .access_token`
+> ```
+
+[Learn more about the token exchange flow](https://cloudentity.com/developers/basics/oauth-grant-types/token-exchange/)
 
 ### Auth methods
 

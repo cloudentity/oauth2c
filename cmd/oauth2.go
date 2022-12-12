@@ -28,79 +28,22 @@ var (
 	silent bool
 )
 
-func OAuth2Cmd() *cobra.Command {
+type OAuth2Cmd struct {
+	*cobra.Command
+}
+
+func NewOAuth2Cmd() (cmd *OAuth2Cmd) {
 	var cconfig oauth2.ClientConfig
 
-	cmd := &cobra.Command{
-		Use:   "oauthc [issuer url or json config file]",
-		Short: "User-friendly command-line for OAuth2",
-		Args:  cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			var (
-				config Config
-				data   []byte
-				cert   tls.Certificate
-				err    error
-			)
-
-			if data, err = os.ReadFile(args[0]); err == nil {
-				if err = json.Unmarshal(data, &config); err != nil {
-					LogError(err)
-					os.Exit(1)
-				}
-
-				if err := mergo.Merge(&cconfig, config.ToClientConfig()); err != nil {
-					LogError(err)
-					os.Exit(1)
-				}
-			} else {
-				cconfig.IssuerURL = strings.TrimSuffix(args[0], oauth2.OpenIDConfigurationPath)
-			}
-
-			if silent {
-				browser.Stdout = ioutil.Discard
-			}
-
-			tr := &http.Transport{
-				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: cconfig.Insecure,
-					MinVersion:         tls.VersionTLS12,
-				},
-			}
-
-			hc := &http.Client{Timeout: 10 * time.Second, Transport: tr}
-
-			if cconfig.TLSCert != "" && cconfig.TLSKey != "" {
-				if cert, err = oauth2.ReadKeyPair(cconfig.TLSCert, cconfig.TLSKey, hc); err != nil {
-					LogError(err)
-					os.Exit(1)
-				}
-
-				tr.TLSClientConfig.Certificates = []tls.Certificate{cert}
-			}
-
-			if cconfig.TLSRootCA != "" {
-				if tr.TLSClientConfig.RootCAs, err = oauth2.ReadRootCA(cconfig.TLSRootCA, hc); err != nil {
-					LogError(err)
-					os.Exit(1)
-				}
-			}
-
-			if err := Authorize(cconfig, hc); err != nil {
-				var oauth2Error *oauth2.Error
-
-				if errors.As(err, &oauth2Error) {
-					switch oauth2Error.Hint {
-					case "Clients must include a code_challenge when performing the authorize code flow, but it is missing.":
-						LogWarning("Authorization server enforces PKCE. Use --pkce flag.")
-					}
-				}
-
-				LogError(err)
-				os.Exit(1)
-			}
+	cmd = &OAuth2Cmd{
+		Command: &cobra.Command{
+			Use:   "oauthc [issuer url]",
+			Short: "User-friendly command-line for OAuth2",
+			Args:  cobra.ExactArgs(1),
 		},
 	}
+
+	cmd.Command.Run = cmd.Run(&cconfig)
 
 	cmd.AddCommand(versionCmd)
 
@@ -116,8 +59,12 @@ func OAuth2Cmd() *cobra.Command {
 	cmd.PersistentFlags().StringSliceVar(&cconfig.Scopes, "scopes", []string{}, "requested scopes")
 	cmd.PersistentFlags().BoolVar(&cconfig.PKCE, "pkce", false, "enable proof key for code exchange (PKCE)")
 	cmd.PersistentFlags().BoolVar(&cconfig.NoPKCE, "no-pkce", false, "disable proof key for code exchange (PKCE)")
-	cmd.PersistentFlags().StringVar(&cconfig.Assertion, "assertion", "", "claims for jwt bearer assertion (standard claims such as iss, aud, iat, exp, jti are automatically generated)")
+	cmd.PersistentFlags().StringVar(&cconfig.Assertion, "assertion", "", "claims for jwt bearer assertion")
 	cmd.PersistentFlags().StringVar(&cconfig.SigningKey, "signing-key", "", "path or url to signing key in jwks format")
+	cmd.PersistentFlags().StringVar(&cconfig.SubjectToken, "subject-token", "", "third party access token")
+	cmd.PersistentFlags().StringVar(&cconfig.SubjectTokenType, "subject-token-type", "", "third party access token type")
+	cmd.PersistentFlags().StringVar(&cconfig.ActorToken, "actor-token", "", "acting party access token")
+	cmd.PersistentFlags().StringVar(&cconfig.ActorTokenType, "actor-token-type", "", "acting party access token type")
 	cmd.PersistentFlags().StringVar(&cconfig.TLSCert, "tls-cert", "", "path to tls cert pem file")
 	cmd.PersistentFlags().StringVar(&cconfig.TLSKey, "tls-key", "", "path to tls key pem file")
 	cmd.PersistentFlags().StringVar(&cconfig.TLSRootCA, "tls-root-ca", "", "path to tls root ca pem file")
@@ -127,7 +74,75 @@ func OAuth2Cmd() *cobra.Command {
 	return cmd
 }
 
-func Authorize(clientConfig oauth2.ClientConfig, hc *http.Client) error {
+func (c *OAuth2Cmd) Run(cconfig *oauth2.ClientConfig) func(cmd *cobra.Command, args []string) {
+	return func(cmd *cobra.Command, args []string) {
+		var (
+			config Config
+			data   []byte
+			cert   tls.Certificate
+			err    error
+		)
+
+		if data, err = os.ReadFile(args[0]); err == nil {
+			if err = json.Unmarshal(data, &config); err != nil {
+				LogError(err)
+				os.Exit(1)
+			}
+
+			if err := mergo.Merge(&cconfig, config.ToClientConfig()); err != nil {
+				LogError(err)
+				os.Exit(1)
+			}
+		} else {
+			cconfig.IssuerURL = strings.TrimSuffix(args[0], oauth2.OpenIDConfigurationPath)
+		}
+
+		if silent {
+			browser.Stdout = ioutil.Discard
+		}
+
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: cconfig.Insecure,
+				MinVersion:         tls.VersionTLS12,
+			},
+		}
+
+		hc := &http.Client{Timeout: 10 * time.Second, Transport: tr}
+
+		if cconfig.TLSCert != "" && cconfig.TLSKey != "" {
+			if cert, err = oauth2.ReadKeyPair(cconfig.TLSCert, cconfig.TLSKey, hc); err != nil {
+				LogError(err)
+				os.Exit(1)
+			}
+
+			tr.TLSClientConfig.Certificates = []tls.Certificate{cert}
+		}
+
+		if cconfig.TLSRootCA != "" {
+			if tr.TLSClientConfig.RootCAs, err = oauth2.ReadRootCA(cconfig.TLSRootCA, hc); err != nil {
+				LogError(err)
+				os.Exit(1)
+			}
+		}
+
+		if err := c.Authorize(*cconfig, hc); err != nil {
+			var oauth2Error *oauth2.Error
+
+			if errors.As(err, &oauth2Error) {
+				switch oauth2Error.Hint {
+				case "Clients must include a code_challenge when performing the authorize code flow, but it is missing.":
+					LogWarning("Authorization server enforces PKCE. Use --pkce flag.")
+				}
+			}
+
+			LogError(err)
+			os.Exit(1)
+		}
+	}
+}
+
+func (c *OAuth2Cmd) Authorize(clientConfig oauth2.ClientConfig, hc *http.Client) error {
 	var (
 		serverRequest oauth2.Request
 		serverConfig  oauth2.ServerConfig
@@ -152,18 +167,36 @@ func Authorize(clientConfig oauth2.ClientConfig, hc *http.Client) error {
 
 	switch clientConfig.GrantType {
 	case oauth2.AuthorizationCodeGrantType:
-		return AuthorizationCodeGrantFlow(clientConfig, serverConfig, hc)
+		return c.AuthorizationCodeGrantFlow(clientConfig, serverConfig, hc)
 	case oauth2.ImplicitGrantType:
-		return ImplicitGrantFlow(clientConfig, serverConfig, hc)
+		return c.ImplicitGrantFlow(clientConfig, serverConfig, hc)
 	case oauth2.ClientCredentialsGrantType:
-		return ClientCredentialsGrantFlow(clientConfig, serverConfig, hc)
+		return c.ClientCredentialsGrantFlow(clientConfig, serverConfig, hc)
 	case oauth2.PasswordGrantType:
-		return PasswordGrantFlow(clientConfig, serverConfig, hc)
+		return c.PasswordGrantFlow(clientConfig, serverConfig, hc)
 	case oauth2.RefreshTokenGrantType:
-		return RefreshTokenGrantFlow(clientConfig, serverConfig, hc)
+		return c.RefreshTokenGrantFlow(clientConfig, serverConfig, hc)
 	case oauth2.JWTBearerGrantType:
-		return JWTBearerGrantFlow(clientConfig, serverConfig, hc)
+		return c.JWTBearerGrantFlow(clientConfig, serverConfig, hc)
+	case oauth2.TokenExchangeGrantType:
+		return c.TokenExchangeGrantFlow(clientConfig, serverConfig, hc)
 	}
 
 	return fmt.Errorf("Unknown grant type: %s", clientConfig.GrantType)
+}
+
+func (c *OAuth2Cmd) PrintResult(result interface{}) {
+	if !silent {
+		return
+	}
+
+	output, err := json.Marshal(result)
+
+	if err != nil {
+		fmt.Fprintf(c.ErrOrStderr(), "%+v", err)
+		fmt.Fprintln(c.ErrOrStderr())
+		return
+	}
+
+	fmt.Fprintln(c.OutOrStdout(), string(output))
 }

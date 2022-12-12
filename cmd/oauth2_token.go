@@ -7,23 +7,27 @@ import (
 	"github.com/cloudentity/oauth2c/internal/oauth2"
 )
 
-func ClientCredentialsGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
-	return tokenEndpointFlow("Client Credentials Flow", clientConfig, serverConfig, hc)
+func (c *OAuth2Cmd) ClientCredentialsGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
+	return c.tokenEndpointFlow("Client Credentials Flow", clientConfig, serverConfig, hc)
 }
 
-func PasswordGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
-	return tokenEndpointFlow("Resource Owner Password Credentials Flow", clientConfig, serverConfig, hc)
+func (c *OAuth2Cmd) PasswordGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
+	return c.tokenEndpointFlow("Resource Owner Password Credentials Flow", clientConfig, serverConfig, hc)
 }
 
-func RefreshTokenGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
-	return tokenEndpointFlow("Refresh Token Flow", clientConfig, serverConfig, hc)
+func (c *OAuth2Cmd) RefreshTokenGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
+	return c.tokenEndpointFlow("Refresh Token Flow", clientConfig, serverConfig, hc)
 }
 
-func JWTBearerGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
-	return tokenEndpointFlow("JWT Bearer Grant Flow", clientConfig, serverConfig, hc)
+func (c *OAuth2Cmd) JWTBearerGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
+	return c.tokenEndpointFlow("JWT Bearer Grant Flow", clientConfig, serverConfig, hc)
 }
 
-func tokenEndpointFlow(
+func (c *OAuth2Cmd) TokenExchangeGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
+	return c.tokenEndpointFlow("Token Exchange Grant Flow", clientConfig, serverConfig, hc)
+}
+
+func (c *OAuth2Cmd) tokenEndpointFlow(
 	name string,
 	clientConfig oauth2.ClientConfig,
 	serverConfig oauth2.ServerConfig,
@@ -57,10 +61,12 @@ func tokenEndpointFlow(
 
 	LogAssertion(tokenRequest, "Assertion", "assertion")
 	LogAssertion(tokenRequest, "Client assertion", "client_assertion")
+	LogSubjectTokenAndActorToken(tokenRequest)
 	LogAuthMethod(clientConfig)
 	LogRequestAndResponse(tokenRequest, tokenResponse)
 	LogTokenPayloadln(tokenResponse)
-	LogResult(tokenResponse)
+
+	c.PrintResult(tokenResponse)
 
 	authorizationStatus("Authorization completed")
 
