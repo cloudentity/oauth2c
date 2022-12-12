@@ -35,6 +35,31 @@ func TestOAuth2NonBrowserGrantTypes(t *testing.T) {
 			},
 		},
 		{
+			title: "refresh_token",
+			args: []string{
+				IssuerURL,
+				"--client-id", "cauktionbud6q8ftlqq0",
+				"--client-secret", "HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc",
+				"--grant-type", oauth2.RefreshTokenGrantType,
+				"--auth-method", oauth2.ClientSecretBasicAuthMethod,
+				"--refresh-token", "$REFRESH_TOKEN",
+			},
+			deps: map[string]CommandDependency{
+				"REFRESH_TOKEN": {
+					args: []string{
+						IssuerURL,
+						"--client-id", "cauktionbud6q8ftlqq0",
+						"--client-secret", "HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc",
+						"--grant-type", oauth2.ClientCredentialsGrantType,
+						"--auth-method", oauth2.ClientSecretBasicAuthMethod,
+						"--scopes", "offline_access",
+						"--silent",
+					},
+					jq: ".refresh_token",
+				},
+			},
+		},
+		{
 			title: "token_exchange",
 			args: []string{
 				IssuerURL,
