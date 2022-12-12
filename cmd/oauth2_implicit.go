@@ -5,7 +5,6 @@ import (
 
 	"github.com/cloudentity/oauth2c/internal/oauth2"
 	"github.com/pkg/browser"
-	"github.com/pterm/pterm"
 )
 
 func ImplicitGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
@@ -15,10 +14,10 @@ func ImplicitGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.Ser
 		err              error
 	)
 
-	pterm.DefaultHeader.WithFullWidth().Println("Implicit Flow")
+	LogHeader("Implicit Flow")
 
 	// authorize endpoint
-	pterm.DefaultSection.Println("Request authorization")
+	LogSection("Request authorization")
 
 	if authorizeRequest, _, err = oauth2.RequestAuthorization(addr, clientConfig, serverConfig); err != nil {
 		return err
@@ -26,27 +25,30 @@ func ImplicitGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.Ser
 
 	LogRequest(authorizeRequest)
 
-	pterm.Printfln("\nOpen the following URL:\n\n%s\n", authorizeRequest.URL.String())
+	Logfln("\nOpen the following URL:\n\n%s\n", authorizeRequest.URL.String())
 
 	if err = browser.OpenURL(authorizeRequest.URL.String()); err != nil {
-		pterm.Warning.PrintOnError(err)
+		LogError(err)
 	}
 
-	pterm.Println()
+	Logln()
 
 	// callback
-	callbackStatus, _ := pterm.DefaultSpinner.Start("Waiting for callback. Go to the browser to authenticate...")
+	callbackStatus := LogAction("Waiting for callback. Go to the browser to authenticate...")
 
 	if callbackRequest, err = oauth2.WaitForCallback(addr); err != nil {
 		LogRequestln(callbackRequest)
 		return err
 	}
 
-	LogRequest(callbackRequest)
-	LogTokenPayloadln(oauth2.NewTokenResponseFromForm(callbackRequest.Form))
-	pterm.Println()
+	tokenResponse := oauth2.NewTokenResponseFromForm(callbackRequest.Form)
 
-	callbackStatus.Success("Obtained authorization")
+	LogRequest(callbackRequest)
+	LogTokenPayloadln(tokenResponse)
+	Logln()
+	LogResult(tokenResponse)
+
+	callbackStatus("Obtained authorization")
 
 	return nil
 }

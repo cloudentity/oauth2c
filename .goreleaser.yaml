@@ -2,9 +2,7 @@
 # Make sure to check the documentation at https://goreleaser.com
 before:
   hooks:
-    # You may remove this if you don't use go modules.
     - go mod tidy
-    # you may remove this if you don't need go generate
     - go generate ./...
 builds:
   - env:
@@ -13,6 +11,10 @@ builds:
       - linux
       - windows
       - darwin
+    goarch:
+      - amd64
+      - arm
+      - arm64
 archives:
   - replacements:
       darwin: Darwin
@@ -30,6 +32,14 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+brews:
+  - tap:
+      owner: cloudentity
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    folder: Formula
+    homepage: "https://github.com/cloudentity/oauth2c"
+    description: "CLI for OAuth2"
 
 # modelines, feel free to remove those if you don't want/use them:
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json

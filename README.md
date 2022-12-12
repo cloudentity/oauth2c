@@ -1,27 +1,47 @@
-# oauth2c
+# OAuth2c: user-friendly CLI OAuth2 client
 
 [![status](https://github.com/cloudentity/oauth2c/workflows/build/badge.svg)](https://github.com/cloudentity/oauthc/actions)
 [![license](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![release](https://img.shields.io/github/release-pre/cloudentity/oauth2c.svg)](https://github.com/cloudentity/oauth2c/releases)
 [![downloads](https://img.shields.io/github/downloads/cloudentity/oauth2c/total)](https://github.com/cloudentity/oauth2c/releases)
 
-`oauth2c` is a command-line tool that simplifies the process of experimenting with different grant types and client authentication methods for OAuth 2.0.
+`oauth2c` is a command-line OAuth2 client. Its goal is to make it easy for users to try out different aspects of the OAuth2 protocol and understand how it works. This tool is designed for testing, debugging, and generally interacting with OAuth2 authorization servers. With `oauth2c`, users can easily learn about and experiment with OAuth2 without the need for complex setup or detailed knowledge of the protocol.
 
 ![demo](https://user-images.githubusercontent.com/909896/176916616-36d803ef-832a-4bd8-ba8d-f6689e31ed22.gif)
 
 ## Features
 
-* Simple and intuitive interface for quickly experimenting with different OAuth 2.0 grant types and client authentication methods
+* A simple and intuitive interface for quickly trying out different OAuth 2.0 grant types and client authentication methods
 * Supports all modern OAuth 2.0 grant types: authorization code, implicit, password, client credentials, refresh token, JWT bearer, token exchange
 * Supports all client authentication methods: client secret basic, client secret post, client secret JWT, private key JWT, TLS client auth
 
 ## Installation
 
-To install `oauth2c`, simply run the following command:
+To install `oauth2c`, you have several options depending on your operating system.
+
+### Install on Mac
+
+On Mac, you can install `oauth2c` using `brew` by running the following command:
+
+``` sh
+brew install cloudentity/tap/oauth2c
+```
+
+### Install on Linux
+
+On linux, you can install `oauth2c` using the installation script by running the following command:
 
 ``` sh
 curl -sSfL https://raw.githubusercontent.com/cloudentity/oauth2c/master/install.sh | \
   sudo sh -s -- -b /usr/local/bin latest
+```
+
+### Compile from source
+
+You can also compile `oauth2c` from source using `go`. To do this run the following command:
+
+``` sh
+go install github.com/cloudentity/oauth2c@latest
 ```
 
 Alternatively, you can download a pre-built binary from the [releases page].
@@ -36,7 +56,32 @@ To use `oauth2c`, run the following command and follow the prompts:
 oauth2c [issuer url] [flags]
 ```
 
-You will be asked to provide the necessary information, such as the grant type, client authentication method, and any other relevant details.
+The available flags are:
+
+``` sh
+      --assertion string         claims for jwt bearer assertion
+      --auth-method string       token endpoint authentication method
+      --client-id string         client identifier
+      --client-secret string     client secret
+      --grant-type string        grant type
+  -h, --help                     help for oauthc
+      --insecure                 allow insecure connections
+      --no-pkce                  disable proof key for code exchange (PKCE)
+      --password string          resource owner password credentials grant flow password
+      --pkce                     enable proof key for code exchange (PKCE)
+      --refresh-token string     refresh token
+      --response-mode string     response mode
+      --response-types strings   response type
+      --scopes strings           requested scopes
+      --signing-key string       path or url to signing key in jwks format
+  -s, --silent                   silent mode
+      --tls-cert string          path to tls cert pem file
+      --tls-key string           path to tls key pem file
+      --tls-root-ca string       path to tls root ca pem file
+      --username string          resource owner password credentials grant flow username
+```
+
+You will be asked to provide the necessary information, such as the grant type, client authentication method, and any other relevant details (if not already provided).
 
 Once authenticated, you will be able to use the access token to access the OAuth2 provider's API.
 
@@ -81,18 +126,16 @@ request is coming from the same client that initiated the authorization request.
 
 This additional step helps to prevent attackers from intercepting the authorization code and using it to
 obtain an access token. PKCE is recommended for all public clients, such as single-page or mobile
-applications, where the client secret cannot be securely stored. oauth2c supports PKCE as an optional
-parameter when using the authorization code grant type.
+applications, where the client secret cannot be securely stored.
 
 ``` sh
 oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
-  --client-id cauktionbud6q8ftlqq0 \
-  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+  --client-id db5e375e7b634095b24bbb683fcb955b \
   --response-types code \
   --response-mode query \
   --grant-type authorization_code \
-  --auth-method client_secret_basic \
-  --scopes openid,email,offline_access \
+  --auth-method none \
+  --scopes openid,email \
   --pkce
 ```
 
@@ -171,6 +214,21 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --refresh-token $REFRESH_TOKEN
 ```
 
+> **Note** In order to use this command, you must first set the REFRESH_TOKEN environment variable
+>
+> ``` sh
+> export REFRESH_TOKEN=`oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+>   --client-id cauktionbud6q8ftlqq0 \
+>   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+>   --response-types code \
+>   --response-mode query \
+>   --grant-type authorization_code \
+>   --auth-method client_secret_basic \
+>   --scopes openid,email,offline_access \
+>   --no-pkce \
+>   --silent | jq -r .refresh_token`
+> ```
+
 [Learn more about the refresh token flow](https://cloudentity.com/developers/basics/oauth-grant-types/refresh-token-flow/)
 
 #### Password
@@ -228,7 +286,32 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --actor-token-type urn:ietf:params:oauth:token-type:access_token
 ```
 
-[Learn more about the jwt bearer flow](https://cloudentity.com/developers/basics/oauth-grant-types/token-exchange/)
+> **Note** In order to use this command, you must first set the SUBJECT_TOKEN and ACTOR_TOKEN environment variables
+>
+> ``` sh
+> export SUBJECT_TOKEN=`oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+>   --client-id cauktionbud6q8ftlqq0 \
+>   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+>   --response-types code \
+>   --response-mode query \
+>   --grant-type authorization_code \
+>   --auth-method client_secret_basic \
+>   --scopes openid,email,offline_access \
+>   --no-pkce \
+>   --silent | jq -r .access_token`
+> ```
+
+> ``` sh
+> export ACTOR_TOKEN=`oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+>   --client-id cauktionbud6q8ftlqq0 \
+>   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+>   --grant-type client_credentials \
+>   --auth-method client_secret_basic \
+>   --scopes introspect_tokens,revoke_tokens
+>   --silent | jq -r .access_token`
+> ```
+
+[Learn more about the token exchange flow](https://cloudentity.com/developers/basics/oauth-grant-types/token-exchange/)
 
 ### Auth methods
 
@@ -319,6 +402,23 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 ```
 
 [Learn more about tls client auth](https://cloudentity.com/developers/basics/oauth-client-authentication/oauth-mtls-client-authentication/)
+
+#### None with PKCE
+
+Public clients, such as mobile apps, are unable to authenticate themselves to the authorization server in the same way that confidential clients can because they do not have a client secret. To protect themselves from having their authorization codes intercepted and used by attackers, public clients can use PKCE (Proof Key for Code Exchange) during the authorization process. PKCE provides an additional layer of security by ensuring that the authorization code can only be exchanged for a token by the same client that initially requested it. This helps prevent unauthorized access to the token.
+
+``` sh
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id db5e375e7b634095b24bbb683fcb955b \
+  --response-types code \
+  --response-mode query \
+  --grant-type authorization_code \
+  --auth-method none \
+  --scopes openid,email \
+  --pkce
+```
+
+[Lean more about none with PKCE](https://cloudentity.com/developers/basics/oauth-client-authentication/client-auth-set-to-none-with-pkce/)
 
 ## License
 

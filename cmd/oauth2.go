@@ -6,16 +6,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/cloudentity/oauth2c/internal/oauth2"
 	"github.com/golang-jwt/jwt"
 	"github.com/imdario/mergo"
-	"github.com/pterm/pterm"
+	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 )
 
@@ -25,6 +25,7 @@ const (
 
 var (
 	parser jwt.Parser
+	silent bool
 )
 
 func OAuth2Cmd() *cobra.Command {
@@ -44,16 +45,20 @@ func OAuth2Cmd() *cobra.Command {
 
 			if data, err = os.ReadFile(args[0]); err == nil {
 				if err = json.Unmarshal(data, &config); err != nil {
-					pterm.Error.PrintOnError(err)
+					LogError(err)
 					os.Exit(1)
 				}
 
 				if err := mergo.Merge(&cconfig, config.ToClientConfig()); err != nil {
-					pterm.Error.PrintOnError(err)
+					LogError(err)
 					os.Exit(1)
 				}
 			} else {
 				cconfig.IssuerURL = strings.TrimSuffix(args[0], oauth2.OpenIDConfigurationPath)
+			}
+
+			if silent {
+				browser.Stdout = ioutil.Discard
 			}
 
 			tr := &http.Transport{
@@ -67,7 +72,7 @@ func OAuth2Cmd() *cobra.Command {
 
 			if cconfig.TLSCert != "" && cconfig.TLSKey != "" {
 				if cert, err = oauth2.ReadKeyPair(cconfig.TLSCert, cconfig.TLSKey, hc); err != nil {
-					pterm.Error.PrintOnError(err)
+					LogError(err)
 					os.Exit(1)
 				}
 
@@ -76,7 +81,7 @@ func OAuth2Cmd() *cobra.Command {
 
 			if cconfig.TLSRootCA != "" {
 				if tr.TLSClientConfig.RootCAs, err = oauth2.ReadRootCA(cconfig.TLSRootCA, hc); err != nil {
-					pterm.Error.PrintOnError(err)
+					LogError(err)
 					os.Exit(1)
 				}
 			}
@@ -87,15 +92,17 @@ func OAuth2Cmd() *cobra.Command {
 				if errors.As(err, &oauth2Error) {
 					switch oauth2Error.Hint {
 					case "Clients must include a code_challenge when performing the authorize code flow, but it is missing.":
-						pterm.Warning.Println("Authorization server enforces PKCE. Use --pkce flag.")
+						LogWarning("Authorization server enforces PKCE. Use --pkce flag.")
 					}
 				}
 
-				pterm.Error.PrintOnError(err)
+				LogError(err)
 				os.Exit(1)
 			}
 		},
 	}
+
+	cmd.AddCommand(versionCmd)
 
 	cmd.PersistentFlags().StringVar(&cconfig.ClientID, "client-id", "", "client identifier")
 	cmd.PersistentFlags().StringVar(&cconfig.ClientSecret, "client-secret", "", "client secret")
@@ -119,6 +126,7 @@ func OAuth2Cmd() *cobra.Command {
 	cmd.PersistentFlags().StringVar(&cconfig.TLSKey, "tls-key", "", "path to tls key pem file")
 	cmd.PersistentFlags().StringVar(&cconfig.TLSRootCA, "tls-root-ca", "", "path to tls root ca pem file")
 	cmd.PersistentFlags().BoolVar(&cconfig.Insecure, "insecure", false, "allow insecure connections")
+	cmd.PersistentFlags().BoolVarP(&silent, "silent", "s", false, "silent mode")
 
 	return cmd
 }
@@ -140,36 +148,11 @@ func Authorize(clientConfig oauth2.ClientConfig, hc *http.Client) error {
 		return err
 	}
 
-	clientConfig = PromptForClientConfig(clientConfig, serverConfig)
-
-	data := pterm.TableData{
-		{"Issuer URL", clientConfig.IssuerURL},
-		{"Grant type", clientConfig.GrantType},
-		{"Auth method", clientConfig.AuthMethod},
-		{"Scopes", strings.Join(clientConfig.Scopes, ", ")},
-		{"Response types", strings.Join(clientConfig.ResponseType, ", ")},
-		{"Response mode", clientConfig.ResponseMode},
-		{"PKCE", strconv.FormatBool(clientConfig.PKCE)},
-		{"Client ID", clientConfig.ClientID},
-		{"Client secret", clientConfig.ClientSecret},
-		{"Username", clientConfig.Username},
-		{"Password", clientConfig.Password},
-		{"Refresh token", clientConfig.RefreshToken},
+	if !silent {
+		clientConfig = PromptForClientConfig(clientConfig, serverConfig)
 	}
 
-	nonEmptyData := pterm.TableData{}
-
-	for _, vs := range data {
-		if vs[1] != "" {
-			nonEmptyData = append(nonEmptyData, vs)
-		}
-	}
-
-	if err := pterm.DefaultTable.WithData(nonEmptyData).WithBoxed().Render(); err != nil {
-		return err
-	}
-
-	pterm.Println()
+	LogInputData(clientConfig)
 
 	switch clientConfig.GrantType {
 	case oauth2.AuthorizationCodeGrantType:
