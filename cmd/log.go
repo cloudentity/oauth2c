@@ -98,6 +98,12 @@ func LogInputData(cc oauth2.ClientConfig) {
 		{"Username", cc.Username},
 		{"Password", cc.Password},
 		{"Refresh token", cc.RefreshToken},
+		{"Signing key", cc.SigningKey},
+		{"Subject token type", cc.SubjectTokenType},
+		{"Actors token type", cc.ActorTokenType},
+		{"TLS client cert", cc.TLSCert},
+		{"TLS client key", cc.TLSKey},
+		{"TLS root CA", cc.TLSRootCA},
 	}
 
 	nonEmptyData := pterm.TableData{}
@@ -278,7 +284,7 @@ func LogAssertion(request oauth2.Request, title string, name string) {
 	}
 
 	pterm.DefaultBox.WithTitle(title).Printfln("%s = JWT-%s(payload)", name, token.Header["alg"])
-	pterm.Println("")
+	pterm.Println()
 	pterm.Println("Payload")
 	LogJson(claims)
 	pterm.Println("")
@@ -317,20 +323,38 @@ func LogAssertion(request oauth2.Request, title string, name string) {
 		pterm.FgGray.Println(string(key))
 	}
 
-	pterm.Println("")
+	pterm.Println()
 }
 
-func LogResult(result interface{}) {
-	if !silent {
+func LogSubjectTokenAndActorToken(request oauth2.Request) {
+	var (
+		subjectToken       = request.Form.Get("subject_token")
+		actorToken         = request.Form.Get("actor_token")
+		subjectTokenClaims jwt.MapClaims
+		actorTokenClaims   jwt.MapClaims
+	)
+
+	if silent {
 		return
 	}
 
-	output, err := json.Marshal(result)
-
-	if err != nil {
-		pterm.Error.Println(err)
-		return
+	if subjectToken != "" {
+		if _, _, err := parser.ParseUnverified(subjectToken, &subjectTokenClaims); err != nil {
+			pterm.Error.Println(err)
+		} else {
+			pterm.Println(pterm.FgGray.Sprint("Subject token:"))
+			LogJson(subjectTokenClaims)
+		}
 	}
 
-	pterm.Println(string(output))
+	if actorToken != "" {
+		if _, _, err := parser.ParseUnverified(actorToken, &actorTokenClaims); err != nil {
+			pterm.Error.Println(err)
+		} else {
+			pterm.Println(pterm.FgGray.Sprint("Actor token:"))
+			LogJson(actorTokenClaims)
+		}
+	}
+
+	pterm.Println()
 }

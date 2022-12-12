@@ -34,6 +34,47 @@ func TestOAuth2NonBrowserGrantTypes(t *testing.T) {
 				"--assertion", `{"sub":"jdoe@example.com"}`,
 			},
 		},
+		{
+			title: "token_exchange",
+			args: []string{
+				IssuerURL,
+				"--client-id", "cauktionbud6q8ftlqq0",
+				"--client-secret", "HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc",
+				"--grant-type", oauth2.TokenExchangeGrantType,
+				"--auth-method", oauth2.ClientSecretBasicAuthMethod,
+				"--scopes", "email",
+				"--subject-token", "$SUBJECT_TOKEN",
+				"--subject-token-type", "urn:ietf:params:oauth:token-type:access_token",
+				"--actor-token", "$ACTOR_TOKEN",
+				"--actor-token-type", "urn:ietf:params:oauth:token-type:access_token",
+			},
+			deps: map[string]CommandDependency{
+				"SUBJECT_TOKEN": {
+					args: []string{
+						IssuerURL,
+						"--client-id", "cauktionbud6q8ftlqq0",
+						"--client-secret", "HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc",
+						"--grant-type", oauth2.ClientCredentialsGrantType,
+						"--auth-method", oauth2.ClientSecretBasicAuthMethod,
+						"--scopes", ClientCredentialsScopes,
+						"--silent",
+					},
+					jq: ".access_token",
+				},
+				"ACTOR_TOKEN": {
+					args: []string{
+						IssuerURL,
+						"--client-id", "cauktionbud6q8ftlqq0",
+						"--client-secret", "HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc",
+						"--grant-type", oauth2.ClientCredentialsGrantType,
+						"--auth-method", oauth2.ClientSecretBasicAuthMethod,
+						"--scopes", ClientCredentialsScopes,
+						"--silent",
+					},
+					jq: ".access_token",
+				},
+			},
+		},
 	}
 
 	for _, tc := range testcases {

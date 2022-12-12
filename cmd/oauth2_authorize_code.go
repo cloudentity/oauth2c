@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/browser"
 )
 
-func AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
+func (c *OAuth2Cmd) AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
 	var (
 		authorizeRequest oauth2.Request
 		callbackRequest  oauth2.Request
@@ -76,7 +76,8 @@ func AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig, serverConfig o
 	LogAuthMethod(clientConfig)
 	LogRequestAndResponse(tokenRequest, tokenResponse)
 	LogTokenPayloadln(tokenResponse)
-	LogResult(tokenResponse)
+
+	c.PrintResult(tokenResponse)
 
 	exchangeStatus("Exchanged authorization code for access token")
 

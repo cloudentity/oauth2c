@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	if err := cmd.OAuth2Cmd().Execute(); err != nil {
+	if err := cmd.NewOAuth2Cmd().Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

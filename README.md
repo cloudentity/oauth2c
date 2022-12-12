@@ -59,26 +59,30 @@ oauth2c [issuer url] [flags]
 The available flags are:
 
 ``` sh
-      --assertion string         claims for jwt bearer assertion
-      --auth-method string       token endpoint authentication method
-      --client-id string         client identifier
-      --client-secret string     client secret
-      --grant-type string        grant type
-  -h, --help                     help for oauthc
-      --insecure                 allow insecure connections
-      --no-pkce                  disable proof key for code exchange (PKCE)
-      --password string          resource owner password credentials grant flow password
-      --pkce                     enable proof key for code exchange (PKCE)
-      --refresh-token string     refresh token
-      --response-mode string     response mode
-      --response-types strings   response type
-      --scopes strings           requested scopes
-      --signing-key string       path or url to signing key in jwks format
-  -s, --silent                   silent mode
-      --tls-cert string          path to tls cert pem file
-      --tls-key string           path to tls key pem file
-      --tls-root-ca string       path to tls root ca pem file
-      --username string          resource owner password credentials grant flow username
+      --actor-token string          acting party access token
+      --actor-token-type string     acting party access token type
+      --assertion string            claims for jwt bearer assertion
+      --auth-method string          token endpoint authentication method
+      --client-id string            client identifier
+      --client-secret string        client secret
+      --grant-type string           grant type
+  -h, --help                        help for oauthc
+      --insecure                    allow insecure connections
+      --no-pkce                     disable proof key for code exchange (PKCE)
+      --password string             resource owner password credentials grant flow password
+      --pkce                        enable proof key for code exchange (PKCE)
+      --refresh-token string        refresh token
+      --response-mode string        response mode
+      --response-types strings      response type
+      --scopes strings              requested scopes
+      --signing-key string          path or url to signing key in jwks format
+  -s, --silent                      silent mode
+      --subject-token string        third party access token
+      --subject-token-type string   third party access token type
+      --tls-cert string             path to tls cert pem file
+      --tls-key string              path to tls key pem file
+      --tls-root-ca string          path to tls root ca pem file
+      --username string             resource owner password credentials grant flow username
 ```
 
 You will be asked to provide the necessary information, such as the grant type, client authentication method, and any other relevant details (if not already provided).
@@ -307,7 +311,7 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 >   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
 >   --grant-type client_credentials \
 >   --auth-method client_secret_basic \
->   --scopes introspect_tokens,revoke_tokens
+>   --scopes introspect_tokens,revoke_tokens \
 >   --silent | jq -r .access_token`
 > ```
 

@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/browser"
 )
 
-func ImplicitGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
+func (c *OAuth2Cmd) ImplicitGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
 	var (
 		authorizeRequest oauth2.Request
 		callbackRequest  oauth2.Request
@@ -46,7 +46,8 @@ func ImplicitGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.Ser
 	LogRequest(callbackRequest)
 	LogTokenPayloadln(tokenResponse)
 	Logln()
-	LogResult(tokenResponse)
+
+	c.PrintResult(tokenResponse)
 
 	callbackStatus("Obtained authorization")
 
