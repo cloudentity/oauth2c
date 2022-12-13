@@ -169,6 +169,8 @@ func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, addr 
 			return
 		}
 
+		w.Header().Add("Content-Type", "text/html")
+
 		if request.Get("error") != "" {
 			err = &Error{
 				ErrorCode:   request.Get("error"),
@@ -179,12 +181,12 @@ func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, addr 
 
 			w.WriteHeader(http.StatusBadRequest)
 
-			if _, err := w.Write([]byte(`Authorization failed. You may close this browser.`)); err != nil {
+			if _, err := w.Write([]byte(`<script>window.close()</script> Authorization failed. You may close this window.`)); err != nil {
 				log.Fatal(err)
 			}
 		} else {
 			w.WriteHeader(http.StatusOK)
-			if _, err := w.Write([]byte(`Authorization succeeded. You may close this browser.`)); err != nil {
+			if _, err := w.Write([]byte(`<script>window.close()</script> Authorization succeeded. You may close this window.`)); err != nil {
 				log.Fatal(err)
 			}
 		}
