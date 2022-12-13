@@ -14,6 +14,7 @@
 * A simple and intuitive interface for quickly trying out different OAuth 2.0 grant types and client authentication methods
 * Supports all modern OAuth 2.0 grant types: authorization code, implicit, password, client credentials, refresh token, JWT bearer, token exchange
 * Supports all client authentication methods: client secret basic, client secret post, client secret JWT, private key JWT, TLS client auth
+* Supports the following extensions: PKCE, JARM
 
 ## Installation
 
@@ -118,32 +119,6 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 ```
 
 [Learn more about authorization code flow](https://cloudentity.com/developers/basics/oauth-grant-types/authorization-code-flow/)
-
-#### Authorization code + PKCE
-
-The Proof Key for Code Exchange (PKCE) is an extension to the OAuth2 authorization code grant flow that
-provides additional security when authenticating with an OAuth2 provider. In the PKCE flow, the client
-generates a code verifier and a code challenge, which are then sent to the OAuth2 provider during
-the authorization request. The provider returns an authorization code, which the client then exchanges for
-an access token along with the code verifier. The provider verifies the code verifier to ensure that the
-request is coming from the same client that initiated the authorization request.
-
-This additional step helps to prevent attackers from intercepting the authorization code and using it to
-obtain an access token. PKCE is recommended for all public clients, such as single-page or mobile
-applications, where the client secret cannot be securely stored.
-
-``` sh
-oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
-  --client-id db5e375e7b634095b24bbb683fcb955b \
-  --response-types code \
-  --response-mode query \
-  --grant-type authorization_code \
-  --auth-method none \
-  --scopes openid,email \
-  --pkce
-```
-
-[Learn more about authorization code flow with pkce](https://cloudentity.com/developers/basics/oauth-grant-types/authorization-code-with-pkce/)
 
 #### Implicit
 
@@ -423,6 +398,53 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 ```
 
 [Lean more about none with PKCE](https://cloudentity.com/developers/basics/oauth-client-authentication/client-auth-set-to-none-with-pkce/)
+
+### Extensions
+
+#### PKCE
+
+The Proof Key for Code Exchange (PKCE) is an extension to the OAuth2 authorization code grant flow that
+provides additional security when authenticating with an OAuth2 provider. In the PKCE flow, the client
+generates a code verifier and a code challenge, which are then sent to the OAuth2 provider during
+the authorization request. The provider returns an authorization code, which the client then exchanges for
+an access token along with the code verifier. The provider verifies the code verifier to ensure that the
+request is coming from the same client that initiated the authorization request.
+
+This additional step helps to prevent attackers from intercepting the authorization code and using it to
+obtain an access token. PKCE is recommended for all public clients, such as single-page or mobile
+applications, where the client secret cannot be securely stored.
+
+``` sh
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id db5e375e7b634095b24bbb683fcb955b \
+  --response-types code \
+  --response-mode query \
+  --grant-type authorization_code \
+  --auth-method none \
+  --scopes openid,email \
+  --pkce
+```
+
+[Learn more about authorization code flow with pkce](https://cloudentity.com/developers/basics/oauth-grant-types/authorization-code-with-pkce/)
+
+#### JARM
+
+JWT-secured OAuth 2.0 authorization response, also known as JARM, is a method of securely transmitting authorization
+information in an OAuth 2.0 authorization response using JSON Web Tokens (JWT). This allows the authorization response
+to be verified by the client, ensuring that the information is coming from a trusted source and has not been tampered
+with. The JWT is signed using a secret key shared between the authorization server and the client, allowing the client
+to verify the authenticity of the JWT. This provides an additional layer of security to the OAuth 2.0 authorization process.
+
+``` sh
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id db5e375e7b634095b24bbb683fcb955b \
+  --response-types code \
+  --response-mode query.jwt \
+  --grant-type authorization_code \
+  --auth-method none \
+  --scopes openid,email
+```
+
 
 ## License
 

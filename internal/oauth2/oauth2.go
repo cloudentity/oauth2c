@@ -149,6 +149,8 @@ func WaitForCallback(addr string) (request Request, err error) {
 		request.URL = r.URL
 		request.Form = r.PostForm
 
+		// TODO parse jarm ?
+
 		if r.URL.Query().Get("error") != "" {
 			err = &Error{
 				ErrorCode:   r.URL.Query().Get("error"),
