@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -97,7 +97,7 @@ func (c *OAuth2Cmd) Run(cconfig *oauth2.ClientConfig) func(cmd *cobra.Command, a
 		}
 
 		if silent {
-			browser.Stdout = ioutil.Discard
+			browser.Stdout = io.Discard
 		}
 
 		tr := &http.Transport{
