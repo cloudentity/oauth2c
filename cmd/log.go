@@ -264,22 +264,13 @@ func LogAuthMethod(config oauth2.ClientConfig) {
 }
 
 func LogJARM(request oauth2.Request) {
-	var (
-		claims map[string]interface{}
-		err    error
-	)
-
 	if silent {
 		return
 	}
 
-	if request.Get("response") != "" {
-		if _, claims, err = oauth2.ParseJWT(request.Get("response")); err != nil {
-			pterm.Error.Println(err)
-		} else {
-			pterm.Println(pterm.FgGray.Sprint("JARM:"))
-			LogJson(claims)
-		}
+	if len(request.JARM) != 0 {
+		pterm.Println(pterm.FgGray.Sprint("JARM:"))
+		LogJson(request.JARM)
 	}
 }
 

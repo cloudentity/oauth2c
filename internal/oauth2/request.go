@@ -14,13 +14,13 @@ type Request struct {
 	URL     *url.URL
 	Headers map[string][]string
 	Form    url.Values
-	JARM    url.Values
+	JARM    map[string]interface{}
 	Key     interface{}
 	Cert    *x509.Certificate
 }
 
 func (r *Request) Get(key string) string {
-	if v := r.JARM.Get(key); v != "" {
+	if v, ok := r.JARM[key].(string); ok {
 		return v
 	}
 
@@ -36,12 +36,11 @@ func (r *Request) ParseJARM(key interface{}) error {
 		response    = r.Get("response")
 		token       *jwt.JSONWebToken
 		nestedToken *jwt.NestedJSONWebToken
-		claims      = map[string]interface{}{}
 		err         error
 		err2        error
 	)
 
-	r.JARM = map[string][]string{}
+	r.JARM = map[string]interface{}{}
 
 	if response != "" {
 		if nestedToken, err = jwt.ParseSignedAndEncrypted(response); err != nil {
@@ -52,14 +51,8 @@ func (r *Request) ParseJARM(key interface{}) error {
 			return errors.Wrapf(err, "failed to decrypt encrypted JARM response")
 		}
 
-		if err = token.UnsafeClaimsWithoutVerification(&claims); err != nil {
+		if err = token.UnsafeClaimsWithoutVerification(&r.JARM); err != nil {
 			return err
-		}
-
-		for key, value := range claims {
-			if v, ok := value.(string); ok {
-				r.JARM[key] = []string{v}
-			}
 		}
 	}
 
