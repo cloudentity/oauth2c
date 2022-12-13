@@ -126,17 +126,22 @@ func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfi
 	return r, codeVerifier, nil
 }
 
-func WaitForCallback(clientConfig ClientConfig, addr string, hc *http.Client) (request Request, err error) {
+func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, addr string, hc *http.Client) (request Request, err error) {
 	var (
-		srv = http.Server{Addr: addr}
-		key jose.JSONWebKey
-		wg  sync.WaitGroup
+		srv           = http.Server{Addr: addr}
+		signingKey    jose.JSONWebKey
+		encryptionKey jose.JSONWebKey
+		wg            sync.WaitGroup
 	)
 
 	wg.Add(1)
 
+	if signingKey, err = ReadKey(SigningKey, serverConfig.JWKsURI, hc); err != nil {
+		return request, errors.Wrapf(err, "failed to read signing key from %s", serverConfig.JWKsURI)
+	}
+
 	if clientConfig.EncryptionKey != "" {
-		if key, err = ReadKey(EncryptionKey, clientConfig.EncryptionKey, hc); err != nil {
+		if encryptionKey, err = ReadKey(EncryptionKey, clientConfig.EncryptionKey, hc); err != nil {
 			return request, errors.Wrapf(err, "failed to read encryption key from %s", clientConfig.EncryptionKey)
 		}
 	}
@@ -159,7 +164,7 @@ func WaitForCallback(clientConfig ClientConfig, addr string, hc *http.Client) (r
 		request.URL = r.URL
 		request.Form = r.PostForm
 
-		if err = request.ParseJARM(key); err != nil {
+		if err = request.ParseJARM(signingKey, encryptionKey); err != nil {
 			log.Fatal(err)
 			return
 		}

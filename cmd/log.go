@@ -224,7 +224,7 @@ func LogTokenPayload(response oauth2.TokenResponse) {
 	}
 
 	if response.AccessToken != "" {
-		if _, atClaims, err = oauth2.ParseJWT(response.AccessToken); err != nil {
+		if _, atClaims, err = oauth2.UnsafeParseJWT(response.AccessToken); err != nil {
 			pterm.Error.Println(err)
 		} else {
 			pterm.Println(pterm.FgGray.Sprint("Access token:"))
@@ -233,7 +233,7 @@ func LogTokenPayload(response oauth2.TokenResponse) {
 	}
 
 	if response.IDToken != "" {
-		if _, idClaims, err = oauth2.ParseJWT(response.IDToken); err != nil {
+		if _, idClaims, err = oauth2.UnsafeParseJWT(response.IDToken); err != nil {
 			pterm.Error.Println(err)
 		} else {
 			pterm.Println(pterm.FgGray.Sprint("ID token:"))
@@ -290,7 +290,7 @@ func LogAssertion(request oauth2.Request, title string, name string) {
 		return
 	}
 
-	if token, claims, err = oauth2.ParseJWT(assertion); err != nil {
+	if token, claims, err = oauth2.UnsafeParseJWT(assertion); err != nil {
 		pterm.Error.Println(err)
 		return
 	}
@@ -352,7 +352,7 @@ func LogSubjectTokenAndActorToken(request oauth2.Request) {
 	}
 
 	if subjectToken != "" {
-		if _, subjectTokenClaims, err = oauth2.ParseJWT(subjectToken); err != nil {
+		if _, subjectTokenClaims, err = oauth2.UnsafeParseJWT(subjectToken); err != nil {
 			pterm.Error.Println(err)
 		} else {
 			pterm.Println(pterm.FgGray.Sprint("Subject token:"))
@@ -361,7 +361,7 @@ func LogSubjectTokenAndActorToken(request oauth2.Request) {
 	}
 
 	if actorToken != "" {
-		if _, actorTokenClaims, err = oauth2.ParseJWT(actorToken); err != nil {
+		if _, actorTokenClaims, err = oauth2.UnsafeParseJWT(actorToken); err != nil {
 			pterm.Error.Println(err)
 		} else {
 			pterm.Println(pterm.FgGray.Sprint("Actor token:"))

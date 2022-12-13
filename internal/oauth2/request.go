@@ -31,7 +31,7 @@ func (r *Request) Get(key string) string {
 	return r.Form.Get(key)
 }
 
-func (r *Request) ParseJARM(key interface{}) error {
+func (r *Request) ParseJARM(signingKey interface{}, encryptionKey interface{}) error {
 	var (
 		response    = r.Get("response")
 		token       *jwt.JSONWebToken
@@ -47,11 +47,19 @@ func (r *Request) ParseJARM(key interface{}) error {
 			if token, err2 = jwt.ParseSigned(response); err2 != nil {
 				return errors.Wrapf(multierror.Append(err, err2), "failed to parse JARM response")
 			}
-		} else if token, err = nestedToken.Decrypt(key); err != nil {
-			return errors.Wrapf(err, "failed to decrypt encrypted JARM response")
+		} else if encryptionKey != nil {
+			if token, err = nestedToken.Decrypt(encryptionKey); err != nil {
+				return errors.Wrapf(err, "failed to decrypt encrypted JARM response")
+			}
+		} else {
+			return errors.New("no encryption key path")
 		}
 
-		if err = token.UnsafeClaimsWithoutVerification(&r.JARM); err != nil {
+		if signingKey == nil {
+			return errors.New("no signing key path")
+		}
+
+		if err = token.Claims(signingKey, &r.JARM); err != nil {
 			return err
 		}
 	}

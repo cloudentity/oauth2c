@@ -2,7 +2,7 @@ package oauth2
 
 import "github.com/go-jose/go-jose/v3/jwt"
 
-func ParseJWT(token string) (*jwt.JSONWebToken, map[string]interface{}, error) {
+func UnsafeParseJWT(token string) (*jwt.JSONWebToken, map[string]interface{}, error) {
 	var (
 		t      *jwt.JSONWebToken
 		claims = map[string]interface{}{}
