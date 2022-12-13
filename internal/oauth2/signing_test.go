@@ -12,14 +12,14 @@ import (
 )
 
 func TestReadKey(t *testing.T) {
-	key, err := oauth2.ReadKey("../../data/key.json", http.DefaultClient)
+	key, err := oauth2.ReadKey(oauth2.SigningKey, "../../data/key.json", http.DefaultClient)
 	require.NoError(t, err)
 
 	require.NotNil(t, key)
 }
 
 func TestSignJWT(t *testing.T) {
-	key, err := oauth2.ReadKey("../../data/key.json", http.DefaultClient)
+	key, err := oauth2.ReadKey(oauth2.SigningKey, "../../data/key.json", http.DefaultClient)
 	require.NoError(t, err)
 
 	claims := oauth2.AssertionClaims(
