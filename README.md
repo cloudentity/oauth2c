@@ -439,12 +439,13 @@ to verify the authenticity of the JWT. This provides an additional layer of secu
 
 ``` sh
 oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
-  --client-id db5e375e7b634095b24bbb683fcb955b \
+  --client-id cauktionbud6q8ftlqq0 \
+  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
   --response-types code \
   --response-mode query.jwt \
   --grant-type authorization_code \
-  --auth-method none \
-  --scopes openid,email \
+  --auth-method client_secret_basic \
+  --scopes openid,email,offline_access \
   --no-pkce
 ```
 

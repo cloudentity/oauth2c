@@ -45,7 +45,7 @@ func (r *Request) ParseJARM(key interface{}) error {
 
 	if response != "" {
 		if nestedToken, err = jwt.ParseSignedAndEncrypted(response); err != nil {
-			if token, err2 = jwt.ParseSigned(response); err != nil {
+			if token, err2 = jwt.ParseSigned(response); err2 != nil {
 				return errors.Wrapf(multierror.Append(err, err2), "failed to parse JARM response")
 			}
 		} else if token, err = nestedToken.Decrypt(key); err != nil {
