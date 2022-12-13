@@ -7,11 +7,11 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
+	"github.com/go-jose/go-jose/v3/jwt"
 	"strconv"
 	"strings"
 
 	"github.com/cloudentity/oauth2c/internal/oauth2"
-	"github.com/golang-jwt/jwt"
 	"github.com/grantae/certinfo"
 	"github.com/pterm/pterm"
 	"github.com/tidwall/pretty"
@@ -214,8 +214,9 @@ func LogRequestAndResponseln(request oauth2.Request, response interface{}) {
 
 func LogTokenPayload(response oauth2.TokenResponse) {
 	var (
-		atClaims jwt.MapClaims
-		idClaims jwt.MapClaims
+		atClaims map[string]interface{}
+		idClaims map[string]interface{}
+		err      error
 	)
 
 	if silent {
@@ -223,7 +224,7 @@ func LogTokenPayload(response oauth2.TokenResponse) {
 	}
 
 	if response.AccessToken != "" {
-		if _, _, err := parser.ParseUnverified(response.AccessToken, &atClaims); err != nil {
+		if _, atClaims, err = oauth2.ParseJWT(response.AccessToken); err != nil {
 			pterm.Error.Println(err)
 		} else {
 			pterm.Println(pterm.FgGray.Sprint("Access token:"))
@@ -232,7 +233,7 @@ func LogTokenPayload(response oauth2.TokenResponse) {
 	}
 
 	if response.IDToken != "" {
-		if _, _, err := parser.ParseUnverified(response.IDToken, &idClaims); err != nil {
+		if _, idClaims, err = oauth2.ParseJWT(response.IDToken); err != nil {
 			pterm.Error.Println(err)
 		} else {
 			pterm.Println(pterm.FgGray.Sprint("ID token:"))
@@ -262,11 +263,31 @@ func LogAuthMethod(config oauth2.ClientConfig) {
 	}
 }
 
+func LogJARM(request oauth2.Request) {
+	var (
+		claims map[string]interface{}
+		err    error
+	)
+
+	if silent {
+		return
+	}
+
+	if request.Get("response") != "" {
+		if _, claims, err = oauth2.ParseJWT(request.Get("response")); err != nil {
+			pterm.Error.Println(err)
+		} else {
+			pterm.Println(pterm.FgGray.Sprint("JARM:"))
+			LogJson(claims)
+		}
+	}
+}
+
 func LogAssertion(request oauth2.Request, title string, name string) {
 	var (
 		assertion = request.Form.Get(name)
-		token     *jwt.Token
-		claims    jwt.MapClaims
+		token     *jwt.JSONWebToken
+		claims    map[string]interface{}
 		err       error
 	)
 
@@ -278,12 +299,12 @@ func LogAssertion(request oauth2.Request, title string, name string) {
 		return
 	}
 
-	if token, _, err = parser.ParseUnverified(assertion, &claims); err != nil {
+	if token, claims, err = oauth2.ParseJWT(assertion); err != nil {
 		pterm.Error.Println(err)
 		return
 	}
 
-	pterm.DefaultBox.WithTitle(title).Printfln("%s = JWT-%s(payload)", name, token.Header["alg"])
+	pterm.DefaultBox.WithTitle(title).Printfln("%s = JWT-%s(payload)", name, token.Headers[0].Algorithm)
 	pterm.Println()
 	pterm.Println("Payload")
 	LogJson(claims)
@@ -330,8 +351,9 @@ func LogSubjectTokenAndActorToken(request oauth2.Request) {
 	var (
 		subjectToken       = request.Form.Get("subject_token")
 		actorToken         = request.Form.Get("actor_token")
-		subjectTokenClaims jwt.MapClaims
-		actorTokenClaims   jwt.MapClaims
+		subjectTokenClaims map[string]interface{}
+		actorTokenClaims   map[string]interface{}
+		err                error
 	)
 
 	if silent {
@@ -339,7 +361,7 @@ func LogSubjectTokenAndActorToken(request oauth2.Request) {
 	}
 
 	if subjectToken != "" {
-		if _, _, err := parser.ParseUnverified(subjectToken, &subjectTokenClaims); err != nil {
+		if _, subjectTokenClaims, err = oauth2.ParseJWT(subjectToken); err != nil {
 			pterm.Error.Println(err)
 		} else {
 			pterm.Println(pterm.FgGray.Sprint("Subject token:"))
@@ -348,7 +370,7 @@ func LogSubjectTokenAndActorToken(request oauth2.Request) {
 	}
 
 	if actorToken != "" {
-		if _, _, err := parser.ParseUnverified(actorToken, &actorTokenClaims); err != nil {
+		if _, actorTokenClaims, err = oauth2.ParseJWT(actorToken); err != nil {
 			pterm.Error.Println(err)
 		} else {
 			pterm.Println(pterm.FgGray.Sprint("Actor token:"))

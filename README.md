@@ -435,6 +435,8 @@ to be verified by the client, ensuring that the information is coming from a tru
 with. The JWT is signed using a secret key shared between the authorization server and the client, allowing the client
 to verify the authenticity of the JWT. This provides an additional layer of security to the OAuth 2.0 authorization process.
 
+##### Signed JWT
+
 ``` sh
 oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id db5e375e7b634095b24bbb683fcb955b \
@@ -442,9 +444,24 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --response-mode query.jwt \
   --grant-type authorization_code \
   --auth-method none \
-  --scopes openid,email
+  --scopes openid,email \
+  --no-pkce
 ```
 
+#### Signed and encrypted JWT
+
+``` sh
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id cauosoo2omc4fr8ai1fg \
+  --client-secret ipFkA1lMomOMI_d2HcGGQ7j8oxeHFqKw3kli76g92VM \
+  --response-types code \
+  --response-mode query.jwt \
+  --grant-type authorization_code \
+  --auth-method client_secret_post \
+  --scopes openid,email,offline_access \
+  --encryption-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.json \
+  --no-pkce
+```
 
 ## License
 

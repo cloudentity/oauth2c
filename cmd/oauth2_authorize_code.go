@@ -45,12 +45,13 @@ func (c *OAuth2Cmd) AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig,
 	// callback
 	callbackStatus := LogAction("Waiting for callback. Go to the browser to authenticate...")
 
-	if callbackRequest, err = oauth2.WaitForCallback(addr); err != nil {
+	if callbackRequest, err = oauth2.WaitForCallback(clientConfig, addr, hc); err != nil {
 		LogRequestln(callbackRequest)
 		return err
 	}
 
 	LogRequest(callbackRequest)
+	LogJARM(callbackRequest)
 	Logln()
 
 	callbackStatus("Obtained authorization code")

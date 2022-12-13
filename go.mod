@@ -6,7 +6,9 @@ require (
 	github.com/go-jose/go-jose/v3 v3.0.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/grantae/certinfo v0.0.0-20170412194111-59d56a35515b
+	github.com/hashicorp/go-multierror v1.1.1
 	github.com/imdario/mergo v0.3.13
+	github.com/itchyny/gojq v0.12.10
 	github.com/lithammer/shortuuid/v4 v4.0.0
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/pkg/errors v0.9.1
@@ -23,8 +25,8 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gookit/color v1.5.0 // indirect
+	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
-	github.com/itchyny/gojq v0.12.10 // indirect
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
 	github.com/lithammer/fuzzysearch v1.1.5 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect

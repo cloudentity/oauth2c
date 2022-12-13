@@ -16,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-jose/go-jose/v3"
 	"github.com/lithammer/shortuuid/v4"
 	"github.com/pkg/errors"
 )
@@ -70,6 +71,7 @@ type ClientConfig struct {
 	RefreshToken     string
 	Assertion        string
 	SigningKey       string
+	EncryptionKey    string
 	SubjectToken     string
 	SubjectTokenType string
 	ActorToken       string
@@ -124,13 +126,20 @@ func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfi
 	return r, codeVerifier, nil
 }
 
-func WaitForCallback(addr string) (request Request, err error) {
+func WaitForCallback(clientConfig ClientConfig, addr string, hc *http.Client) (request Request, err error) {
 	var (
 		srv = http.Server{Addr: addr}
+		key jose.JSONWebKey
 		wg  sync.WaitGroup
 	)
 
 	wg.Add(1)
+
+	if clientConfig.EncryptionKey != "" {
+		if key, err = ReadKey(EncryptionKey, clientConfig.EncryptionKey, hc); err != nil {
+			return request, errors.Wrapf(err, "failed to read encryption key from %s", clientConfig.EncryptionKey)
+		}
+	}
 
 	http.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -142,6 +151,7 @@ func WaitForCallback(addr string) (request Request, err error) {
 		}()
 
 		if err = r.ParseForm(); err != nil {
+			log.Fatal(err)
 			return
 		}
 
@@ -149,14 +159,17 @@ func WaitForCallback(addr string) (request Request, err error) {
 		request.URL = r.URL
 		request.Form = r.PostForm
 
-		// TODO parse jarm ?
+		if err = request.ParseJARM(key); err != nil {
+			log.Fatal(err)
+			return
+		}
 
-		if r.URL.Query().Get("error") != "" {
+		if request.Get("error") != "" {
 			err = &Error{
-				ErrorCode:   r.URL.Query().Get("error"),
-				Description: r.URL.Query().Get("error_description"),
-				Hint:        r.URL.Query().Get("error_hint"),
-				TraceID:     r.URL.Query().Get("trace_id"),
+				ErrorCode:   request.Get("error"),
+				Description: request.Get("error_description"),
+				Hint:        request.Get("error_hint"),
+				TraceID:     request.Get("trace_id"),
 			}
 
 			w.WriteHeader(http.StatusBadRequest)
