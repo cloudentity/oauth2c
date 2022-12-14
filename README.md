@@ -220,12 +220,33 @@ sending the user's credentials to the OAuth2 server.
 oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id cauktionbud6q8ftlqq0 \
   --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
-  --grant-type password --username demo --password demo \
+  --grant-type password \
+  --username demo \
+  --password demo \
   --auth-method client_secret_basic \
   --scopes openid
 ```
 
 [Learn more about the password flow](https://cloudentity.com/developers/basics/oauth-grant-types/resource-owner-password-credentials/)
+
+#### Device
+
+This grant type is a two-step process that allows a user to grant access to their data without
+having to enter a username and password. In the first step, the user grants permission for the client to access
+their data. In the second step, the client exchanges the authorization code received in the first step for an
+access token. This grant type is commonly used in server-side applications, such as when accessing a device
+from a TV or other non-interactive device.
+
+``` sh
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id cauktionbud6q8ftlqq0 \
+  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+  --grant-type urn:ietf:params:oauth:grant-type:device_code \
+  --auth-method client_secret_basic \
+  --scopes openid,email,offline_access
+```
+
+[Learn more about the device flow](https://cloudentity.com/developers/basics/oauth-grant-types/device/)
 
 #### JWT Bearer
 

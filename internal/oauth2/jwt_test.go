@@ -1,38 +1,29 @@
-package oauth2_test
+package oauth2
 
 import (
 	"encoding/json"
 	"net/http"
 	"testing"
 
-	"github.com/cloudentity/oauth2c/internal/oauth2"
+	"github.com/go-jose/go-jose/v3"
 	"github.com/stretchr/testify/require"
-
-	jose "github.com/go-jose/go-jose/v3"
 )
 
-func TestReadKey(t *testing.T) {
-	key, err := oauth2.ReadKey(oauth2.SigningKey, "../../data/key.json", http.DefaultClient)
-	require.NoError(t, err)
-
-	require.NotNil(t, key)
-}
-
 func TestSignJWT(t *testing.T) {
-	key, err := oauth2.ReadKey(oauth2.SigningKey, "../../data/key.json", http.DefaultClient)
+	key, err := ReadKey(SigningKey, "../../data/key.json", http.DefaultClient)
 	require.NoError(t, err)
 
-	claims := oauth2.AssertionClaims(
-		oauth2.ServerConfig{
+	claims := AssertionClaims(
+		ServerConfig{
 			Issuer:        "https://example.com/tid/aid",
 			TokenEndpoint: "https://example.com/tid/aid/oauth2/token",
 		},
-		oauth2.ClientConfig{
+		ClientConfig{
 			Assertion: `{"sub": "jdoe@example.com"}`,
 		},
 	)
 
-	jwt, _, err := oauth2.SignJWT(claims, oauth2.JWKSigner(oauth2.ClientConfig{
+	jwt, _, err := SignJWT(claims, JWKSigner(ClientConfig{
 		SigningKey: "../../data/key.json",
 	}, http.DefaultClient))
 	require.NoError(t, err)

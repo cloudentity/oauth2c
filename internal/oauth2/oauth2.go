@@ -30,8 +30,8 @@ const (
 	RefreshTokenGrantType      string = "refresh_token"
 	JWTBearerGrantType         string = "urn:ietf:params:oauth:grant-type:jwt-bearer"
 	TokenExchangeGrantType     string = "urn:ietf:params:oauth:grant-type:token-exchange"
+	DeviceGrantType            string = "urn:ietf:params:oauth:grant-type:device_code"
 	// CIBAGrantType              string = "urn:openid:params:grant-type:ciba"
-	// DeviceGrantType            string = "urn:ietf:params:oauth:grant-type:device_code"
 )
 
 // auth methods
@@ -231,6 +231,7 @@ func NewTokenResponseFromForm(f url.Values) TokenResponse {
 
 type RequestTokenParams struct {
 	Code         string
+	DeviceCode   string
 	CodeVerifier string
 	RedirectURL  string
 }
@@ -240,6 +241,12 @@ type RequestTokenOption func(*RequestTokenParams)
 func WithAuthorizationCode(code string) func(*RequestTokenParams) {
 	return func(opts *RequestTokenParams) {
 		opts.Code = code
+	}
+}
+
+func WithDeviceCode(deviceCode string) func(*RequestTokenParams) {
+	return func(opts *RequestTokenParams) {
+		opts.DeviceCode = deviceCode
 	}
 }
 
@@ -308,6 +315,8 @@ func RequestToken(
 			request.Form.Set("actor_token", cconfig.ActorToken)
 			request.Form.Set("actor_token_type", cconfig.ActorTokenType)
 		}
+	case DeviceGrantType:
+		request.Form.Set("device_code", params.DeviceCode)
 	}
 
 	switch cconfig.AuthMethod {

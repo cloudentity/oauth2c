@@ -179,6 +179,8 @@ func (c *OAuth2Cmd) Authorize(clientConfig oauth2.ClientConfig, hc *http.Client)
 		return c.JWTBearerGrantFlow(clientConfig, serverConfig, hc)
 	case oauth2.TokenExchangeGrantType:
 		return c.TokenExchangeGrantFlow(clientConfig, serverConfig, hc)
+	case oauth2.DeviceGrantType:
+		return c.DeviceGrantFlow(clientConfig, serverConfig, hc)
 	}
 
 	return fmt.Errorf("Unknown grant type: %s", clientConfig.GrantType)
