@@ -39,14 +39,15 @@ func (c *OAuth2Cmd) DeviceGrantFlow(clientConfig oauth2.ClientConfig, serverConf
 	Logln()
 
 	// polling
-
 	tokenStatus := LogAction("Waiting for token. Go to the browser to authenticate...")
 
 	ticker := time.NewTicker(time.Duration(authorizationResponse.Interval) * time.Second)
-	done := make(chan bool)
+	done := make(chan error)
 
 	go func() {
 		var oauth2Error *oauth2.Error
+
+		defer close(done)
 
 		for {
 			select {
@@ -67,18 +68,24 @@ func (c *OAuth2Cmd) DeviceGrantFlow(clientConfig oauth2.ClientConfig, serverConf
 						}
 					}
 
-					LogRequestAndResponseln(tokenRequest, err)
-					close(done)
+					done <- err
+
+					return
 				} else {
-					close(done)
+					return
 				}
 			}
 		}
 	}()
 
-	<-done
+	err = <-done
 
 	LogSection("Exchange device code for token")
+
+	if err != nil {
+		LogRequestAndResponseln(tokenRequest, err)
+		return err
+	}
 
 	LogAuthMethod(clientConfig)
 	LogRequestAndResponse(tokenRequest, tokenResponse)
