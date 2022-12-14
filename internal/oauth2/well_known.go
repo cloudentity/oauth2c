@@ -17,6 +17,7 @@ type ServerConfig struct {
 	SupportedScopes                   []string `json:"scopes_supported"`
 	SupportedResponseModes            []string `json:"response_modes_supported"`
 	AuthorizationEndpoint             string   `json:"authorization_endpoint"`
+	DeviceAuthorizationEndpoint       string   `json:"device_authorization_endpoint"`
 	TokenEndpoint                     string   `json:"token_endpoint"`
 	MTLsEndpointAliases               struct {
 		TokenEndpoint string `json:"token_endpoint"`

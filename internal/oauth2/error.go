@@ -7,6 +7,11 @@ import (
 	"strings"
 )
 
+const (
+	ErrAuthorizationPending = "authorization_pending"
+	ErrSlowDown             = "slow_down"
+)
+
 type Error struct {
 	StatusCode int    `json:"-"`
 	TraceID    string `json:"-"`
