@@ -84,6 +84,7 @@ The available flags are:
       --tls-cert string             path to tls cert pem file
       --tls-key string              path to tls key pem file
       --tls-root-ca string          path to tls root ca pem file
+      --username string             resource owner password credentials grant flow username
 ```
 
 You will be asked to provide the necessary information, such as the grant type, client authentication method, and any other relevant details (if not already provided).
