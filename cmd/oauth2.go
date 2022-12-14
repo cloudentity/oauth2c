@@ -56,7 +56,7 @@ func NewOAuth2Cmd() (cmd *OAuth2Cmd) {
 	cmd.PersistentFlags().StringVar(&cconfig.ResponseMode, "response-mode", "", "response mode")
 	cmd.PersistentFlags().StringSliceVar(&cconfig.Scopes, "scopes", []string{}, "requested scopes")
 	cmd.PersistentFlags().BoolVar(&cconfig.PKCE, "pkce", false, "enable proof key for code exchange (PKCE)")
-	cmd.PersistentFlags().BoolVar(&cconfig.NoPKCE, "no-pkce", false, "disable proof key for code exchange (PKCE)")
+	cmd.PersistentFlags().BoolVar(&cconfig.PAR, "par", false, "enable pushed authorization requests (PAR)")
 	cmd.PersistentFlags().StringVar(&cconfig.Assertion, "assertion", "", "claims for jwt bearer assertion")
 	cmd.PersistentFlags().StringVar(&cconfig.SigningKey, "signing-key", "", "path or url to signing key in jwks format")
 	cmd.PersistentFlags().StringVar(&cconfig.EncryptionKey, "encryption-key", "", "path or url to encryption key in jwks format")

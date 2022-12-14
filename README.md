@@ -66,10 +66,11 @@ The available flags are:
       --auth-method string          token endpoint authentication method
       --client-id string            client identifier
       --client-secret string        client secret
+      --encryption-key string       path or url to encryption key in jwks format
       --grant-type string           grant type
   -h, --help                        help for oauthc
       --insecure                    allow insecure connections
-      --no-pkce                     disable proof key for code exchange (PKCE)
+      --par                         enable pushed authorization requests (PAR)
       --password string             resource owner password credentials grant flow password
       --pkce                        enable proof key for code exchange (PKCE)
       --refresh-token string        refresh token
@@ -83,7 +84,6 @@ The available flags are:
       --tls-cert string             path to tls cert pem file
       --tls-key string              path to tls key pem file
       --tls-root-ca string          path to tls root ca pem file
-      --username string             resource owner password credentials grant flow username
 ```
 
 You will be asked to provide the necessary information, such as the grant type, client authentication method, and any other relevant details (if not already provided).
@@ -114,8 +114,7 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --response-mode query \
   --grant-type authorization_code \
   --auth-method client_secret_basic \
-  --scopes openid,email,offline_access \
-  --no-pkce
+  --scopes openid,email,offline_access
 ```
 
 [Learn more about authorization code flow](https://cloudentity.com/developers/basics/oauth-grant-types/authorization-code-flow/)
@@ -155,8 +154,7 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --response-mode form_post \
   --grant-type authorization_code \
   --auth-method client_secret_basic \
-  --scopes openid,email,offline_access \
-  --no-pkce
+  --scopes openid,email,offline_access
 ```
 
 [Learn more about the hybrid flow](https://cloudentity.com/developers/basics/oauth-grant-types/hybrid-flow/)
@@ -204,7 +202,6 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 >   --grant-type authorization_code \
 >   --auth-method client_secret_basic \
 >   --scopes openid,email,offline_access \
->   --no-pkce \
 >   --silent | jq -r .refresh_token`
 > ```
 
@@ -297,7 +294,6 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 >   --grant-type authorization_code \
 >   --auth-method client_secret_basic \
 >   --scopes openid,email,offline_access \
->   --no-pkce \
 >   --silent | jq -r .access_token`
 > ```
 
@@ -466,8 +462,7 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --response-mode query.jwt \
   --grant-type authorization_code \
   --auth-method client_secret_basic \
-  --scopes openid,email,offline_access \
-  --no-pkce
+  --scopes openid,email,offline_access
 ```
 
 #### Signed and encrypted JWT
@@ -481,9 +476,29 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --grant-type authorization_code \
   --auth-method client_secret_post \
   --scopes openid,email,offline_access \
-  --encryption-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.json \
-  --no-pkce
+  --encryption-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.json
 ```
+
+#### PAR
+
+Pushed Authorization Requests (PAR) is an extension of the OAuth 2.0 specification that enables client applications
+to push the payloads of authorization requests directly to the authorization server via a PAR endpoint.
+This allows for more efficient and secure handling of authorization requests. PAR can be useful for client applications
+that require a high level of security, and may be required for compliance with certain security profiles and regulations.
+
+``` sh
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id cauktionbud6q8ftlqq0 \
+  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+  --response-types code \
+  --response-mode query \
+  --grant-type authorization_code \
+  --auth-method client_secret_basic \
+  --scopes openid,email,offline_access \
+  --par
+```
+
+[Learn more about PAR](https://cloudentity.com/developers/basics/oauth-grant-types/pushed-authorization-requests/)
 
 ## License
 

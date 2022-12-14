@@ -9,18 +9,20 @@ import (
 const OpenIDConfigurationPath = "/.well-known/openid-configuration"
 
 type ServerConfig struct {
-	Issuer                            string   `json:"issuer"`
-	JWKsURI                           string   `json:"jwks_uri"`
-	SupportedGrantTypes               []string `json:"grant_types_supported"`
-	SupportedResponseTypes            []string `json:"response_types_supported"`
-	SupportedTokenEndpointAuthMethods []string `json:"token_endpoint_auth_methods_supported"`
-	SupportedScopes                   []string `json:"scopes_supported"`
-	SupportedResponseModes            []string `json:"response_modes_supported"`
-	AuthorizationEndpoint             string   `json:"authorization_endpoint"`
-	DeviceAuthorizationEndpoint       string   `json:"device_authorization_endpoint"`
-	TokenEndpoint                     string   `json:"token_endpoint"`
-	MTLsEndpointAliases               struct {
-		TokenEndpoint string `json:"token_endpoint"`
+	Issuer                             string   `json:"issuer"`
+	JWKsURI                            string   `json:"jwks_uri"`
+	SupportedGrantTypes                []string `json:"grant_types_supported"`
+	SupportedResponseTypes             []string `json:"response_types_supported"`
+	SupportedTokenEndpointAuthMethods  []string `json:"token_endpoint_auth_methods_supported"`
+	SupportedScopes                    []string `json:"scopes_supported"`
+	SupportedResponseModes             []string `json:"response_modes_supported"`
+	AuthorizationEndpoint              string   `json:"authorization_endpoint"`
+	DeviceAuthorizationEndpoint        string   `json:"device_authorization_endpoint"`
+	PushedAuthorizationRequestEndpoint string   `json:"pushed_authorization_request_endpoint"`
+	TokenEndpoint                      string   `json:"token_endpoint"`
+	MTLsEndpointAliases                struct {
+		TokenEndpoint                      string `json:"token_endpoint"`
+		PushedAuthorizationRequestEndpoint string `json:"pushed_authorization_request_endpoint"`
 	} `json:"mtls_endpoint_aliases"`
 }
 

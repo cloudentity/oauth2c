@@ -3,7 +3,6 @@ package oauth2
 import (
 	"context"
 	"crypto/sha256"
-	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -62,7 +61,7 @@ type ClientConfig struct {
 	Scopes           []string
 	AuthMethod       string
 	PKCE             bool
-	NoPKCE           bool
+	PAR              bool
 	Insecure         bool
 	ResponseType     []string
 	ResponseMode     string
@@ -81,12 +80,8 @@ type ClientConfig struct {
 	TLSRootCA        string
 }
 
-func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfig) (r Request, codeVerifier string, err error) {
-	if r.URL, err = url.Parse(sconfig.AuthorizationEndpoint); err != nil {
-		return r, "", errors.Wrapf(err, "failed to parse authorization endpoint")
-	}
-
-	values := url.Values{
+func NewAuthorizationRequest(addr string, cconfig ClientConfig) (values url.Values, codeVerifier string, err error) {
+	values = url.Values{
 		"client_id":    {cconfig.ClientID},
 		"redirect_uri": {"http://" + addr + "/callback"},
 		"state":        {shortuuid.New()},
@@ -111,7 +106,7 @@ func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfi
 		hash := sha256.New()
 
 		if _, err = hash.Write([]byte(codeVerifier)); err != nil {
-			return r, "", err
+			return values, "", err
 		}
 
 		codeChallenge := CodeChallengeEncoder.EncodeToString(hash.Sum([]byte{}))
@@ -120,10 +115,106 @@ func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfi
 		values.Set("code_challenge_method", "S256")
 	}
 
+	return values, codeVerifier, nil
+}
+
+func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfig) (r Request, codeVerifier string, err error) {
+	var values url.Values
+
+	if r.URL, err = url.Parse(sconfig.AuthorizationEndpoint); err != nil {
+		return r, "", errors.Wrapf(err, "failed to parse authorization endpoint")
+	}
+
+	if values, codeVerifier, err = NewAuthorizationRequest(addr, cconfig); err != nil {
+		return r, "", errors.Wrapf(err, "failed to create authorization request")
+	}
+
 	r.URL.RawQuery = values.Encode()
 	r.Method = http.MethodGet
 
 	return r, codeVerifier, nil
+}
+
+type PARResponse struct {
+	RequestURI string `json:"request_uri"`
+	ExpiresIn  int64  `json:"expires_in"`
+}
+
+func RequestPAR(
+	ctx context.Context,
+	addr string,
+	cconfig ClientConfig,
+	sconfig ServerConfig,
+	hc *http.Client,
+) (parRequest Request, parResponse PARResponse, authorizeRequest Request, codeVerifier string, err error) {
+	var (
+		req      *http.Request
+		resp     *http.Response
+		endpoint string
+	)
+
+	// push authorization request to /par
+	if parRequest.Form, codeVerifier, err = NewAuthorizationRequest(addr, cconfig); err != nil {
+		return parRequest, parResponse, authorizeRequest, "", errors.Wrapf(err, "failed to create authorization request")
+	}
+
+	if endpoint, err = parRequest.AuthenticateClient(
+		sconfig.PushedAuthorizationRequestEndpoint,
+		sconfig.MTLsEndpointAliases.PushedAuthorizationRequestEndpoint,
+		cconfig,
+		sconfig,
+		hc,
+	); err != nil {
+		return parRequest, parResponse, authorizeRequest, "", errors.Wrapf(err, "failed to create client authentication request")
+	}
+
+	if req, err = http.NewRequestWithContext(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		strings.NewReader(parRequest.Form.Encode()),
+	); err != nil {
+		return parRequest, parResponse, authorizeRequest, codeVerifier, err
+	}
+
+	if cconfig.AuthMethod == ClientSecretBasicAuthMethod {
+		req.SetBasicAuth(cconfig.ClientID, cconfig.ClientSecret)
+	}
+
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	parRequest.Method = req.Method
+	parRequest.Headers = req.Header
+	parRequest.URL = req.URL
+
+	if resp, err = hc.Do(req); err != nil {
+		return parRequest, parResponse, authorizeRequest, codeVerifier, err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		return parRequest, parResponse, authorizeRequest, codeVerifier, ParseError(resp)
+	}
+
+	if err = json.NewDecoder(resp.Body).Decode(&parResponse); err != nil {
+		return parRequest, parResponse, authorizeRequest, codeVerifier, fmt.Errorf("failed to parse token response: %w", err)
+	}
+
+	// build request to /authorize
+	if authorizeRequest.URL, err = url.Parse(sconfig.AuthorizationEndpoint); err != nil {
+		return parRequest, parResponse, authorizeRequest, codeVerifier, errors.Wrapf(err, "failed to create authorization request")
+	}
+
+	values := url.Values{
+		"client_id":   {cconfig.ClientID},
+		"request_uri": {parResponse.RequestURI},
+	}
+
+	authorizeRequest.URL.RawQuery = values.Encode()
+	authorizeRequest.Method = http.MethodGet
+
+	return parRequest, parResponse, authorizeRequest, codeVerifier, nil
 }
 
 func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, addr string, hc *http.Client) (request Request, err error) {
@@ -273,7 +364,7 @@ func RequestToken(
 		req      *http.Request
 		resp     *http.Response
 		params   RequestTokenParams
-		endpoint = sconfig.TokenEndpoint
+		endpoint string
 		body     []byte
 	)
 
@@ -319,45 +410,14 @@ func RequestToken(
 		request.Form.Set("device_code", params.DeviceCode)
 	}
 
-	switch cconfig.AuthMethod {
-	case NoneAuthMethod:
-		request.Form.Set("client_id", cconfig.ClientID)
-	case ClientSecretPostAuthMethod:
-		request.Form.Set("client_id", cconfig.ClientID)
-		request.Form.Set("client_secret", cconfig.ClientSecret)
-	case ClientSecretJwtAuthMethod:
-		var clientAssertion string
-
-		if clientAssertion, request.Key, err = SignJWT(
-			ClientAssertionClaims(sconfig, cconfig),
-			SecretSigner([]byte(cconfig.ClientSecret)),
-		); err != nil {
-			return request, response, err
-		}
-
-		request.Form.Set("client_assertion_type", JwtBearerClientAssertion)
-		request.Form.Set("client_assertion", clientAssertion)
-	case PrivateKeyJwtAuthMethod:
-		var clientAssertion string
-
-		if clientAssertion, request.Key, err = SignJWT(
-			ClientAssertionClaims(sconfig, cconfig),
-			JWKSigner(cconfig, hc),
-		); err != nil {
-			return request, response, err
-		}
-
-		request.Form.Set("client_assertion_type", JwtBearerClientAssertion)
-		request.Form.Set("client_assertion", clientAssertion)
-	case TLSClientAuthMethod, SelfSignedTLSAuthMethod:
-		endpoint = sconfig.MTLsEndpointAliases.TokenEndpoint
-		request.Form.Set("client_id", cconfig.ClientID)
-
-		if tr, ok := hc.Transport.(*http.Transport); ok {
-			if len(tr.TLSClientConfig.Certificates) > 0 {
-				request.Cert, _ = x509.ParseCertificate(tr.TLSClientConfig.Certificates[0].Certificate[0])
-			}
-		}
+	if endpoint, err = request.AuthenticateClient(
+		sconfig.TokenEndpoint,
+		sconfig.MTLsEndpointAliases.TokenEndpoint,
+		cconfig,
+		sconfig,
+		hc,
+	); err != nil {
+		return request, response, err
 	}
 
 	if params.RedirectURL != "" {

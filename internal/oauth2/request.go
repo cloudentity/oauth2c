@@ -2,6 +2,7 @@ package oauth2
 
 import (
 	"crypto/x509"
+	"net/http"
 	"net/url"
 
 	"github.com/go-jose/go-jose/v3/jwt"
@@ -17,6 +18,57 @@ type Request struct {
 	JARM    map[string]interface{}
 	Key     interface{}
 	Cert    *x509.Certificate
+}
+
+func (r *Request) AuthenticateClient(
+	endpoint string,
+	mtlsEndpoint string,
+	cconfig ClientConfig,
+	sconfig ServerConfig,
+	hc *http.Client,
+) (string, error) {
+	var err error
+
+	switch cconfig.AuthMethod {
+	case ClientSecretPostAuthMethod:
+		r.Form.Set("client_id", cconfig.ClientID)
+		r.Form.Set("client_secret", cconfig.ClientSecret)
+	case ClientSecretJwtAuthMethod:
+		var clientAssertion string
+
+		if clientAssertion, r.Key, err = SignJWT(
+			ClientAssertionClaims(sconfig, cconfig),
+			SecretSigner([]byte(cconfig.ClientSecret)),
+		); err != nil {
+			return endpoint, err
+		}
+
+		r.Form.Set("client_assertion_type", JwtBearerClientAssertion)
+		r.Form.Set("client_assertion", clientAssertion)
+	case PrivateKeyJwtAuthMethod:
+		var clientAssertion string
+
+		if clientAssertion, r.Key, err = SignJWT(
+			ClientAssertionClaims(sconfig, cconfig),
+			JWKSigner(cconfig, hc),
+		); err != nil {
+			return endpoint, err
+		}
+
+		r.Form.Set("client_assertion_type", JwtBearerClientAssertion)
+		r.Form.Set("client_assertion", clientAssertion)
+	case TLSClientAuthMethod, SelfSignedTLSAuthMethod:
+		r.Form.Set("client_id", cconfig.ClientID)
+		endpoint = mtlsEndpoint
+
+		if tr, ok := hc.Transport.(*http.Transport); ok {
+			if len(tr.TLSClientConfig.Certificates) > 0 {
+				r.Cert, _ = x509.ParseCertificate(tr.TLSClientConfig.Certificates[0].Certificate[0])
+			}
+		}
+	}
+
+	return endpoint, nil
 }
 
 func (r *Request) Get(key string) string {
