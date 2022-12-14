@@ -10,6 +10,8 @@ import (
 
 func (c *OAuth2Cmd) AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
 	var (
+		parRequest       oauth2.Request
+		parResponse      oauth2.PARResponse
 		authorizeRequest oauth2.Request
 		callbackRequest  oauth2.Request
 		tokenRequest     oauth2.Request
@@ -20,14 +22,30 @@ func (c *OAuth2Cmd) AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig,
 
 	LogHeader("Authorization Code Flow")
 
-	// authorize endpoint
-	LogSection("Request authorization")
+	if clientConfig.PAR {
+		LogSection("Request PAR")
 
-	if authorizeRequest, codeVerifier, err = oauth2.RequestAuthorization(addr, clientConfig, serverConfig); err != nil {
-		return err
+		if parRequest, parResponse, authorizeRequest, codeVerifier, err = oauth2.RequestPAR(context.Background(), addr, clientConfig, serverConfig, hc); err != nil {
+			LogRequestAndResponseln(parRequest, err)
+			return err
+		}
+
+		LogAssertion(parRequest, "Client assertion", "client_assertion")
+		LogAuthMethod(clientConfig)
+		LogRequestAndResponse(parRequest, parResponse)
+
+		LogSection("Request authorization")
+
+		LogRequest(authorizeRequest)
+	} else {
+		LogSection("Request authorization")
+
+		if authorizeRequest, codeVerifier, err = oauth2.RequestAuthorization(addr, clientConfig, serverConfig); err != nil {
+			return err
+		}
+
+		LogRequest(authorizeRequest)
 	}
-
-	LogRequest(authorizeRequest)
 
 	if codeVerifier != "" {
 		Logln()

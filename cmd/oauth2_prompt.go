@@ -40,14 +40,6 @@ func PromptForClientConfig(client oauth2.ClientConfig, server oauth2.ServerConfi
 		}
 	}
 
-	// pkce
-	switch client.GrantType {
-	case oauth2.AuthorizationCodeGrantType:
-		if !client.PKCE && !client.NoPKCE {
-			client.PKCE = PromptBool("PKCE")
-		}
-	}
-
 	if client.ClientID == "" {
 		client.ClientID = PromptString("Client ID")
 	}

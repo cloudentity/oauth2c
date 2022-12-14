@@ -25,6 +25,7 @@ func (c *OAuth2Cmd) DeviceGrantFlow(clientConfig oauth2.ClientConfig, serverConf
 	LogSection("Request device authorization")
 
 	if authorizationRequest, authorizationResponse, err = oauth2.RequestDeviceAuthorization(context.Background(), clientConfig, serverConfig, hc); err != nil {
+		LogRequestAndResponseln(tokenRequest, err)
 		return err
 	}
 
