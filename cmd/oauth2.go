@@ -6,14 +6,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/cloudentity/oauth2c/internal/oauth2"
-	"github.com/golang-jwt/jwt"
 	"github.com/imdario/mergo"
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
@@ -24,7 +23,6 @@ const (
 )
 
 var (
-	parser jwt.Parser
 	silent bool
 )
 
@@ -61,6 +59,7 @@ func NewOAuth2Cmd() (cmd *OAuth2Cmd) {
 	cmd.PersistentFlags().BoolVar(&cconfig.NoPKCE, "no-pkce", false, "disable proof key for code exchange (PKCE)")
 	cmd.PersistentFlags().StringVar(&cconfig.Assertion, "assertion", "", "claims for jwt bearer assertion")
 	cmd.PersistentFlags().StringVar(&cconfig.SigningKey, "signing-key", "", "path or url to signing key in jwks format")
+	cmd.PersistentFlags().StringVar(&cconfig.EncryptionKey, "encryption-key", "", "path or url to encryption key in jwks format")
 	cmd.PersistentFlags().StringVar(&cconfig.SubjectToken, "subject-token", "", "third party access token")
 	cmd.PersistentFlags().StringVar(&cconfig.SubjectTokenType, "subject-token-type", "", "third party access token type")
 	cmd.PersistentFlags().StringVar(&cconfig.ActorToken, "actor-token", "", "acting party access token")
@@ -98,7 +97,7 @@ func (c *OAuth2Cmd) Run(cconfig *oauth2.ClientConfig) func(cmd *cobra.Command, a
 		}
 
 		if silent {
-			browser.Stdout = ioutil.Discard
+			browser.Stdout = io.Discard
 		}
 
 		tr := &http.Transport{

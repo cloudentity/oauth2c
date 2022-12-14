@@ -16,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-jose/go-jose/v3"
 	"github.com/lithammer/shortuuid/v4"
 	"github.com/pkg/errors"
 )
@@ -70,6 +71,7 @@ type ClientConfig struct {
 	RefreshToken     string
 	Assertion        string
 	SigningKey       string
+	EncryptionKey    string
 	SubjectToken     string
 	SubjectTokenType string
 	ActorToken       string
@@ -124,13 +126,25 @@ func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfi
 	return r, codeVerifier, nil
 }
 
-func WaitForCallback(addr string) (request Request, err error) {
+func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, addr string, hc *http.Client) (request Request, err error) {
 	var (
-		srv = http.Server{Addr: addr}
-		wg  sync.WaitGroup
+		srv           = http.Server{Addr: addr}
+		signingKey    jose.JSONWebKey
+		encryptionKey jose.JSONWebKey
+		wg            sync.WaitGroup
 	)
 
 	wg.Add(1)
+
+	if signingKey, err = ReadKey(SigningKey, serverConfig.JWKsURI, hc); err != nil {
+		return request, errors.Wrapf(err, "failed to read signing key from %s", serverConfig.JWKsURI)
+	}
+
+	if clientConfig.EncryptionKey != "" {
+		if encryptionKey, err = ReadKey(EncryptionKey, clientConfig.EncryptionKey, hc); err != nil {
+			return request, errors.Wrapf(err, "failed to read encryption key from %s", clientConfig.EncryptionKey)
+		}
+	}
 
 	http.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -142,6 +156,7 @@ func WaitForCallback(addr string) (request Request, err error) {
 		}()
 
 		if err = r.ParseForm(); err != nil {
+			log.Fatal(err)
 			return
 		}
 
@@ -149,22 +164,29 @@ func WaitForCallback(addr string) (request Request, err error) {
 		request.URL = r.URL
 		request.Form = r.PostForm
 
-		if r.URL.Query().Get("error") != "" {
+		if err = request.ParseJARM(signingKey, encryptionKey); err != nil {
+			log.Fatal(err)
+			return
+		}
+
+		w.Header().Add("Content-Type", "text/html")
+
+		if request.Get("error") != "" {
 			err = &Error{
-				ErrorCode:   r.URL.Query().Get("error"),
-				Description: r.URL.Query().Get("error_description"),
-				Hint:        r.URL.Query().Get("error_hint"),
-				TraceID:     r.URL.Query().Get("trace_id"),
+				ErrorCode:   request.Get("error"),
+				Description: request.Get("error_description"),
+				Hint:        request.Get("error_hint"),
+				TraceID:     request.Get("trace_id"),
 			}
 
 			w.WriteHeader(http.StatusBadRequest)
 
-			if _, err := w.Write([]byte(`Authorization failed. You may close this browser.`)); err != nil {
+			if _, err := w.Write([]byte(`<script>window.close()</script> Authorization failed. You may close this window.`)); err != nil {
 				log.Fatal(err)
 			}
 		} else {
 			w.WriteHeader(http.StatusOK)
-			if _, err := w.Write([]byte(`Authorization succeeded. You may close this browser.`)); err != nil {
+			if _, err := w.Write([]byte(`<script>window.close()</script> Authorization succeeded. You may close this window.`)); err != nil {
 				log.Fatal(err)
 			}
 		}

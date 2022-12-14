@@ -10,6 +10,7 @@ const OpenIDConfigurationPath = "/.well-known/openid-configuration"
 
 type ServerConfig struct {
 	Issuer                            string   `json:"issuer"`
+	JWKsURI                           string   `json:"jwks_uri"`
 	SupportedGrantTypes               []string `json:"grant_types_supported"`
 	SupportedResponseTypes            []string `json:"response_types_supported"`
 	SupportedTokenEndpointAuthMethods []string `json:"token_endpoint_auth_methods_supported"`

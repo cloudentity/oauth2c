@@ -14,7 +14,14 @@ import (
 	jose "github.com/go-jose/go-jose/v3"
 )
 
-func ReadKey(location string, hc *http.Client) (jose.JSONWebKey, error) {
+type KeyUse string
+
+const (
+	SigningKey    KeyUse = "sig"
+	EncryptionKey KeyUse = "enc"
+)
+
+func ReadKey(use KeyUse, location string, hc *http.Client) (jose.JSONWebKey, error) {
 	var (
 		keys jose.JSONWebKeySet
 		bs   []byte
@@ -49,7 +56,13 @@ func ReadKey(location string, hc *http.Client) (jose.JSONWebKey, error) {
 		return jose.JSONWebKey{}, errors.New("keys are empty")
 	}
 
-	return keys.Keys[0], nil
+	for _, key := range keys.Keys {
+		if key.Use == string(use) {
+			return key, nil
+		}
+	}
+
+	return jose.JSONWebKey{}, fmt.Errorf("could not find %s key", use)
 }
 
 type SignerProvider func() (jose.Signer, interface{}, error)
@@ -62,7 +75,7 @@ func JWKSigner(clientConfig ClientConfig, hc *http.Client) SignerProvider {
 			return nil, nil, errors.New("no signing key path")
 		}
 
-		if key, err = ReadKey(clientConfig.SigningKey, hc); err != nil {
+		if key, err = ReadKey(SigningKey, clientConfig.SigningKey, hc); err != nil {
 			return nil, nil, errors.Wrapf(err, "failed to read signing key from %s", clientConfig.SigningKey)
 		}
 
