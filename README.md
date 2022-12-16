@@ -60,8 +60,8 @@ oauth2c [issuer url] [flags]
 The available flags are:
 
 ``` sh
-      --actor-token string          acting party access token
-      --actor-token-type string     acting party access token type
+      --actor-token string          acting party token
+      --actor-token-type string     acting party token type
       --assertion string            claims for jwt bearer assertion
       --auth-method string          token endpoint authentication method
       --client-id string            client identifier
@@ -79,8 +79,8 @@ The available flags are:
       --scopes strings              requested scopes
       --signing-key string          path or url to signing key in jwks format
   -s, --silent                      silent mode
-      --subject-token string        third party access token
-      --subject-token-type string   third party access token type
+      --subject-token string        third party token
+      --subject-token-type string   third party token type
       --tls-cert string             path to tls cert pem file
       --tls-key string              path to tls key pem file
       --tls-root-ca string          path to tls root ca pem file
@@ -90,8 +90,6 @@ The available flags are:
 You will be asked to provide the necessary information, such as the grant type, client authentication method, and any other relevant details (if not already provided).
 
 `oauth2c` opens a browser for flows such as authorization code and starts an HTTP server which acts as a client application and waits for a callback.
-
-Once authenticated, you will be able to use the access token to access the OAuth2 resource server's API.
 
 > **Note**: To make browser flows work add `http://localhost:9876/callback` as a redirect URL to your client.
 
@@ -103,7 +101,7 @@ Here are a few examples of using oauth2c with different grant types and client a
 
 ### Grant types
 
-> **Note**: The authorization code, implicit, hybrid and device grant flows require browser and user authentication.
+> **NOTE**: The authorization code, implicit, hybrid and device grant flows require browser and user authentication.
 
 #### Authorization code
 
@@ -130,7 +128,8 @@ This grant type is similar to the authorization code grant, but the access token
 the client without an intermediate authorization code. This grant type is typically used in single-page or
 mobile applications.
 
-> **Note**: The implicit flow is not recommended for use in modern OAuth2 applications. It does not provide a secure method for obtaining new access tokens. Instead, it is recommended to use the authorization code flow with PKCE (Proof Key for Code Exchange) for added security.
+> **Note**: The implicit flow is not recommended for use in modern OAuth2 applications.
+> Instead, it is recommended to use the authorization code flow with PKCE (Proof Key for Code Exchange) for added security.
 
 ``` sh
 oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
@@ -184,8 +183,7 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 #### Refresh token
 
 This grant type involves the client providing a refresh token to the OAuth2 server, which then returns
-a new access token. This grant type is used to obtain new access tokens when the original access
-token has expired.
+a new access token.
 
 ``` sh
 oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
