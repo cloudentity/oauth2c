@@ -1,4 +1,4 @@
-# OAuth2c: user-friendly CLI OAuth2 client
+# OAuth2c: user-friendly OAuth CLI
 
 [![status](https://github.com/cloudentity/oauth2c/workflows/build/badge.svg)](https://github.com/cloudentity/oauthc/actions)
 [![license](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
@@ -11,7 +11,7 @@
 
 ## Features
 
-* A simple and intuitive interface for quickly trying out different OAuth 2.0 grant types and client authentication methods
+* A simple and intuitive command-line interface for quickly trying out different OAuth 2.0 grant types and client authentication methods
 * Supports all modern OAuth 2.0 grant types: authorization code, implicit, password, client credentials, refresh token, JWT bearer, token exchange
 * Supports all client authentication methods: client secret basic, client secret post, client secret JWT, private key JWT, TLS client auth
 * Supports the following extensions: PKCE, JARM
@@ -20,7 +20,7 @@
 
 To install `oauth2c`, you have several options depending on your operating system.
 
-### Install on Mac
+**Install on Mac**
 
 On Mac, you can install `oauth2c` using `brew` by running the following command:
 
@@ -28,7 +28,7 @@ On Mac, you can install `oauth2c` using `brew` by running the following command:
 brew install cloudentity/tap/oauth2c
 ```
 
-### Install on Linux
+**Install on Linux**
 
 On linux, you can install `oauth2c` using the installation script by running the following command:
 
@@ -37,7 +37,7 @@ curl -sSfL https://raw.githubusercontent.com/cloudentity/oauth2c/master/install.
   sudo sh -s -- -b /usr/local/bin latest
 ```
 
-### Compile from source
+**Compile from source**
 
 You can also compile `oauth2c` from source using `go`. To do this run the following command:
 
@@ -89,7 +89,9 @@ The available flags are:
 
 You will be asked to provide the necessary information, such as the grant type, client authentication method, and any other relevant details (if not already provided).
 
-Once authenticated, you will be able to use the access token to access the OAuth2 provider's API.
+`oauth2c` opens a browser for flows such as authorization code and starts an HTTP server which acts as a client application and waits for a callback.
+
+Once authenticated, you will be able to use the access token to access the OAuth2 resource server's API.
 
 > **Note**: To make browser flows work add `http://localhost:9876/callback` as a redirect URL to your client.
 
@@ -100,6 +102,8 @@ For more information on the available options and arguments for each grant type,
 Here are a few examples of using oauth2c with different grant types and client authentication methods:
 
 ### Grant types
+
+> **Note**: The authorization code, implicit, hybrid and device grant flows require browser and user authentication.
 
 #### Authorization code
 
@@ -453,7 +457,7 @@ to be verified by the client, ensuring that the information is coming from a tru
 with. The JWT is signed using a secret key shared between the authorization server and the client, allowing the client
 to verify the authenticity of the JWT. This provides an additional layer of security to the OAuth 2.0 authorization process.
 
-##### Signed JWT
+**Signed JWT**
 
 ``` sh
 oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
@@ -466,7 +470,7 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --scopes openid,email,offline_access
 ```
 
-#### Signed and encrypted JWT
+**Signed and encrypted JWT**
 
 ``` sh
 oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
