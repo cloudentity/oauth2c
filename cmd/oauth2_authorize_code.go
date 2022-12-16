@@ -36,14 +36,16 @@ func (c *OAuth2Cmd) AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig,
 
 		LogSection("Request authorization")
 
+		LogRequestObject(parRequest)
 		LogRequest(authorizeRequest)
 	} else {
 		LogSection("Request authorization")
 
-		if authorizeRequest, codeVerifier, err = oauth2.RequestAuthorization(addr, clientConfig, serverConfig); err != nil {
+		if authorizeRequest, codeVerifier, err = oauth2.RequestAuthorization(addr, clientConfig, serverConfig, hc); err != nil {
 			return err
 		}
 
+		LogRequestObject(authorizeRequest)
 		LogRequest(authorizeRequest)
 	}
 

@@ -3,6 +3,7 @@ package oauth2
 import (
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/go-jose/go-jose/v3"
@@ -86,6 +87,25 @@ func AssertionClaims(serverConfig ServerConfig, clientConfig ClientConfig) Claim
 
 		if err = json.Unmarshal([]byte(clientConfig.Assertion), &claims); err != nil {
 			return nil, err
+		}
+
+		return claims, nil
+	}
+}
+
+func RequestObjectClaims(params url.Values, serverConfig ServerConfig, clientConfig ClientConfig) ClaimsProvider {
+	return func() (map[string]interface{}, error) {
+		claims := map[string]interface{}{
+			"iss": clientConfig.ClientID,
+			"aud": serverConfig.Issuer,
+		}
+
+		for key, values := range params {
+			if len(values) == 0 {
+				continue
+			}
+
+			claims[key] = values[0]
 		}
 
 		return claims, nil

@@ -1,12 +1,15 @@
 package oauth2
 
 import (
+	"crypto/sha256"
 	"crypto/x509"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/go-jose/go-jose/v3/jwt"
 	"github.com/hashicorp/go-multierror"
+	"github.com/lithammer/shortuuid/v4"
 	"github.com/pkg/errors"
 )
 
@@ -18,6 +21,74 @@ type Request struct {
 	JARM    map[string]interface{}
 	Key     interface{}
 	Cert    *x509.Certificate
+}
+
+func (r *Request) AuthorizeRequest(
+	addr string,
+	cconfig ClientConfig,
+	sconfig ServerConfig,
+	hc *http.Client,
+) (codeVerifier string, err error) {
+	r.Form = url.Values{
+		"client_id":    {cconfig.ClientID},
+		"redirect_uri": {"http://" + addr + "/callback"},
+		"state":        {shortuuid.New()},
+		"nonce":        {shortuuid.New()},
+	}
+
+	if len(cconfig.ResponseType) > 0 {
+		r.Form.Set("response_type", strings.Join(cconfig.ResponseType, " "))
+	}
+
+	if cconfig.ResponseMode != "" {
+		r.Form.Set("response_mode", cconfig.ResponseMode)
+	}
+
+	if len(cconfig.Scopes) > 0 {
+		r.Form.Set("scope", strings.Join(cconfig.Scopes, " "))
+	}
+
+	if cconfig.PKCE {
+		codeVerifier = RandomString(CodeVerifierLength)
+
+		hash := sha256.New()
+
+		if _, err = hash.Write([]byte(codeVerifier)); err != nil {
+			return "", err
+		}
+
+		codeChallenge := CodeChallengeEncoder.EncodeToString(hash.Sum([]byte{}))
+
+		r.Form.Set("code_challenge", codeChallenge)
+		r.Form.Set("code_challenge_method", "S256")
+	}
+
+	if cconfig.RequestObject {
+		var request string
+
+		// TODO plain text jwt
+
+		if request, r.Key, err = SignJWT(
+			RequestObjectClaims(r.Form, sconfig, cconfig),
+			JWKSigner(cconfig, hc),
+		); err != nil {
+			return "", err
+		}
+
+		// TODO encrypt or sign and encrypt
+
+		r.Form = url.Values{
+			"client_id": {cconfig.ClientID},
+			"request":   {request},
+			"scope":     {"openid"},
+		}
+
+		if len(cconfig.Scopes) > 0 {
+			r.Form.Set("scope", strings.Join(cconfig.Scopes, " "))
+		}
+	}
+
+	return codeVerifier, nil
 }
 
 func (r *Request) AuthenticateClient(

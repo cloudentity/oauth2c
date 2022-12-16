@@ -74,6 +74,7 @@ The available flags are:
       --password string             resource owner password credentials grant flow password
       --pkce                        enable proof key for code exchange (PKCE)
       --refresh-token string        refresh token
+      --request-object              pass request parameters as jwt
       --response-mode string        response mode
       --response-types strings      response type
       --scopes strings              requested scopes
@@ -402,7 +403,12 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 
 #### None with PKCE
 
-Public clients, such as mobile apps, are unable to authenticate themselves to the authorization server in the same way that confidential clients can because they do not have a client secret. To protect themselves from having their authorization codes intercepted and used by attackers, public clients can use PKCE (Proof Key for Code Exchange) during the authorization process. PKCE provides an additional layer of security by ensuring that the authorization code can only be exchanged for a token by the same client that initially requested it. This helps prevent unauthorized access to the token.
+Public clients, such as mobile apps, are unable to authenticate themselves to the authorization server in the same
+way that confidential clients can because they do not have a client secret. To protect themselves from having their
+authorization codes intercepted and used by attackers, public clients can use PKCE (Proof Key for Code Exchange)
+during the authorization process. PKCE provides an additional layer of security by ensuring that the authorization
+code can only be exchanged for a token by the same client that initially requested it. This helps prevent
+unauthorized access to the token.
 
 ``` sh
 oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
@@ -418,6 +424,24 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 [Lean more about none with PKCE](https://cloudentity.com/developers/basics/oauth-client-authentication/client-auth-set-to-none-with-pkce/)
 
 ### Extensions
+
+#### Request Object
+
+The Request Object is a JWT that contains the parameters of an authorization request. It allows the request to be passed along as a single,
+self-contained parameter, and it can be optionally signed and/or encrypted for added security.
+
+``` sh
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id cauktionbud6q8ftlqq0 \
+  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+  --response-types code \
+  --response-mode query \
+  --grant-type authorization_code \
+  --auth-method client_secret_basic \
+  --scopes openid,email,offline_access \
+  --request-object \
+  --signing-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.json
+```
 
 #### PKCE
 

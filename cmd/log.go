@@ -274,6 +274,29 @@ func LogJARM(request oauth2.Request) {
 	}
 }
 
+func LogRequestObject(r oauth2.Request) {
+	var (
+		request       = r.URL.Query().Get("request")
+		requestClaims map[string]interface{}
+		err           error
+	)
+
+	if silent {
+		return
+	}
+
+	if request != "" {
+		if _, requestClaims, err = oauth2.UnsafeParseJWT(request); err != nil {
+			pterm.Error.Println(err)
+		} else {
+			pterm.Println(pterm.FgGray.Sprint("Request object"))
+			LogJson(requestClaims)
+		}
+
+		pterm.Println()
+	}
+}
+
 func LogAssertion(request oauth2.Request, title string, name string) {
 	var (
 		assertion = request.Form.Get(name)
@@ -369,5 +392,7 @@ func LogSubjectTokenAndActorToken(request oauth2.Request) {
 		}
 	}
 
-	pterm.Println()
+	if subjectToken != "" || actorToken != "" {
+		pterm.Println()
+	}
 }

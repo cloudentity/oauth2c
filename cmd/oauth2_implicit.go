@@ -19,7 +19,7 @@ func (c *OAuth2Cmd) ImplicitGrantFlow(clientConfig oauth2.ClientConfig, serverCo
 	// authorize endpoint
 	LogSection("Request authorization")
 
-	if authorizeRequest, _, err = oauth2.RequestAuthorization(addr, clientConfig, serverConfig); err != nil {
+	if authorizeRequest, _, err = oauth2.RequestAuthorization(addr, clientConfig, serverConfig, hc); err != nil {
 		return err
 	}
 
