@@ -350,7 +350,7 @@ func RequestToken(
 	case JWTBearerGrantType:
 		var assertion string
 
-		if assertion, request.Key, err = SignJWT(
+		if assertion, request.SigningKey, err = SignJWT(
 			AssertionClaims(sconfig, cconfig),
 			JWKSigner(cconfig, hc),
 		); err != nil {

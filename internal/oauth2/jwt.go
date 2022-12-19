@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-jose/go-jose/v3"
 	"github.com/go-jose/go-jose/v3/jwt"
+	golangjwt "github.com/golang-jwt/jwt/v4"
 	"github.com/pkg/errors"
 )
 
@@ -154,4 +155,23 @@ func SignJWT(claimsProvider ClaimsProvider, signerProvider SignerProvider) (jwt 
 	}
 
 	return jwt, key, nil
+}
+
+func PlaintextJWT(claimsProvider ClaimsProvider) (jwt string, key string, err error) {
+	var (
+		claims map[string]interface{}
+		t      *golangjwt.Token
+	)
+
+	if claims, err = claimsProvider(); err != nil {
+		return "", "", errors.Wrapf(err, "failed to build claims")
+	}
+
+	t = golangjwt.NewWithClaims(golangjwt.SigningMethodNone, golangjwt.MapClaims(claims))
+
+	if jwt, err = t.SignedString(golangjwt.UnsafeAllowNoneSignatureType); err != nil {
+		return "", "", err
+	}
+
+	return jwt, "none", nil
 }

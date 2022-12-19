@@ -14,13 +14,14 @@ import (
 )
 
 type Request struct {
-	Method  string
-	URL     *url.URL
-	Headers map[string][]string
-	Form    url.Values
-	JARM    map[string]interface{}
-	Key     interface{}
-	Cert    *x509.Certificate
+	Method        string
+	URL           *url.URL
+	Headers       map[string][]string
+	Form          url.Values
+	JARM          map[string]interface{}
+	SigningKey    interface{}
+	EncryptionKey interface{}
+	Cert          *x509.Certificate
 }
 
 func (r *Request) AuthorizeRequest(
@@ -66,16 +67,23 @@ func (r *Request) AuthorizeRequest(
 	if cconfig.RequestObject {
 		var request string
 
-		// TODO plain text jwt
+		claims := RequestObjectClaims(r.Form, sconfig, cconfig)
 
-		if request, r.Key, err = SignJWT(
-			RequestObjectClaims(r.Form, sconfig, cconfig),
-			JWKSigner(cconfig, hc),
-		); err != nil {
-			return "", err
+		if cconfig.SigningKey != "" {
+			if request, r.SigningKey, err = SignJWT(claims, JWKSigner(cconfig, hc)); err != nil {
+				return "", err
+			}
+		} else {
+			if request, r.SigningKey, err = PlaintextJWT(claims); err != nil {
+				return "", err
+			}
 		}
 
-		// TODO encrypt or sign and encrypt
+		if cconfig.EncryptionKey != "" {
+			if request, r.EncryptionKey, err = EncryptJWT(request, JWEEncrypter(cconfig, hc)); err != nil {
+				return "", err
+			}
+		}
 
 		r.Form = url.Values{
 			"client_id": {cconfig.ClientID},
@@ -107,7 +115,7 @@ func (r *Request) AuthenticateClient(
 	case ClientSecretJwtAuthMethod:
 		var clientAssertion string
 
-		if clientAssertion, r.Key, err = SignJWT(
+		if clientAssertion, r.SigningKey, err = SignJWT(
 			ClientAssertionClaims(sconfig, cconfig),
 			SecretSigner([]byte(cconfig.ClientSecret)),
 		); err != nil {
@@ -119,7 +127,7 @@ func (r *Request) AuthenticateClient(
 	case PrivateKeyJwtAuthMethod:
 		var clientAssertion string
 
-		if clientAssertion, r.Key, err = SignJWT(
+		if clientAssertion, r.SigningKey, err = SignJWT(
 			ClientAssertionClaims(sconfig, cconfig),
 			JWKSigner(cconfig, hc),
 		); err != nil {

@@ -7,9 +7,10 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
-	"github.com/go-jose/go-jose/v3/jwt"
 	"strconv"
 	"strings"
+
+	"github.com/go-jose/go-jose/v3/jwt"
 
 	"github.com/cloudentity/oauth2c/internal/oauth2"
 	"github.com/grantae/certinfo"
@@ -278,6 +279,7 @@ func LogRequestObject(r oauth2.Request) {
 	var (
 		request       = r.URL.Query().Get("request")
 		requestClaims map[string]interface{}
+		token         *jwt.JSONWebToken
 		err           error
 	)
 
@@ -286,14 +288,23 @@ func LogRequestObject(r oauth2.Request) {
 	}
 
 	if request != "" {
-		if _, requestClaims, err = oauth2.UnsafeParseJWT(request); err != nil {
+		if token, requestClaims, err = oauth2.UnsafeParseJWT(request); err != nil {
 			pterm.Error.Println(err)
 		} else {
-			pterm.Println(pterm.FgGray.Sprint("Request object"))
+			pterm.DefaultBox.WithTitle("Request object").Printfln("request = JWT-%s(payload)", token.Headers[0].Algorithm)
+			pterm.Println()
+			pterm.Println("Payload")
 			LogJson(requestClaims)
-		}
+			pterm.Println()
 
-		pterm.Println()
+			if r.SigningKey != nil {
+				LogKey("Signing key", r.SigningKey)
+			}
+
+			if r.EncryptionKey != nil {
+				LogKey("Encryption key", r.EncryptionKey)
+			}
+		}
 	}
 }
 
@@ -324,8 +335,15 @@ func LogAssertion(request oauth2.Request, title string, name string) {
 	LogJson(claims)
 	pterm.Println("")
 
-	pterm.Println("Key")
-	switch key := request.Key.(type) {
+	LogKey("Signing key", request.SigningKey)
+}
+
+func LogKey(name string, key interface{}) {
+	var err error
+
+	pterm.Println(name)
+
+	switch key := key.(type) {
 	case *rsa.PrivateKey:
 		p := bytes.Buffer{}
 
@@ -356,6 +374,8 @@ func LogAssertion(request oauth2.Request, title string, name string) {
 		pterm.FgGray.Printfln(p.String())
 	case []byte:
 		pterm.FgGray.Println(string(key))
+	case string:
+		pterm.FgGray.Println(key)
 	}
 
 	pterm.Println()
