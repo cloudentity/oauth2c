@@ -22,7 +22,7 @@ func JWEEncrypter(clientConfig ClientConfig, hc *http.Client) EncrypterProvider 
 		}
 
 		if encrypter, err = jose.NewEncrypter(
-			jose.A128GCM,
+			jose.A256GCM,
 			jose.Recipient{
 				Algorithm: jose.KeyAlgorithm(key.Algorithm),
 				Key:       key.Key,
