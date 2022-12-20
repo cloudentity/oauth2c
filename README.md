@@ -66,23 +66,23 @@ The available flags are:
 
 ### Core
 
-| Flag               | Description |
-|--------------------|-------------|
-| `--grant-type`     |             |
-| `--auth-method`    |             |
-| `--client-id`      |             |
-| `--client-secret`  |             |
-| `--scopes`         |             |
-| `--response-mode`  |             |
-| `--response-types` |             |
-| `--signing-key`    |             |
-| `--encryption-key` |             |
-| `--tls-cert`       |             |
-| `--tls-key`        |             |
-| `--tls-root-ca`    |             |
-| `--insecure`       |             |
-| `--silent`         |             |
-| `--help`           |             |
+| Flag               | Description                         |
+|--------------------|-------------------------------------|
+| `--grant-type`     | <p> the way to obtain the access token: <p> * authorization_code <p> * client_credentials |
+| `--auth-method`    |                                     |
+| `--client-id`      |                                     |
+| `--client-secret`  |                                     |
+| `--scopes`         |                                     |
+| `--response-mode`  |                                     |
+| `--response-types` |                                     |
+| `--signing-key`    |                                     |
+| `--encryption-key` |                                     |
+| `--tls-cert`       |                                     |
+| `--tls-key`        |                                     |
+| `--tls-root-ca`    |                                     |
+| `--insecure`       |                                     |
+| `--silent`         |                                     |
+| `--help`           |                                     |
 
 ### Grant flows
 
@@ -94,9 +94,9 @@ The available flags are:
 
 #### Token exchange
 
-### Extensions
+### sh
 
-``` sh
+``` Extensions
       --request-object              pass request parameters as jwt
       --par                         enable pushed authorization requests (PAR)
       --pkce                        enable proof key for code exchange (PKCE)
