@@ -60,35 +60,54 @@ To use `oauth2c`, run the following command and follow the prompts:
 oauth2c [issuer url] [flags]
 ```
 
+The issuer URL is base URL where `oauth2c` can find the `/.well-known/openid-configuration` endpoint.
+
 The available flags are:
 
+### Core
+
+| Flag               | Description |
+|--------------------|-------------|
+| `--grant-type`     |             |
+| `--auth-method`    |             |
+| `--client-id`      |             |
+| `--client-secret`  |             |
+| `--scopes`         |             |
+| `--response-mode`  |             |
+| `--response-types` |             |
+| `--signing-key`    |             |
+| `--encryption-key` |             |
+| `--tls-cert`       |             |
+| `--tls-key`        |             |
+| `--tls-root-ca`    |             |
+| `--insecure`       |             |
+| `--silent`         |             |
+| `--help`           |             |
+
+### Grant flows
+
+#### Refresh token
+
+#### Password grant
+
+#### JWT Bearer grant
+
+#### Token exchange
+
+### Extensions
+
 ``` sh
-      --actor-token string          acting party token
-      --actor-token-type string     acting party token type
-      --assertion string            claims for jwt bearer assertion
-      --auth-method string          token endpoint authentication method
-      --client-id string            client identifier
-      --client-secret string        client secret
-      --encryption-key string       path or url to encryption key in jwks format
-      --grant-type string           grant type
-  -h, --help                        help for oauthc
-      --insecure                    allow insecure connections
+      --request-object              pass request parameters as jwt
       --par                         enable pushed authorization requests (PAR)
-      --password string             resource owner password credentials grant flow password
       --pkce                        enable proof key for code exchange (PKCE)
       --refresh-token string        refresh token
-      --request-object              pass request parameters as jwt
-      --response-mode string        response mode
-      --response-types strings      response type
-      --scopes strings              requested scopes
-      --signing-key string          path or url to signing key in jwks format
-  -s, --silent                      silent mode
+      --username string             resource owner password credentials grant flow username
+      --password string             resource owner password credentials grant flow password
+      --assertion string            claims for jwt bearer assertion
       --subject-token string        third party token
       --subject-token-type string   third party token type
-      --tls-cert string             path to tls cert pem file
-      --tls-key string              path to tls key pem file
-      --tls-root-ca string          path to tls root ca pem file
-      --username string             resource owner password credentials grant flow username
+      --actor-token string          acting party token
+      --actor-token-type string     acting party token type
 ```
 
 `oauth2c` opens a browser for flows such as authorization code and starts an HTTP server which acts as a client application and waits for a callback.
