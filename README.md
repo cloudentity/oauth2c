@@ -5,22 +5,25 @@
 [![release](https://img.shields.io/github/release-pre/cloudentity/oauth2c.svg)](https://github.com/cloudentity/oauth2c/releases)
 [![downloads](https://img.shields.io/github/downloads/cloudentity/oauth2c/total)](https://github.com/cloudentity/oauth2c/releases)
 
-`oauth2c` is a command-line OAuth2 client. Its goal is to make it easy for users to try out different aspects of the OAuth2 protocol and understand how it works. This tool is designed for testing, debugging, and generally interacting with OAuth2 authorization servers. With `oauth2c`, users can easily learn about and experiment with OAuth2 without the need for complex setup or detailed knowledge of the protocol.
+`oauth2c` is a command-line tool for interacting with OAuth 2.0 authorization servers. Its goal is to make it easy to fetch access tokens
+using any grant type or client authentication method. It is compliant with almost all basic and advanced OAuth 2.0, OIDC, OIDF FAPI and JWT profiles.
 
 ![demo](https://user-images.githubusercontent.com/909896/176916616-36d803ef-832a-4bd8-ba8d-f6689e31ed22.gif)
 
 ## Features
 
-* A simple and intuitive command-line interface for quickly trying out different OAuth 2.0 grant types and client authentication methods
-* Supports all modern OAuth 2.0 grant types: authorization code, implicit, password, client credentials, refresh token, JWT bearer, token exchange
-* Supports all client authentication methods: client secret basic, client secret post, client secret JWT, private key JWT, TLS client auth
-* Supports the following extensions: PKCE, JARM, PAR
+* support for **authorization code**, **hybrid**, **implicit**, **password**, **client credentials**, **refresh token**, **JWT bearer**, **token exchange**, **device** grant flows
+* support for **client secret basic**, **client secret post**, **client secret JWT**, **private key JWT**, **TLS client auth** client authentication methods
+* passing request parameters as plaintext, signed, and/or encrypted JWT
+* support for **Proof Key for Code Exchange** (**PKCE**)
+* support for **JWT Secured Authorization Response Mode** (**JARM**)
+* support for **Pushed Authorization Requests** (**PAR**)
 
 ## Installation
 
 To install `oauth2c`, you have several options depending on your operating system.
 
-**Install on Mac**
+### Install on Mac
 
 On Mac, you can install `oauth2c` using `brew` by running the following command:
 
@@ -28,7 +31,7 @@ On Mac, you can install `oauth2c` using `brew` by running the following command:
 brew install cloudentity/tap/oauth2c
 ```
 
-**Install on Linux**
+### Install on Linux
 
 On linux, you can install `oauth2c` using the installation script by running the following command:
 
@@ -37,7 +40,7 @@ curl -sSfL https://raw.githubusercontent.com/cloudentity/oauth2c/master/install.
   sudo sh -s -- -b /usr/local/bin latest
 ```
 
-**Compile from source**
+### Compile from source
 
 You can also compile `oauth2c` from source using `go`. To do this run the following command:
 
@@ -88,13 +91,13 @@ The available flags are:
       --username string             resource owner password credentials grant flow username
 ```
 
-You will be asked to provide the necessary information, such as the grant type, client authentication method, and any other relevant details (if not already provided).
-
 `oauth2c` opens a browser for flows such as authorization code and starts an HTTP server which acts as a client application and waits for a callback.
 
 > **Note**: To make browser flows work add `http://localhost:9876/callback` as a redirect URL to your client.
 
-For more information on the available options and arguments for each grant type, run `oauth2c --help`.
+`oauth2c` prints all the requests it made to obtain an access token. If you want to integrate it with CI/CD pipeline use the `--silent` flag.
+
+For more information on the available options and arguments run `oauth2c --help`.
 
 ## Example
 
