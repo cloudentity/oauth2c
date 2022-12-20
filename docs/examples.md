@@ -409,8 +409,7 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --grant-type authorization_code \
   --auth-method client_secret_basic \
   --scopes openid,email,offline_access \
-  --request-object \
-  --signing-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.json
+  --request-object
 ```
 
 </details>
