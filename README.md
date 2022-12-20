@@ -74,6 +74,7 @@ The available flags are:
       --password string             resource owner password credentials grant flow password
       --pkce                        enable proof key for code exchange (PKCE)
       --refresh-token string        refresh token
+      --request-object              pass request parameters as jwt
       --response-mode string        response mode
       --response-types strings      response type
       --scopes strings              requested scopes

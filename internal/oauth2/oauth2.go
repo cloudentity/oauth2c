@@ -2,7 +2,6 @@ package oauth2
 
 import (
 	"context"
-	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -16,7 +15,6 @@ import (
 	"time"
 
 	"github.com/go-jose/go-jose/v3"
-	"github.com/lithammer/shortuuid/v4"
 	"github.com/pkg/errors"
 )
 
@@ -62,6 +60,7 @@ type ClientConfig struct {
 	AuthMethod       string
 	PKCE             bool
 	PAR              bool
+	RequestObject    bool
 	Insecure         bool
 	ResponseType     []string
 	ResponseMode     string
@@ -80,57 +79,18 @@ type ClientConfig struct {
 	TLSRootCA        string
 }
 
-func NewAuthorizationRequest(addr string, cconfig ClientConfig) (values url.Values, codeVerifier string, err error) {
-	values = url.Values{
-		"client_id":    {cconfig.ClientID},
-		"redirect_uri": {"http://" + addr + "/callback"},
-		"state":        {shortuuid.New()},
-		"nonce":        {shortuuid.New()},
-	}
-
-	if len(cconfig.ResponseType) > 0 {
-		values.Set("response_type", strings.Join(cconfig.ResponseType, " "))
-	}
-
-	if cconfig.ResponseMode != "" {
-		values.Set("response_mode", cconfig.ResponseMode)
-	}
-
-	if len(cconfig.Scopes) > 0 {
-		values.Set("scope", strings.Join(cconfig.Scopes, " "))
-	}
-
-	if cconfig.PKCE {
-		codeVerifier = RandomString(CodeVerifierLength)
-
-		hash := sha256.New()
-
-		if _, err = hash.Write([]byte(codeVerifier)); err != nil {
-			return values, "", err
-		}
-
-		codeChallenge := CodeChallengeEncoder.EncodeToString(hash.Sum([]byte{}))
-
-		values.Set("code_challenge", codeChallenge)
-		values.Set("code_challenge_method", "S256")
-	}
-
-	return values, codeVerifier, nil
-}
-
-func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfig) (r Request, codeVerifier string, err error) {
-	var values url.Values
-
+func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfig, hc *http.Client) (r Request, codeVerifier string, err error) {
 	if r.URL, err = url.Parse(sconfig.AuthorizationEndpoint); err != nil {
 		return r, "", errors.Wrapf(err, "failed to parse authorization endpoint")
 	}
 
-	if values, codeVerifier, err = NewAuthorizationRequest(addr, cconfig); err != nil {
+	if codeVerifier, err = r.AuthorizeRequest(addr, cconfig, sconfig, hc); err != nil {
 		return r, "", errors.Wrapf(err, "failed to create authorization request")
 	}
 
-	r.URL.RawQuery = values.Encode()
+	r.URL.RawQuery = r.Form.Encode()
 	r.Method = http.MethodGet
+	r.Form = url.Values{}
 
 	return r, codeVerifier, nil
 }
@@ -154,7 +114,7 @@ func RequestPAR(
 	)
 
 	// push authorization request to /par
-	if parRequest.Form, codeVerifier, err = NewAuthorizationRequest(addr, cconfig); err != nil {
+	if codeVerifier, err = parRequest.AuthorizeRequest(addr, cconfig, sconfig, hc); err != nil {
 		return parRequest, parResponse, authorizeRequest, "", errors.Wrapf(err, "failed to create authorization request")
 	}
 
@@ -390,7 +350,7 @@ func RequestToken(
 	case JWTBearerGrantType:
 		var assertion string
 
-		if assertion, request.Key, err = SignJWT(
+		if assertion, request.SigningKey, err = SignJWT(
 			AssertionClaims(sconfig, cconfig),
 			JWKSigner(cconfig, hc),
 		); err != nil {

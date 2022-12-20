@@ -3,10 +3,12 @@ package oauth2
 import (
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/go-jose/go-jose/v3"
 	"github.com/go-jose/go-jose/v3/jwt"
+	golangjwt "github.com/golang-jwt/jwt/v4"
 	"github.com/pkg/errors"
 )
 
@@ -92,6 +94,25 @@ func AssertionClaims(serverConfig ServerConfig, clientConfig ClientConfig) Claim
 	}
 }
 
+func RequestObjectClaims(params url.Values, serverConfig ServerConfig, clientConfig ClientConfig) ClaimsProvider {
+	return func() (map[string]interface{}, error) {
+		claims := map[string]interface{}{
+			"iss": clientConfig.ClientID,
+			"aud": serverConfig.Issuer,
+		}
+
+		for key, values := range params {
+			if len(values) == 0 {
+				continue
+			}
+
+			claims[key] = values[0]
+		}
+
+		return claims, nil
+	}
+}
+
 func ClientAssertionClaims(serverConfig ServerConfig, clientConfig ClientConfig) ClaimsProvider {
 	return func() (map[string]interface{}, error) {
 		return map[string]interface{}{
@@ -134,4 +155,23 @@ func SignJWT(claimsProvider ClaimsProvider, signerProvider SignerProvider) (jwt 
 	}
 
 	return jwt, key, nil
+}
+
+func PlaintextJWT(claimsProvider ClaimsProvider) (jwt string, key string, err error) {
+	var (
+		claims map[string]interface{}
+		t      *golangjwt.Token
+	)
+
+	if claims, err = claimsProvider(); err != nil {
+		return "", "", errors.Wrapf(err, "failed to build claims")
+	}
+
+	t = golangjwt.NewWithClaims(golangjwt.SigningMethodNone, golangjwt.MapClaims(claims))
+
+	if jwt, err = t.SignedString(golangjwt.UnsafeAllowNoneSignatureType); err != nil {
+		return "", "", err
+	}
+
+	return jwt, "none", nil
 }
