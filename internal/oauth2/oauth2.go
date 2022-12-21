@@ -54,31 +54,32 @@ const CodeVerifierLength = 43
 var CodeChallengeEncoder = base64.RawURLEncoding
 
 type ClientConfig struct {
-	IssuerURL        string
-	GrantType        string
-	ClientID         string
-	ClientSecret     string
-	Scopes           []string
-	AuthMethod       string
-	PKCE             bool
-	PAR              bool
-	RequestObject    bool
-	Insecure         bool
-	ResponseType     []string
-	ResponseMode     string
-	Username         string
-	Password         string
-	RefreshToken     string
-	Assertion        string
-	SigningKey       string
-	EncryptionKey    string
-	SubjectToken     string
-	SubjectTokenType string
-	ActorToken       string
-	ActorTokenType   string
-	TLSCert          string
-	TLSKey           string
-	TLSRootCA        string
+	IssuerURL              string
+	GrantType              string
+	ClientID               string
+	ClientSecret           string
+	Scopes                 []string
+	AuthMethod             string
+	PKCE                   bool
+	PAR                    bool
+	RequestObject          bool
+	EncryptedRequestObject bool
+	Insecure               bool
+	ResponseType           []string
+	ResponseMode           string
+	Username               string
+	Password               string
+	RefreshToken           string
+	Assertion              string
+	SigningKey             string
+	EncryptionKey          string
+	SubjectToken           string
+	SubjectTokenType       string
+	ActorToken             string
+	ActorTokenType         string
+	TLSCert                string
+	TLSKey                 string
+	TLSRootCA              string
 }
 
 func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfig, hc *http.Client) (r Request, codeVerifier string, err error) {
@@ -358,7 +359,7 @@ func RequestToken(
 
 		if assertion, request.SigningKey, err = SignJWT(
 			AssertionClaims(sconfig, cconfig),
-			JWKSigner(cconfig, hc),
+			JWKSigner(cconfig.SigningKey, hc),
 		); err != nil {
 			return request, response, err
 		}

@@ -32,16 +32,16 @@ func UnsafeParseJWT(token string) (*jwt.JSONWebToken, map[string]interface{}, er
 
 type SignerProvider func() (jose.Signer, interface{}, error)
 
-func JWKSigner(clientConfig ClientConfig, hc *http.Client) SignerProvider {
+func JWKSigner(keyPath string, hc *http.Client) SignerProvider {
 	return func() (signer jose.Signer, _ interface{}, err error) {
 		var key jose.JSONWebKey
 
-		if clientConfig.SigningKey == "" {
+		if keyPath == "" {
 			return nil, nil, errors.New("no signing key path")
 		}
 
-		if key, err = ReadKey(SigningKey, clientConfig.SigningKey, hc); err != nil {
-			return nil, nil, errors.Wrapf(err, "failed to read signing key from %s", clientConfig.SigningKey)
+		if key, err = ReadKey(SigningKey, keyPath, hc); err != nil {
+			return nil, nil, errors.Wrapf(err, "failed to read signing key from %s", keyPath)
 		}
 
 		if signer, err = jose.NewSigner(jose.SigningKey{

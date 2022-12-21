@@ -23,9 +23,7 @@ func TestSignJWT(t *testing.T) {
 		},
 	)
 
-	jwt, _, err := SignJWT(claims, JWKSigner(ClientConfig{
-		SigningKey: "../../data/key.json",
-	}, http.DefaultClient))
+	jwt, _, err := SignJWT(claims, JWKSigner("../../data/key.json", http.DefaultClient))
 	require.NoError(t, err)
 
 	jws, err := jose.ParseSigned(jwt)

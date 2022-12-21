@@ -9,16 +9,16 @@ import (
 
 type EncrypterProvider func() (jose.Encrypter, interface{}, error)
 
-func JWEEncrypter(clientConfig ClientConfig, hc *http.Client) EncrypterProvider {
+func JWEEncrypter(keyPath string, hc *http.Client) EncrypterProvider {
 	return func() (encrypter jose.Encrypter, _ interface{}, err error) {
 		var key jose.JSONWebKey
 
-		if clientConfig.EncryptionKey == "" {
+		if keyPath == "" {
 			return nil, nil, errors.New("no encryption key path")
 		}
 
-		if key, err = ReadKey(EncryptionKey, clientConfig.EncryptionKey, hc); err != nil {
-			return nil, nil, errors.Wrapf(err, "failed to read encryption key from %s", clientConfig.EncryptionKey)
+		if key, err = ReadKey(EncryptionKey, keyPath, hc); err != nil {
+			return nil, nil, errors.Wrapf(err, "failed to read encryption key from %s", keyPath)
 		}
 
 		if encrypter, err = jose.NewEncrypter(
