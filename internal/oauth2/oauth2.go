@@ -9,9 +9,11 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
+	"os/signal"
 	"strconv"
 	"strings"
-	"sync"
+	"syscall"
 	"time"
 
 	"github.com/go-jose/go-jose/v3"
@@ -182,10 +184,8 @@ func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, addr 
 		srv           = http.Server{Addr: addr}
 		signingKey    jose.JSONWebKey
 		encryptionKey jose.JSONWebKey
-		wg            sync.WaitGroup
+		done          = make(chan struct{})
 	)
-
-	wg.Add(1)
 
 	if signingKey, err = ReadKey(SigningKey, serverConfig.JWKsURI, hc); err != nil {
 		return request, errors.Wrapf(err, "failed to read signing key from %s", serverConfig.JWKsURI)
@@ -244,16 +244,22 @@ func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, addr 
 	})
 
 	go func() {
-		defer wg.Done()
+		defer close(done)
 
 		if serr := srv.ListenAndServe(); serr != http.ErrServerClosed {
 			err = serr
 		}
 	}()
 
-	wg.Wait()
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 
-	return request, err
+	select {
+	case <-signalChan:
+		return request, errors.New("interrupted")
+	case <-done:
+		return request, err
+	}
 }
 
 type TokenResponse struct {
