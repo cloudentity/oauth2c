@@ -32,11 +32,11 @@ func (c *OAuth2Cmd) AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig,
 
 		LogAssertion(parRequest, "Client assertion", "client_assertion")
 		LogAuthMethod(clientConfig)
+		LogRequestObject(parRequest)
 		LogRequestAndResponse(parRequest, parResponse)
 
 		LogSection("Request authorization")
 
-		LogRequestObject(parRequest)
 		LogRequest(authorizeRequest)
 	} else {
 		LogSection("Request authorization")

@@ -283,6 +283,10 @@ func LogRequestObject(r oauth2.Request) {
 		err           error
 	)
 
+	if request == "" {
+		request = r.Form.Get("request")
+	}
+
 	if silent {
 		return
 	}
