@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-jose/go-jose/v3"
 	"github.com/go-jose/go-jose/v3/jwt"
 
 	"github.com/cloudentity/oauth2c/internal/oauth2"
@@ -277,10 +278,11 @@ func LogJARM(request oauth2.Request) {
 
 func LogRequestObject(r oauth2.Request) {
 	var (
-		request       = r.URL.Query().Get("request")
-		requestClaims map[string]interface{}
-		token         *jwt.JSONWebToken
-		err           error
+		request        = r.URL.Query().Get("request")
+		requestClaims  map[string]interface{}
+		token          *jwt.JSONWebToken
+		encryptedToken *jose.JSONWebEncryption
+		err            error
 	)
 
 	if request == "" {
@@ -292,10 +294,15 @@ func LogRequestObject(r oauth2.Request) {
 	}
 
 	if request != "" {
-		if token, requestClaims, err = oauth2.UnsafeParseJWT(request); err != nil {
+		if token, requestClaims, err = oauth2.UnsafeParseJWT(r.RequestObject); err != nil {
 			pterm.Error.Println(err)
 		} else {
-			pterm.DefaultBox.WithTitle("Request object").Printfln("request = JWT-%s(payload)", token.Headers[0].Algorithm)
+			if encryptedToken, err = jose.ParseEncrypted(request); err == nil {
+				pterm.DefaultBox.WithTitle("Request object").Printfln("request = JWE-%s(JWT-%s(payload))", encryptedToken.Header.Algorithm, token.Headers[0].Algorithm)
+			} else {
+				pterm.DefaultBox.WithTitle("Request object").Printfln("request = JWT-%s(payload)", token.Headers[0].Algorithm)
+			}
+
 			pterm.Println()
 			pterm.Println("Payload")
 			LogJson(requestClaims)
@@ -348,12 +355,40 @@ func LogKey(name string, key interface{}) {
 	pterm.Println(name)
 
 	switch key := key.(type) {
+	case *rsa.PublicKey:
+		p := bytes.Buffer{}
+
+		if err = pem.Encode(&p, &pem.Block{
+			Type:  "RSA PUBLIC KEY",
+			Bytes: x509.MarshalPKCS1PublicKey(key),
+		}); err != nil {
+			pterm.Error.Println(err)
+		}
+
+		pterm.FgGray.Printfln(p.String())
 	case *rsa.PrivateKey:
 		p := bytes.Buffer{}
 
 		if err = pem.Encode(&p, &pem.Block{
 			Type:  "RSA PRIVATE KEY",
 			Bytes: x509.MarshalPKCS1PrivateKey(key),
+		}); err != nil {
+			pterm.Error.Println(err)
+		}
+
+		pterm.FgGray.Printfln(p.String())
+	case *ecdsa.PublicKey:
+		b, err := x509.MarshalPKIXPublicKey(key)
+
+		if err != nil {
+			pterm.Error.Println(err)
+		}
+
+		p := bytes.Buffer{}
+
+		if err = pem.Encode(&p, &pem.Block{
+			Type:  "EC PUBLIC KEY",
+			Bytes: b,
 		}); err != nil {
 			pterm.Error.Println(err)
 		}

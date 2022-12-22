@@ -19,6 +19,7 @@ type Request struct {
 	Headers       map[string][]string
 	Form          url.Values
 	JARM          map[string]interface{}
+	RequestObject string
 	SigningKey    interface{}
 	EncryptionKey interface{}
 	Cert          *x509.Certificate
@@ -64,31 +65,33 @@ func (r *Request) AuthorizeRequest(
 		r.Form.Set("code_challenge_method", "S256")
 	}
 
-	if cconfig.RequestObject {
-		var request string
-
+	if cconfig.RequestObject || cconfig.EncryptedRequestObject {
 		claims := RequestObjectClaims(r.Form, sconfig, cconfig)
 
 		if cconfig.SigningKey != "" {
-			if request, r.SigningKey, err = SignJWT(claims, JWKSigner(cconfig, hc)); err != nil {
+			if r.RequestObject, r.SigningKey, err = SignJWT(claims, JWKSigner(cconfig.SigningKey, hc)); err != nil {
 				return "", err
 			}
 		} else {
-			if request, r.SigningKey, err = PlaintextJWT(claims); err != nil {
-				return "", err
-			}
-		}
-
-		if cconfig.EncryptionKey != "" {
-			if request, r.EncryptionKey, err = EncryptJWT(request, JWEEncrypter(cconfig, hc)); err != nil {
+			if r.RequestObject, r.SigningKey, err = PlaintextJWT(claims); err != nil {
 				return "", err
 			}
 		}
 
 		r.Form = url.Values{
 			"client_id": {cconfig.ClientID},
-			"request":   {request},
+			"request":   {r.RequestObject},
 			"scope":     {"openid"},
+		}
+
+		if cconfig.EncryptedRequestObject {
+			var encryptedRequestObject string
+
+			if encryptedRequestObject, r.EncryptionKey, err = EncryptJWT(r.RequestObject, JWEEncrypter(sconfig.JWKsURI, hc)); err != nil {
+				return "", err
+			}
+
+			r.Form.Set("request", encryptedRequestObject)
 		}
 
 		if len(cconfig.Scopes) > 0 {
@@ -129,7 +132,7 @@ func (r *Request) AuthenticateClient(
 
 		if clientAssertion, r.SigningKey, err = SignJWT(
 			ClientAssertionClaims(sconfig, cconfig),
-			JWKSigner(cconfig, hc),
+			JWKSigner(cconfig.SigningKey, hc),
 		); err != nil {
 			return endpoint, err
 		}
