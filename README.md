@@ -105,8 +105,15 @@ For more information on the available options and arguments run `oauth2c --help`
 
 ## Example
 
-Run the following command to get an access token using authorization code flow, hybrid mode, tls client authentication,
-PKCE, JARM, PAR, and signed+encrypted request object:
+Run the following command to get an access token using 
+
+* authorization code flow
+* hybrid mode
+* tls client authentication
+* PKCE
+* JARM
+* PAR
+* signed and encrypted request object
 
 ``` sh
 oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
