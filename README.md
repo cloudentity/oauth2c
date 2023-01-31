@@ -73,7 +73,10 @@ The available flags are:
       --encryption-key string       path or url to encryption key in jwks format
       --grant-type string           grant type
   -h, --help                        help for oauthc
+      --id-token-hint string        id token hint
+      --idp-hint string             identity provider hint
       --insecure                    allow insecure connections
+      --login-hint string           user identifier hint
       --par                         enable pushed authorization requests (PAR)
       --password string             resource owner password credentials grant flow password
       --pkce                        enable proof key for code exchange (PKCE)

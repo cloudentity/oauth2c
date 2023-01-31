@@ -50,6 +50,18 @@ func (r *Request) AuthorizeRequest(
 		r.Form.Set("scope", strings.Join(cconfig.Scopes, " "))
 	}
 
+	if cconfig.IDTokenHint != "" {
+		r.Form.Set("id_token_hint", cconfig.IDTokenHint)
+	}
+
+	if cconfig.LoginHint != "" {
+		r.Form.Set("login_hint", cconfig.LoginHint)
+	}
+
+	if cconfig.IDPHint != "" {
+		r.Form.Set("idp_hint", cconfig.IDPHint)
+	}
+
 	if cconfig.PKCE {
 		codeVerifier = RandomString(CodeVerifierLength)
 

@@ -77,6 +77,9 @@ type ClientConfig struct {
 	SubjectTokenType       string
 	ActorToken             string
 	ActorTokenType         string
+	IDTokenHint            string
+	LoginHint              string
+	IDPHint                string
 	TLSCert                string
 	TLSKey                 string
 	TLSRootCA              string
