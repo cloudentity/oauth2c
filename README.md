@@ -105,7 +105,7 @@ For more information on the available options and arguments run `oauth2c --help`
 
 ## Example
 
-Run the following command to get an access token using 
+Run the following command to get an access token using
 
 * authorization code flow
 * hybrid mode
@@ -123,13 +123,13 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --grant-type authorization_code \
   --auth-method tls_client_auth \
   --scopes openid,email,offline_access \
-  --par \
-  --pkce \
-  --request-object \
   --tls-cert https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/cert.pem \
   --tls-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.pem \
   --signing-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.json \
-  --encryption-key https://oauth2c.us.authz.cloudentity.io/oauth2c/demo/.well-known/jwks.json
+  --encryption-key https://oauth2c.us.authz.cloudentity.io/oauth2c/demo/.well-known/jwks.json \
+  --request-object \
+  --pkce \
+  --par
 ```
 
 See [examples](docs/examples.md) for more.
