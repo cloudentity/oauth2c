@@ -105,17 +105,31 @@ For more information on the available options and arguments run `oauth2c --help`
 
 ## Example
 
-Run the following command to get an access token using authorization code flow:
+Run the following command to get an access token using
+
+* authorization code flow
+* hybrid mode
+* TLS client auth
+* proof key for code exchange
+* jwt secure authorization response mode
+* pushed authorization requests
+* signed and encrypted request object
 
 ``` sh
 oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
-  --client-id cauktionbud6q8ftlqq0 \
-  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
-  --response-types code \
-  --response-mode query \
+  --client-id 3f07a8c2adea4c1ab353f3ca8e16b8fd \
+  --response-types code,id_token \
+  --response-mode form_post.jwt \
   --grant-type authorization_code \
-  --auth-method client_secret_basic \
-  --scopes openid,email,offline_access
+  --auth-method tls_client_auth \
+  --scopes openid,email,offline_access \
+  --tls-cert https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/cert.pem \
+  --tls-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.pem \
+  --signing-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.json \
+  --encryption-key https://oauth2c.us.authz.cloudentity.io/oauth2c/demo/.well-known/jwks.json \
+  --request-object \
+  --pkce \
+  --par
 ```
 
 See [examples](docs/examples.md) for more.
