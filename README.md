@@ -109,10 +109,10 @@ Run the following command to get an access token using
 
 * authorization code flow
 * hybrid mode
-* tls client authentication
-* PKCE
-* JARM
-* PAR
+* TLS client auth
+* proof key for code exchange
+* jwt secure authorization response mode
+* pushed authorization requests
 * signed and encrypted request object
 
 ``` sh
