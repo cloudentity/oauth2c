@@ -26,14 +26,13 @@ type Request struct {
 }
 
 func (r *Request) AuthorizeRequest(
-	addr string,
 	cconfig ClientConfig,
 	sconfig ServerConfig,
 	hc *http.Client,
 ) (codeVerifier string, err error) {
 	r.Form = url.Values{
 		"client_id":    {cconfig.ClientID},
-		"redirect_uri": {"http://" + addr + "/callback"},
+		"redirect_uri": {cconfig.RedirectURL},
 		"state":        {shortuuid.New()},
 		"nonce":        {shortuuid.New()},
 	}

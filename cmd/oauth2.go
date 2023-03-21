@@ -18,10 +18,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	addr = "localhost:9876"
-)
-
 var (
 	silent bool
 )
@@ -45,6 +41,7 @@ func NewOAuth2Cmd() (cmd *OAuth2Cmd) {
 
 	cmd.AddCommand(versionCmd)
 
+	cmd.PersistentFlags().StringVar(&cconfig.RedirectURL, "redirect-url", "http://localhost:9876/callback", "client redirect url")
 	cmd.PersistentFlags().StringVar(&cconfig.ClientID, "client-id", "", "client identifier")
 	cmd.PersistentFlags().StringVar(&cconfig.ClientSecret, "client-secret", "", "client secret")
 	cmd.PersistentFlags().StringVar(&cconfig.GrantType, "grant-type", "", "grant type")

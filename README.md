@@ -80,6 +80,7 @@ The available flags are:
       --par                         enable pushed authorization requests (PAR)
       --password string             resource owner password credentials grant flow password
       --pkce                        enable proof key for code exchange (PKCE)
+      --redirect-url string         client redirect url (default "http://localhost:9876/callback")
       --refresh-token string        refresh token
       --request-object              pass request parameters as jwt
       --response-mode string        response mode
