@@ -44,6 +44,10 @@ func JWKSigner(keyPath string, hc *http.Client) SignerProvider {
 			return nil, nil, errors.Wrapf(err, "failed to read signing key from %s", keyPath)
 		}
 
+		if key.IsPublic() {
+			return nil, nil, errors.New("signing key must be private")
+		}
+
 		if signer, err = jose.NewSigner(jose.SigningKey{
 			Algorithm: jose.SignatureAlgorithm(key.Algorithm),
 			Key:       key.Key,
