@@ -19,7 +19,7 @@ func (c *OAuth2Cmd) ImplicitGrantFlow(clientConfig oauth2.ClientConfig, serverCo
 	// authorize endpoint
 	LogSection("Request authorization")
 
-	if authorizeRequest, _, err = oauth2.RequestAuthorization(addr, clientConfig, serverConfig, hc); err != nil {
+	if authorizeRequest, _, err = oauth2.RequestAuthorization(clientConfig, serverConfig, hc); err != nil {
 		return err
 	}
 
@@ -36,7 +36,7 @@ func (c *OAuth2Cmd) ImplicitGrantFlow(clientConfig oauth2.ClientConfig, serverCo
 	// callback
 	callbackStatus := LogAction("Waiting for callback. Go to the browser to authenticate...")
 
-	if callbackRequest, err = oauth2.WaitForCallback(clientConfig, serverConfig, addr, hc); err != nil {
+	if callbackRequest, err = oauth2.WaitForCallback(clientConfig, serverConfig, hc); err != nil {
 		LogRequestln(callbackRequest)
 		return err
 	}

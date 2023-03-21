@@ -55,6 +55,7 @@ var CodeChallengeEncoder = base64.RawURLEncoding
 
 type ClientConfig struct {
 	IssuerURL              string
+	RedirectURL            string
 	GrantType              string
 	ClientID               string
 	ClientSecret           string
@@ -85,12 +86,12 @@ type ClientConfig struct {
 	TLSRootCA              string
 }
 
-func RequestAuthorization(addr string, cconfig ClientConfig, sconfig ServerConfig, hc *http.Client) (r Request, codeVerifier string, err error) {
+func RequestAuthorization(cconfig ClientConfig, sconfig ServerConfig, hc *http.Client) (r Request, codeVerifier string, err error) {
 	if r.URL, err = url.Parse(sconfig.AuthorizationEndpoint); err != nil {
 		return r, "", errors.Wrapf(err, "failed to parse authorization endpoint")
 	}
 
-	if codeVerifier, err = r.AuthorizeRequest(addr, cconfig, sconfig, hc); err != nil {
+	if codeVerifier, err = r.AuthorizeRequest(cconfig, sconfig, hc); err != nil {
 		return r, "", errors.Wrapf(err, "failed to create authorization request")
 	}
 
@@ -108,7 +109,6 @@ type PARResponse struct {
 
 func RequestPAR(
 	ctx context.Context,
-	addr string,
 	cconfig ClientConfig,
 	sconfig ServerConfig,
 	hc *http.Client,
@@ -120,7 +120,7 @@ func RequestPAR(
 	)
 
 	// push authorization request to /par
-	if codeVerifier, err = parRequest.AuthorizeRequest(addr, cconfig, sconfig, hc); err != nil {
+	if codeVerifier, err = parRequest.AuthorizeRequest(cconfig, sconfig, hc); err != nil {
 		return parRequest, parResponse, authorizeRequest, "", errors.Wrapf(err, "failed to create authorization request")
 	}
 
@@ -183,13 +183,18 @@ func RequestPAR(
 	return parRequest, parResponse, authorizeRequest, codeVerifier, nil
 }
 
-func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, addr string, hc *http.Client) (request Request, err error) {
+func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, hc *http.Client) (request Request, err error) {
 	var (
-		srv           = http.Server{Addr: addr}
+		srv           = http.Server{}
+		redirectURL   *url.URL
 		signingKey    jose.JSONWebKey
 		encryptionKey jose.JSONWebKey
 		done          = make(chan struct{})
 	)
+
+	if redirectURL, err = url.Parse(clientConfig.RedirectURL); err != nil {
+		return request, errors.Wrapf(err, "failed to parse redirect url: %s", clientConfig.RedirectURL)
+	}
 
 	if signingKey, err = ReadKey(SigningKey, serverConfig.JWKsURI, hc); err != nil {
 		return request, errors.Wrapf(err, "failed to read signing key from %s", serverConfig.JWKsURI)
@@ -201,7 +206,9 @@ func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, addr 
 		}
 	}
 
-	http.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
+	srv.Addr = redirectURL.Host
+
+	http.HandleFunc(redirectURL.Path, func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			time.AfterFunc(time.Second, func() {
 				if err := srv.Shutdown(context.Background()); err != nil {

@@ -25,7 +25,7 @@ func (c *OAuth2Cmd) AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig,
 	if clientConfig.PAR {
 		LogSection("Request PAR")
 
-		if parRequest, parResponse, authorizeRequest, codeVerifier, err = oauth2.RequestPAR(context.Background(), addr, clientConfig, serverConfig, hc); err != nil {
+		if parRequest, parResponse, authorizeRequest, codeVerifier, err = oauth2.RequestPAR(context.Background(), clientConfig, serverConfig, hc); err != nil {
 			LogRequestAndResponseln(parRequest, err)
 			return err
 		}
@@ -41,7 +41,7 @@ func (c *OAuth2Cmd) AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig,
 	} else {
 		LogSection("Request authorization")
 
-		if authorizeRequest, codeVerifier, err = oauth2.RequestAuthorization(addr, clientConfig, serverConfig, hc); err != nil {
+		if authorizeRequest, codeVerifier, err = oauth2.RequestAuthorization(clientConfig, serverConfig, hc); err != nil {
 			return err
 		}
 
@@ -65,7 +65,7 @@ func (c *OAuth2Cmd) AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig,
 	// callback
 	callbackStatus := LogAction("Waiting for callback. Go to the browser to authenticate...")
 
-	if callbackRequest, err = oauth2.WaitForCallback(clientConfig, serverConfig, addr, hc); err != nil {
+	if callbackRequest, err = oauth2.WaitForCallback(clientConfig, serverConfig, hc); err != nil {
 		LogRequestln(callbackRequest)
 		return err
 	}
@@ -87,7 +87,7 @@ func (c *OAuth2Cmd) AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig,
 		serverConfig,
 		hc,
 		oauth2.WithAuthorizationCode(callbackRequest.Get("code")),
-		oauth2.WithRedirectURL("http://"+addr+"/callback"),
+		oauth2.WithRedirectURL(clientConfig.RedirectURL),
 		oauth2.WithCodeVerifier(codeVerifier),
 	); err != nil {
 		LogRequestAndResponseln(tokenRequest, err)
