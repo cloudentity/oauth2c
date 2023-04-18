@@ -103,6 +103,8 @@ func RequestObjectClaims(params url.Values, serverConfig ServerConfig, clientCon
 		claims := map[string]interface{}{
 			"iss": clientConfig.ClientID,
 			"aud": serverConfig.Issuer,
+			"exp": time.Now().Add(time.Minute * 10).Unix(),
+			"nbf": time.Now().Unix(),
 		}
 
 		for key, values := range params {
