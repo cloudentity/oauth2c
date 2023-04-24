@@ -113,7 +113,7 @@ func (r *Request) AuthorizeRequest(
 	if cconfig.DPoP {
 		var jkt string
 
-		if jkt, err = DPoPThumbprint(cconfig.DPoPSigningKey, hc); err != nil {
+		if jkt, err = DPoPThumbprint(cconfig.SigningKey, hc); err != nil {
 			return "", err
 		}
 

@@ -72,7 +72,6 @@ func NewOAuth2Cmd() (cmd *OAuth2Cmd) {
 	cmd.PersistentFlags().BoolVar(&cconfig.Insecure, "insecure", false, "allow insecure connections")
 	cmd.PersistentFlags().BoolVarP(&silent, "silent", "s", false, "silent mode")
 	cmd.PersistentFlags().BoolVar(&cconfig.DPoP, "dpop", false, "use DPoP")
-	cmd.PersistentFlags().StringVar(&cconfig.DPoPSigningKey, "dpop-signing-key", "", "path or url to dpop signing key in jwks format")
 
 	return cmd
 }
