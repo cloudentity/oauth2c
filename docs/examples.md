@@ -530,7 +530,7 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --grant-type authorization_code \
   --auth-method client_secret_basic \
   --scopes openid,email,offline_access \
-  --signing-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.json \
+  --signing-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/ps/key.json \
   --dpop
 ```
 </details>

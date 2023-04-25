@@ -8,7 +8,7 @@ import (
 )
 
 func TestReadKey(t *testing.T) {
-	key, err := ReadKey(SigningKey, "../../data/key.json", http.DefaultClient)
+	key, err := ReadKey(SigningKey, "../../data/rsa/key.json", http.DefaultClient)
 	require.NoError(t, err)
 
 	require.NotNil(t, key)
