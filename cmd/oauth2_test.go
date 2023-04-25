@@ -17,7 +17,7 @@ const (
 
 	TLSCertURL    = "https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/cert.pem"
 	TLSKeyURL     = "https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.pem"
-	SigningKeyURL = "https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.json"
+	SigningKeyURL = "https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/rsa/key.json"
 )
 
 type CommandTestCase struct {
