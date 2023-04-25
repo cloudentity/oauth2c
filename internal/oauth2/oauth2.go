@@ -84,6 +84,7 @@ type ClientConfig struct {
 	TLSCert                string
 	TLSKey                 string
 	TLSRootCA              string
+	DPoP                   bool
 }
 
 func RequestAuthorization(cconfig ClientConfig, sconfig ServerConfig, hc *http.Client) (r Request, codeVerifier string, err error) {
@@ -423,6 +424,12 @@ func RequestToken(
 	}
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	if cconfig.DPoP {
+		if err = DPoPSignRequest(cconfig.SigningKey, hc, req); err != nil {
+			return request, response, err
+		}
+	}
 
 	request.Method = req.Method
 	request.Headers = req.Header

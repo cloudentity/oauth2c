@@ -10,7 +10,7 @@ import (
 )
 
 func TestSignJWT(t *testing.T) {
-	key, err := ReadKey(SigningKey, "../../data/key.json", http.DefaultClient)
+	key, err := ReadKey(SigningKey, "../../data/rsa/key.json", http.DefaultClient)
 	require.NoError(t, err)
 
 	claims := AssertionClaims(
@@ -23,7 +23,7 @@ func TestSignJWT(t *testing.T) {
 		},
 	)
 
-	jwt, _, err := SignJWT(claims, JWKSigner("../../data/key.json", http.DefaultClient))
+	jwt, _, err := SignJWT(claims, JWKSigner("../../data/rsa/key.json", http.DefaultClient))
 	require.NoError(t, err)
 
 	jws, err := jose.ParseSigned(jwt)

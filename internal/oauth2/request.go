@@ -110,6 +110,16 @@ func (r *Request) AuthorizeRequest(
 		}
 	}
 
+	if cconfig.DPoP {
+		var jkt string
+
+		if jkt, err = DPoPThumbprint(cconfig.SigningKey, hc); err != nil {
+			return "", err
+		}
+
+		r.Form.Set("dpop_jkt", jkt)
+	}
+
 	return codeVerifier, nil
 }
 

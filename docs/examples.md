@@ -199,7 +199,7 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --grant-type urn:ietf:params:oauth:grant-type:jwt-bearer \
   --auth-method client_secret_basic \
   --scopes email \
-  --signing-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.json \
+  --signing-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/rsa/key.json \
   --assertion '{"sub":"jdoe@example.com"}'
 ```
 </details>
@@ -337,7 +337,7 @@ JWT methods using a client secret, as the private key is never shared with the O
 ``` sh
 oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id 582af0afb0d74554aa7af47849edb222 \
-  --signing-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.json \
+  --signing-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/rsa/key.json \
   --grant-type client_credentials \
   --auth-method private_key_jwt \
   --scopes introspect_tokens,revoke_tokens
@@ -483,7 +483,7 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --grant-type authorization_code \
   --auth-method client_secret_post \
   --scopes openid,email,offline_access \
-  --encryption-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.json
+  --encryption-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/rsa/key.json
 ```
 </details>
 
@@ -511,3 +511,26 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 </details>
 
 [Learn more about PAR](https://cloudentity.com/developers/basics/oauth-grant-types/pushed-authorization-requests/)
+
+### DPoP
+
+DPoP, or Demonstration of Proof of Possession, is an extension that describes a technique to cryptographically bind access
+tokens to a particular client when they are issued. This is one of many attempts at improving the security of Bearer Tokens
+by requiring the application using the token to authenticate itself.
+
+<details>
+<summary>Show example</summary>
+
+``` sh
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id cauktionbud6q8ftlqq0 \
+  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+  --response-types code \
+  --response-mode query \
+  --grant-type authorization_code \
+  --auth-method client_secret_basic \
+  --scopes openid,email,offline_access \
+  --signing-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/ps/key.json \
+  --dpop
+```
+</details>

@@ -126,7 +126,7 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --scopes openid,email,offline_access \
   --tls-cert https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/cert.pem \
   --tls-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.pem \
-  --signing-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.json \
+  --signing-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/rsa/key.json \
   --encryption-key https://oauth2c.us.authz.cloudentity.io/oauth2c/demo/.well-known/jwks.json \
   --request-object \
   --pkce \
