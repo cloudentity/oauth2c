@@ -199,7 +199,7 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --grant-type urn:ietf:params:oauth:grant-type:jwt-bearer \
   --auth-method client_secret_basic \
   --scopes email \
-  --signing-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.json \
+  --signing-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/rsa/key.json \
   --assertion '{"sub":"jdoe@example.com"}'
 ```
 </details>
@@ -337,7 +337,7 @@ JWT methods using a client secret, as the private key is never shared with the O
 ``` sh
 oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id 582af0afb0d74554aa7af47849edb222 \
-  --signing-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.json \
+  --signing-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/rsa/key.json \
   --grant-type client_credentials \
   --auth-method private_key_jwt \
   --scopes introspect_tokens,revoke_tokens
@@ -483,7 +483,7 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --grant-type authorization_code \
   --auth-method client_secret_post \
   --scopes openid,email,offline_access \
-  --encryption-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.json
+  --encryption-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/rsa/key.json
 ```
 </details>
 
