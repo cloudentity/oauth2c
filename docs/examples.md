@@ -511,3 +511,26 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 </details>
 
 [Learn more about PAR](https://cloudentity.com/developers/basics/oauth-grant-types/pushed-authorization-requests/)
+
+### DPoP
+
+DPoP, or Demonstration of Proof of Possession, is an extension that describes a technique to cryptographically bind access
+tokens to a particular client when they are issued. This is one of many attempts at improving the security of Bearer Tokens
+by requiring the application using the token to authenticate itself.
+
+<details>
+<summary>Show example</summary>
+
+``` sh
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id cauktionbud6q8ftlqq0 \
+  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+  --response-types code \
+  --response-mode query \
+  --grant-type authorization_code \
+  --auth-method client_secret_basic \
+  --scopes openid,email,offline_access \
+  --signing-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.json \
+  --dpop
+```
+</details>
