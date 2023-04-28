@@ -18,6 +18,7 @@ using any grant type or client authentication method. It is compliant with almos
 * support for **Proof Key for Code Exchange** (**PKCE**)
 * support for **JWT Secured Authorization Response Mode** (**JARM**)
 * support for **Pushed Authorization Requests** (**PAR**)
+* support for **Demonstration of Proof of Possession** (**DPoP**)
 
 ## Installation
 
@@ -69,6 +70,7 @@ The available flags are:
       --auth-method string          token endpoint authentication method
       --client-id string            client identifier
       --client-secret string        client secret
+      --dpop                        use DPoP
       --encrypted-request-object    pass request parameters as encrypted jwt
       --encryption-key string       path or url to encryption key in jwks format
       --grant-type string           grant type
