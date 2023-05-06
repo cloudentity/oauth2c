@@ -76,6 +76,10 @@ func (r *Request) AuthorizeRequest(
 		r.Form.Set("code_challenge_method", "S256")
 	}
 
+	if cconfig.Claims != "" {
+		r.Form.Set("claims", cconfig.Claims)
+	}
+
 	if cconfig.RequestObject || cconfig.EncryptedRequestObject {
 		claims := RequestObjectClaims(r.Form, sconfig, cconfig)
 

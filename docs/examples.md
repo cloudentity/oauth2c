@@ -23,7 +23,8 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --response-mode query \
   --grant-type authorization_code \
   --auth-method client_secret_basic \
-  --scopes openid,email,offline_access
+  --scopes openid,offline_access \
+  --claims '{"id_token":{"email": {"essential": true}}}'
 ```
 </details>
 
