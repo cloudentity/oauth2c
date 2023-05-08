@@ -164,12 +164,12 @@ func (r *Request) AuthenticateClient(
 		r.Form.Set("client_assertion", clientAssertion)
 	case TLSClientAuthMethod, SelfSignedTLSAuthMethod:
 		r.Form.Set("client_id", cconfig.ClientID)
-		endpoint = mtlsEndpoint
+	}
 
-		if tr, ok := hc.Transport.(*http.Transport); ok {
-			if len(tr.TLSClientConfig.Certificates) > 0 {
-				r.Cert, _ = x509.ParseCertificate(tr.TLSClientConfig.Certificates[0].Certificate[0])
-			}
+	if tr, ok := hc.Transport.(*http.Transport); ok {
+		if len(tr.TLSClientConfig.Certificates) > 0 {
+			r.Cert, _ = x509.ParseCertificate(tr.TLSClientConfig.Certificates[0].Certificate[0])
+			endpoint = mtlsEndpoint
 		}
 	}
 
