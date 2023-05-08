@@ -85,6 +85,7 @@ type ClientConfig struct {
 	TLSKey                 string
 	TLSRootCA              string
 	DPoP                   bool
+	Claims                 string
 }
 
 func RequestAuthorization(cconfig ClientConfig, sconfig ServerConfig, hc *http.Client) (r Request, codeVerifier string, err error) {
