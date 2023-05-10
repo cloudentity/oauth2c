@@ -112,7 +112,13 @@ func RequestObjectClaims(params url.Values, serverConfig ServerConfig, clientCon
 				continue
 			}
 
-			claims[key] = values[0]
+			val := values[0]
+
+			if len(val) > 0 && val[0] == '{' {
+				claims[key] = json.RawMessage(val)
+			} else {
+				claims[key] = val
+			}
 		}
 
 		return claims, nil
