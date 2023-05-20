@@ -209,6 +209,9 @@ func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, hc *h
 	}
 
 	srv.Addr = redirectURL.Host
+	if redirectURL.Path == "" {
+		redirectURL.Path = "/"
+	}
 
 	http.HandleFunc(redirectURL.Path, func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
