@@ -23,6 +23,10 @@ using any grant type or client authentication method. It is compliant with almos
 
 ## Installation
 
+<a href="https://repology.org/project/oauth2c/versions">
+    <img src="https://repology.org/badge/vertical-allrepos/oauth2c.svg" alt="Packaging status" align="right">
+</a>
+
 To install `oauth2c`, you have several options depending on your operating system.
 
 ### Install on Mac
@@ -43,10 +47,6 @@ curl -sSfL https://raw.githubusercontent.com/cloudentity/oauth2c/master/install.
 ```
 
 Alternatively, you can check the [packages page] for specific instructions on installing oauth2c using a package manager.
-
-<a href="https://repology.org/project/oauth2c/versions">
-    <img src="https://repology.org/badge/vertical-allrepos/oauth2c.svg" alt="Packaging status" align="right">
-</a>
 
 [packages page]: https://repology.org/project/oauth2c/versions
 
