@@ -42,15 +42,19 @@ curl -sSfL https://raw.githubusercontent.com/cloudentity/oauth2c/master/install.
   sudo sh -s -- -b /usr/local/bin latest
 ```
 
+Alternatively, you can check the [packages page] for specific instructions on installing oauth2c using a package manager.
+
+[packages page]: https://repology.org/project/oauth2c/versions
+
 ### Compile from source
 
-You can also compile `oauth2c` from source using `go`. To do this run the following command:
+To compile `oauth2c` from source using `go`. To do this run the following command:
 
 ``` sh
 go install github.com/cloudentity/oauth2c@latest
 ```
 
-Alternatively, you can download a pre-built binary from the [releases page].
+You can also download a pre-built binary from the [releases page].
 
 [releases page]: https://github.com/cloudentity/oauth2c/releases
 
