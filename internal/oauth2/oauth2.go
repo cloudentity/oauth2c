@@ -85,6 +85,7 @@ type ClientConfig struct {
 	TLSCert                string
 	TLSKey                 string
 	TLSRootCA              string
+	Timeout                time.Duration
 	DPoP                   bool
 	Claims                 string
 }
