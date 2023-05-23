@@ -4,6 +4,7 @@
 [![license](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![release](https://img.shields.io/github/release-pre/cloudentity/oauth2c.svg)](https://github.com/cloudentity/oauth2c/releases)
 [![downloads](https://img.shields.io/github/downloads/cloudentity/oauth2c/total)](https://github.com/cloudentity/oauth2c/releases)
+[![packages](https://repology.org/badge/tiny-repos/oauth2c.svg)](https://repology.org/project/oauth2c/versions)
 
 `oauth2c` is a command-line tool for interacting with OAuth 2.0 authorization servers. Its goal is to make it easy to fetch access tokens
 using any grant type or client authentication method. It is compliant with almost all basic and advanced OAuth 2.0, OIDC, OIDF FAPI and JWT profiles.
@@ -40,10 +41,6 @@ On linux, you can install `oauth2c` using the installation script by running the
 curl -sSfL https://raw.githubusercontent.com/cloudentity/oauth2c/master/install.sh | \
   sudo sh -s -- -b /usr/local/bin latest
 ```
-
-## Install using package manager
-
-[![Packaging status](https://repology.org/badge/vertical-allrepos/oauth2c.svg)](https://repology.org/project/oauth2c/versions)
 
 ### Compile from source
 
