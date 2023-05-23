@@ -92,6 +92,7 @@ func LogInputData(cc oauth2.ClientConfig) {
 		{"Grant type", cc.GrantType},
 		{"Auth method", cc.AuthMethod},
 		{"Scopes", strings.Join(cc.Scopes, ", ")},
+		{"Audience", strings.Join(cc.Audience, ", ")},
 		{"Response types", strings.Join(cc.ResponseType, ", ")},
 		{"Response mode", cc.ResponseMode},
 		{"PKCE", strconv.FormatBool(cc.PKCE)},

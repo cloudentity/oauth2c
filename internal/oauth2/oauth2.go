@@ -60,6 +60,7 @@ type ClientConfig struct {
 	ClientID               string
 	ClientSecret           string
 	Scopes                 []string
+	Audience               []string
 	AuthMethod             string
 	PKCE                   bool
 	PAR                    bool
@@ -359,8 +360,14 @@ func RequestToken(
 	}
 
 	switch cconfig.GrantType {
-	case ClientCredentialsGrantType, PasswordGrantType, RefreshTokenGrantType, JWTBearerGrantType:
-		request.Form.Set("scope", strings.Join(cconfig.Scopes, " "))
+	case ClientCredentialsGrantType, PasswordGrantType, RefreshTokenGrantType, JWTBearerGrantType, TokenExchangeGrantType:
+		if len(cconfig.Scopes) > 0 {
+			request.Form.Set("scope", strings.Join(cconfig.Scopes, " "))
+		}
+
+		if len(cconfig.Audience) > 0 {
+			request.Form.Set("audience", strings.Join(cconfig.Audience, " "))
+		}
 	}
 
 	switch cconfig.GrantType {

@@ -76,7 +76,9 @@ The available flags are:
       --actor-token string          acting party token
       --actor-token-type string     acting party token type
       --assertion string            claims for jwt bearer assertion
+      --audience strings            requested audience
       --auth-method string          token endpoint authentication method
+      --claims string               claims parameter
       --client-id string            client identifier
       --client-secret string        client secret
       --dpop                        use DPoP
