@@ -103,6 +103,7 @@ The available flags are:
   -s, --silent                      silent mode
       --subject-token string        third party token
       --subject-token-type string   third party token type
+      --timeout duration            http client timeout (default 1m0s)
       --tls-cert string             path to tls cert pem file
       --tls-key string              path to tls key pem file
       --tls-root-ca string          path to tls root ca pem file

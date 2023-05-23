@@ -70,6 +70,7 @@ func NewOAuth2Cmd() (cmd *OAuth2Cmd) {
 	cmd.PersistentFlags().StringVar(&cconfig.TLSCert, "tls-cert", "", "path to tls cert pem file")
 	cmd.PersistentFlags().StringVar(&cconfig.TLSKey, "tls-key", "", "path to tls key pem file")
 	cmd.PersistentFlags().StringVar(&cconfig.TLSRootCA, "tls-root-ca", "", "path to tls root ca pem file")
+	cmd.PersistentFlags().DurationVar(&cconfig.Timeout, "timeout", time.Minute, "http client timeout")
 	cmd.PersistentFlags().BoolVar(&cconfig.Insecure, "insecure", false, "allow insecure connections")
 	cmd.PersistentFlags().BoolVarP(&silent, "silent", "s", false, "silent mode")
 	cmd.PersistentFlags().BoolVar(&cconfig.DPoP, "dpop", false, "use DPoP")
@@ -112,7 +113,7 @@ func (c *OAuth2Cmd) Run(cconfig *oauth2.ClientConfig) func(cmd *cobra.Command, a
 			},
 		}
 
-		hc := &http.Client{Timeout: 10 * time.Second, Transport: tr}
+		hc := &http.Client{Timeout: cconfig.Timeout, Transport: tr}
 
 		if cconfig.TLSCert != "" && cconfig.TLSKey != "" {
 			if cert, err = oauth2.ReadKeyPair(cconfig.TLSCert, cconfig.TLSKey, hc); err != nil {
