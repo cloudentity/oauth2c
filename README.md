@@ -44,6 +44,10 @@ curl -sSfL https://raw.githubusercontent.com/cloudentity/oauth2c/master/install.
 
 Alternatively, you can check the [packages page] for specific instructions on installing oauth2c using a package manager.
 
+<a href="https://repology.org/project/oauth2c/versions">
+    <img src="https://repology.org/badge/vertical-allrepos/oauth2c.svg" alt="Packaging status" align="right">
+</a>
+
 [packages page]: https://repology.org/project/oauth2c/versions
 
 ### Compile from source
