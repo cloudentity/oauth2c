@@ -4,6 +4,7 @@
 [![license](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![release](https://img.shields.io/github/release-pre/cloudentity/oauth2c.svg)](https://github.com/cloudentity/oauth2c/releases)
 [![downloads](https://img.shields.io/github/downloads/cloudentity/oauth2c/total)](https://github.com/cloudentity/oauth2c/releases)
+[![packages](https://repology.org/badge/tiny-repos/oauth2c.svg)](https://repology.org/project/oauth2c/versions)
 
 `oauth2c` is a command-line tool for interacting with OAuth 2.0 authorization servers. Its goal is to make it easy to fetch access tokens
 using any grant type or client authentication method. It is compliant with almost all basic and advanced OAuth 2.0, OIDC, OIDF FAPI and JWT profiles.
@@ -21,6 +22,10 @@ using any grant type or client authentication method. It is compliant with almos
 * support for **Demonstration of Proof of Possession** (**DPoP**)
 
 ## Installation
+
+<a href="https://repology.org/project/oauth2c/versions">
+    <img src="https://repology.org/badge/vertical-allrepos/oauth2c.svg" alt="Packaging status" align="right">
+</a>
 
 To install `oauth2c`, you have several options depending on your operating system.
 
@@ -41,15 +46,19 @@ curl -sSfL https://raw.githubusercontent.com/cloudentity/oauth2c/master/install.
   sudo sh -s -- -b /usr/local/bin latest
 ```
 
+Alternatively, you can check the [packages page] for specific instructions on installing oauth2c using a package manager.
+
+[packages page]: https://repology.org/project/oauth2c/versions
+
 ### Compile from source
 
-You can also compile `oauth2c` from source using `go`. To do this run the following command:
+To compile `oauth2c` from source using `go`. To do this run the following command:
 
 ``` sh
 go install github.com/cloudentity/oauth2c@latest
 ```
 
-Alternatively, you can download a pre-built binary from the [releases page].
+You can also download a pre-built binary from the [releases page].
 
 [releases page]: https://github.com/cloudentity/oauth2c/releases
 
