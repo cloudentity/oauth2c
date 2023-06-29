@@ -107,6 +107,7 @@ func (c *OAuth2Cmd) Run(cconfig *oauth2.ClientConfig) func(cmd *cobra.Command, a
 		}
 
 		tr := &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: cconfig.Insecure,
 				MinVersion:         tls.VersionTLS12,
