@@ -23,8 +23,6 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --response-mode query \
   --grant-type authorization_code \
   --auth-method client_secret_basic \
-  --scopes openid,offline_access \
-  --claims '{"id_token":{"email": {"essential": true}}}'
 ```
 </details>
 
@@ -414,6 +412,22 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 ```
 
 </details>
+
+### Request claims
+
+Requesting Claims using the "claims" Request Parameter enables clients to request specific user attributes in an authorization, enhancing efficiency and security.
+
+``` sh
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id cauktionbud6q8ftlqq0 \
+  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+  --response-types code \
+  --response-mode query \
+  --grant-type authorization_code \
+  --auth-method client_secret_basic \
+  --scopes openid,offline_access \
+  --claims '{"id_token":{"email": {"essential": true}}}'
+```
 
 ### PKCE
 
