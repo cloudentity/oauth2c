@@ -22,7 +22,7 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --response-types code \
   --response-mode query \
   --grant-type authorization_code \
-  --auth-method client_secret_basic \
+  --auth-method client_secret_basic
 ```
 </details>
 
