@@ -574,6 +574,10 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 }
 ```
 
+
+<details>
+<summary>Show example</summary>
+
 ``` sh
 oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id cauktionbud6q8ftlqq0 \
@@ -584,3 +588,4 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --auth-method client_secret_basic \
   --rar '[{"type":"payment_initiation","locations":["https://example.com/payments"],"instructedAmount":{"currency":"EUR","amount":"123.50"},"creditorName":"Merchant A","creditorAccount":{"bic":"ABCIDEFFXXX","iban":"DE02100100109307118603"},"remittanceInformationUnstructured":"Ref Number Merchant"}]'
 ```
+</details>
