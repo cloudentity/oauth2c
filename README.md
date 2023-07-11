@@ -20,6 +20,7 @@ using any grant type or client authentication method. It is compliant with almos
 * support for **JWT Secured Authorization Response Mode** (**JARM**)
 * support for **Pushed Authorization Requests** (**PAR**)
 * support for **Demonstration of Proof of Possession** (**DPoP**)
+* support for **Rich Authorization Requests** (**RAR**)
 
 ## Installation
 
