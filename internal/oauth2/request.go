@@ -84,6 +84,10 @@ func (r *Request) AuthorizeRequest(
 		r.Form.Set("claims", cconfig.Claims)
 	}
 
+	if cconfig.RAR != "" {
+		r.Form.Set("authorization_details", cconfig.RAR)
+	}
+
 	if cconfig.RequestObject || cconfig.EncryptedRequestObject {
 		claims := RequestObjectClaims(r.Form, sconfig, cconfig)
 

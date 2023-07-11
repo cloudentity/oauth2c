@@ -78,7 +78,8 @@ The available flags are:
       --assertion string            claims for jwt bearer assertion
       --audience strings            requested audience
       --auth-method string          token endpoint authentication method
-      --claims string               claims parameter
+      --claims string               use claims
+      --rar string                  use rich authorization request (RAR)
       --client-id string            client identifier
       --client-secret string        client secret
       --dpop                        use DPoP

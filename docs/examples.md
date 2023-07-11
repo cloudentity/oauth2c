@@ -549,3 +549,43 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --dpop
 ```
 </details>
+
+
+### RAR
+
+[Rich Authorization Request (RAR)](https://datatracker.ietf.org/doc/html/rfc9396) introduces a new parameter `authorization_details` that allows clients to specify their fine-grained authorization requirements using the expressiveness of JSON data structures. For example, an authorization request for a credit transfer (designated as "payment initiation" in several open banking initiatives) can be represented using a JSON object like this:
+
+```
+{
+   "type": "payment_initiation",
+   "locations": [
+      "https://example.com/payments"
+   ],
+   "instructedAmount": {
+      "currency": "EUR",
+      "amount": "123.50"
+   },
+   "creditorName": "Merchant A",
+   "creditorAccount": {
+      "bic":"ABCIDEFFXXX",
+      "iban": "DE02100100109307118603"
+   },
+   "remittanceInformationUnstructured": "Ref Number Merchant"
+}
+```
+
+
+<details>
+<summary>Show example</summary>
+
+``` sh
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id cauktionbud6q8ftlqq0 \
+  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+  --response-types code \
+  --response-mode query \
+  --grant-type authorization_code \
+  --auth-method client_secret_basic \
+  --rar '[{"type":"payment_initiation","locations":["https://example.com/payments"],"instructedAmount":{"currency":"EUR","amount":"123.50"},"creditorName":"Merchant A","creditorAccount":{"bic":"ABCIDEFFXXX","iban":"DE02100100109307118603"},"remittanceInformationUnstructured":"Ref Number Merchant"}]'
+```
+</details>
