@@ -40,6 +40,7 @@ func NewOAuth2Cmd() (cmd *OAuth2Cmd) {
 	cmd.Command.Run = cmd.Run(&cconfig)
 
 	cmd.AddCommand(versionCmd)
+	cmd.AddCommand(docsCmd)
 
 	cmd.PersistentFlags().StringVar(&cconfig.RedirectURL, "redirect-url", "http://localhost:9876/callback", "client redirect url")
 	cmd.PersistentFlags().StringVar(&cconfig.ClientID, "client-id", "", "client identifier")
