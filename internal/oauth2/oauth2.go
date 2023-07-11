@@ -88,6 +88,7 @@ type ClientConfig struct {
 	Timeout                time.Duration
 	DPoP                   bool
 	Claims                 string
+	RAR                    string
 }
 
 func RequestAuthorization(cconfig ClientConfig, sconfig ServerConfig, hc *http.Client) (r Request, codeVerifier string, err error) {

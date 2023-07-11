@@ -75,6 +75,7 @@ func NewOAuth2Cmd() (cmd *OAuth2Cmd) {
 	cmd.PersistentFlags().BoolVarP(&silent, "silent", "s", false, "silent mode")
 	cmd.PersistentFlags().BoolVar(&cconfig.DPoP, "dpop", false, "use DPoP")
 	cmd.PersistentFlags().StringVar(&cconfig.Claims, "claims", "", "claims parameter")
+	cmd.PersistentFlags().StringVar(&cconfig.RAR, "rar", "", "Rich Authorization Request (RAR) parameter")
 
 	return cmd
 }
