@@ -417,6 +417,9 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
 
 Requesting Claims using the "claims" Request Parameter enables clients to request specific user attributes in an authorization, enhancing efficiency and security.
 
+<details>
+<summary>Show example</summary>
+
 ``` sh
 oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id cauktionbud6q8ftlqq0 \
@@ -428,6 +431,8 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --scopes openid,offline_access \
   --claims '{"id_token":{"email": {"essential": true}}}'
 ```
+
+</details>
 
 ### PKCE
 

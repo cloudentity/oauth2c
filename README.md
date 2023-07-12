@@ -80,7 +80,6 @@ The available flags are:
       --audience strings            requested audience
       --auth-method string          token endpoint authentication method
       --claims string               use claims
-      --rar string                  use rich authorization request (RAR)
       --client-id string            client identifier
       --client-secret string        client secret
       --dpop                        use DPoP
@@ -95,6 +94,7 @@ The available flags are:
       --par                         enable pushed authorization requests (PAR)
       --password string             resource owner password credentials grant flow password
       --pkce                        enable proof key for code exchange (PKCE)
+      --rar string                  use rich authorization request (RAR)
       --redirect-url string         client redirect url (default "http://localhost:9876/callback")
       --refresh-token string        refresh token
       --request-object              pass request parameters as jwt
