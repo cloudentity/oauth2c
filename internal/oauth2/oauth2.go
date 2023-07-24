@@ -282,13 +282,14 @@ func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, hc *h
 }
 
 type TokenResponse struct {
-	AccessToken     string `json:"access_token,omitempty"`
-	ExpiresIn       int64  `json:"expires_in,omitempty"`
-	IDToken         string `json:"id_token,omitempty"`
-	IssuedTokenType string `json:"issued_token_type,omitempty"`
-	RefreshToken    string `json:"refresh_token,omitempty"`
-	Scope           string `json:"scope,omitempty"`
-	TokenType       string `json:"token_type,omitempty"`
+	AccessToken          string                   `json:"access_token,omitempty"`
+	ExpiresIn            int64                    `json:"expires_in,omitempty"`
+	IDToken              string                   `json:"id_token,omitempty"`
+	IssuedTokenType      string                   `json:"issued_token_type,omitempty"`
+	RefreshToken         string                   `json:"refresh_token,omitempty"`
+	Scope                string                   `json:"scope,omitempty"`
+	TokenType            string                   `json:"token_type,omitempty"`
+	AuthorizationDetails []map[string]interface{} `json:"authorization_details,omitempty"`
 }
 
 func NewTokenResponseFromForm(f url.Values) TokenResponse {
