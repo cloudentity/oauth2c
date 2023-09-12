@@ -224,8 +224,10 @@ func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, hc *h
 		request.Form = r.PostForm
 
 		if request.Get("response") != "" {
-			signingKey := jose.JSONWebKey{}
-			encryptionKey := jose.JSONWebKey{}
+			var (
+				signingKey    jose.JSONWebKey
+				encryptionKey jose.JSONWebKey
+			)
 
 			if signingKey, err = ReadKey(SigningKey, serverConfig.JWKsURI, hc); err != nil {
 				log.Fatal(err)
