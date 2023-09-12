@@ -190,28 +190,17 @@ func RequestPAR(
 
 func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, hc *http.Client) (request Request, err error) {
 	var (
-		srv           = http.Server{}
-		redirectURL   *url.URL
-		signingKey    jose.JSONWebKey
-		encryptionKey jose.JSONWebKey
-		done          = make(chan struct{})
+		srv         = http.Server{}
+		redirectURL *url.URL
+		done        = make(chan struct{})
 	)
 
 	if redirectURL, err = url.Parse(clientConfig.RedirectURL); err != nil {
 		return request, errors.Wrapf(err, "failed to parse redirect url: %s", clientConfig.RedirectURL)
 	}
 
-	if signingKey, err = ReadKey(SigningKey, serverConfig.JWKsURI, hc); err != nil {
-		return request, errors.Wrapf(err, "failed to read signing key from %s", serverConfig.JWKsURI)
-	}
-
-	if clientConfig.EncryptionKey != "" {
-		if encryptionKey, err = ReadKey(EncryptionKey, clientConfig.EncryptionKey, hc); err != nil {
-			return request, errors.Wrapf(err, "failed to read encryption key from %s", clientConfig.EncryptionKey)
-		}
-	}
-
 	srv.Addr = redirectURL.Host
+
 	if redirectURL.Path == "" {
 		redirectURL.Path = "/"
 	}
@@ -234,9 +223,28 @@ func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, hc *h
 		request.URL = r.URL
 		request.Form = r.PostForm
 
-		if err = request.ParseJARM(signingKey, encryptionKey); err != nil {
-			log.Fatal(err)
-			return
+		if request.Get("response") != "" {
+			var (
+				signingKey    jose.JSONWebKey
+				encryptionKey jose.JSONWebKey
+			)
+
+			if signingKey, err = ReadKey(SigningKey, serverConfig.JWKsURI, hc); err != nil {
+				log.Fatal(err)
+				return
+			}
+
+			if clientConfig.EncryptionKey != "" {
+				if encryptionKey, err = ReadKey(EncryptionKey, clientConfig.EncryptionKey, hc); err != nil {
+					log.Fatal(err)
+					return
+				}
+			}
+
+			if err = request.ParseJARM(signingKey, encryptionKey); err != nil {
+				log.Fatal(err)
+				return
+			}
 		}
 
 		w.Header().Add("Content-Type", "text/html")
