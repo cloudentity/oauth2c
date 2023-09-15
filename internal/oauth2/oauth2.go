@@ -60,6 +60,7 @@ type ClientConfig struct {
 	ClientID               string
 	ClientSecret           string
 	Scopes                 []string
+	ACRValues              []string
 	Audience               []string
 	AuthMethod             string
 	PKCE                   bool

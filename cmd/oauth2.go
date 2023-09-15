@@ -77,6 +77,7 @@ func NewOAuth2Cmd() (cmd *OAuth2Cmd) {
 	cmd.PersistentFlags().BoolVar(&cconfig.DPoP, "dpop", false, "use DPoP")
 	cmd.PersistentFlags().StringVar(&cconfig.Claims, "claims", "", "use claims")
 	cmd.PersistentFlags().StringVar(&cconfig.RAR, "rar", "", "use rich authorization request (RAR)")
+	cmd.PersistentFlags().StringSliceVar(&cconfig.ACRValues, "acr-values", []string{}, "ACR values")
 
 	return cmd
 }

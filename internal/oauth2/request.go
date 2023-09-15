@@ -49,6 +49,10 @@ func (r *Request) AuthorizeRequest(
 		r.Form.Set("scope", strings.Join(cconfig.Scopes, " "))
 	}
 
+	if len(cconfig.ACRValues) > 0 {
+		r.Form.Set("acr_values", strings.Join(cconfig.ACRValues, " "))
+	}
+
 	if len(cconfig.Audience) > 0 {
 		r.Form.Set("audience", strings.Join(cconfig.Audience, " "))
 	}
@@ -119,6 +123,10 @@ func (r *Request) AuthorizeRequest(
 
 		if len(cconfig.Scopes) > 0 {
 			r.Form.Set("scope", strings.Join(cconfig.Scopes, " "))
+		}
+
+		if len(cconfig.ACRValues) > 0 {
+			r.Form.Set("acr_values", strings.Join(cconfig.ACRValues, " "))
 		}
 
 		if len(cconfig.Audience) > 0 {
