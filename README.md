@@ -74,6 +74,7 @@ oauth2c [issuer url] [flags]
 The available flags are:
 
 ``` sh
+      --acr-values strings          ACR values
       --actor-token string          acting party token
       --actor-token-type string     acting party token type
       --assertion string            claims for jwt bearer assertion
