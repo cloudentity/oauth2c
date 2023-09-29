@@ -94,6 +94,7 @@ The available flags are:
       --idp-hint string             identity provider hint
       --insecure                    allow insecure connections
       --login-hint string           user identifier hint
+      --no-prompt                   disable prompt
       --par                         enable pushed authorization requests (PAR)
       --password string             resource owner password credentials grant flow password
       --pkce                        enable proof key for code exchange (PKCE)

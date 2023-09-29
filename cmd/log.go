@@ -7,6 +7,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
+	"os"
 	"strconv"
 	"strings"
 
@@ -18,6 +19,10 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/tidwall/pretty"
 )
+
+func init() {
+	pterm.SetDefaultOutput(os.Stderr)
+}
 
 func Logln() {
 	if silent {
@@ -59,6 +64,7 @@ func LogAction(msg string) func(string) {
 	done, _ := pterm.DefaultSpinner.Start(msg)
 	return func(s string) {
 		done.Success(s)
+		pterm.Println()
 	}
 }
 
