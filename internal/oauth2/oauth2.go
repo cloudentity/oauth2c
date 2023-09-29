@@ -83,7 +83,8 @@ type ClientConfig struct {
 	TLSCert                string
 	TLSKey                 string
 	TLSRootCA              string
-	Timeout                time.Duration
+	HTTPTimeout            time.Duration
+	BrowserTimeout         time.Duration
 	DPoP                   bool
 	Claims                 string
 	RAR                    string
@@ -276,7 +277,11 @@ func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, hc *h
 		}
 	}()
 
+	timeout := time.After(clientConfig.BrowserTimeout)
+
 	select {
+	case <-timeout:
+		return request, errors.New("timeout")
 	case <-done:
 		return request, err
 	}
