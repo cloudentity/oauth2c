@@ -80,6 +80,7 @@ The available flags are:
       --assertion string            claims for jwt bearer assertion
       --audience strings            requested audience
       --auth-method string          token endpoint authentication method
+      --callback-timeout duration   callback timeout (default 10m0s)
       --claims string               use claims
       --client-id string            client identifier
       --client-secret string        client secret
