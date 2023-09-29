@@ -13,14 +13,14 @@ using any grant type or client authentication method. It is compliant with almos
 
 ## Features
 
-* support for **authorization code**, **hybrid**, **implicit**, **password**, **client credentials**, **refresh token**, **JWT bearer**, **token exchange**, **device** grant flows
-* support for **client secret basic**, **client secret post**, **client secret JWT**, **private key JWT**, **TLS client auth** client authentication methods
-* passing request parameters as plaintext, signed, and/or encrypted JWT
-* support for **Proof Key for Code Exchange** (**PKCE**)
-* support for **JWT Secured Authorization Response Mode** (**JARM**)
-* support for **Pushed Authorization Requests** (**PAR**)
-* support for **Demonstration of Proof of Possession** (**DPoP**)
-* support for **Rich Authorization Requests** (**RAR**)
+- support for **authorization code**, **hybrid**, **implicit**, **password**, **client credentials**, **refresh token**, **JWT bearer**, **token exchange**, **device** grant flows
+- support for **client secret basic**, **client secret post**, **client secret JWT**, **private key JWT**, **TLS client auth** client authentication methods
+- passing request parameters as plaintext, signed, and/or encrypted JWT
+- support for **Proof Key for Code Exchange** (**PKCE**)
+- support for **JWT Secured Authorization Response Mode** (**JARM**)
+- support for **Pushed Authorization Requests** (**PAR**)
+- support for **Demonstration of Proof of Possession** (**DPoP**)
+- support for **Rich Authorization Requests** (**RAR**)
 
 ## Installation
 
@@ -34,7 +34,7 @@ To install `oauth2c`, you have several options depending on your operating syste
 
 On Mac, you can install `oauth2c` using `brew` by running the following command:
 
-``` sh
+```sh
 brew install cloudentity/tap/oauth2c
 ```
 
@@ -42,7 +42,7 @@ brew install cloudentity/tap/oauth2c
 
 On linux, you can install `oauth2c` using the installation script by running the following command:
 
-``` sh
+```sh
 curl -sSfL https://raw.githubusercontent.com/cloudentity/oauth2c/master/install.sh | \
   sudo sh -s -- -b /usr/local/bin latest
 ```
@@ -55,7 +55,7 @@ Alternatively, you can check the [packages page] for specific instructions on in
 
 To compile `oauth2c` from source using `go`. To do this run the following command:
 
-``` sh
+```sh
 go install github.com/cloudentity/oauth2c@latest
 ```
 
@@ -67,13 +67,13 @@ You can also download a pre-built binary from the [releases page].
 
 To use `oauth2c`, run the following command and follow the prompts:
 
-``` sh
+```sh
 oauth2c [issuer url] [flags]
 ```
 
 The available flags are:
 
-``` sh
+```sh
       --acr-values strings          ACR values
       --actor-token string          acting party token
       --actor-token-type string     acting party token type
@@ -125,15 +125,14 @@ For more information on the available options and arguments run `oauth2c --help`
 
 Run the following command to get an access token using
 
-* authorization code flow
-* hybrid mode
-* TLS client auth
-* proof key for code exchange
-* jwt secure authorization response mode
-* pushed authorization requests
-* signed and encrypted request object
+- authorization code flow
+- hybrid mode
+- TLS client auth
+- proof key for code exchange
+- jwt secure authorization response mode
+- pushed authorization requests
 
-``` sh
+```sh
 oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --client-id 3f07a8c2adea4c1ab353f3ca8e16b8fd \
   --response-types code,id_token \
@@ -145,7 +144,6 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --tls-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.pem \
   --signing-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/rsa/key.json \
   --encryption-key https://oauth2c.us.authz.cloudentity.io/oauth2c/demo/.well-known/jwks.json \
-  --request-object \
   --pkce \
   --par
 ```

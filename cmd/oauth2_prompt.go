@@ -16,14 +16,6 @@ func PromptForClientConfig(client oauth2.ClientConfig, server oauth2.ServerConfi
 		}
 	}
 
-	// scopes
-	switch client.GrantType {
-	case oauth2.AuthorizationCodeGrantType, oauth2.ClientCredentialsGrantType, oauth2.ImplicitGrantType, oauth2.PasswordGrantType, oauth2.JWTBearerGrantType:
-		if len(client.Scopes) == 0 || client.Scopes[0] == "" {
-			client.Scopes = PromptMultiStringSlice("Scopes", server.SupportedScopes)
-		}
-	}
-
 	// response types
 	switch client.GrantType {
 	case oauth2.AuthorizationCodeGrantType, oauth2.ImplicitGrantType:
