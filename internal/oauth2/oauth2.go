@@ -86,7 +86,8 @@ type ClientConfig struct {
 	TLSCert                string
 	TLSKey                 string
 	TLSRootCA              string
-	Timeout                time.Duration
+	HTTPTimeout            time.Duration
+	BrowserTimeout         time.Duration
 	DPoP                   bool
 	Claims                 string
 	RAR                    string
@@ -282,9 +283,13 @@ func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, hc *h
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 
+	timeout := time.After(clientConfig.BrowserTimeout)
+
 	select {
 	case <-signalChan:
 		return request, errors.New("interrupted")
+	case <-timeout:
+		return request, errors.New("timeout")
 	case <-done:
 		return request, err
 	}

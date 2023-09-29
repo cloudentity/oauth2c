@@ -80,6 +80,7 @@ The available flags are:
       --assertion string            claims for jwt bearer assertion
       --audience strings            requested audience
       --auth-method string          token endpoint authentication method
+      --browser-timeout duration    browser timeout (default 10m0s)
       --claims string               use claims
       --client-id string            client identifier
       --client-secret string        client secret
@@ -88,6 +89,7 @@ The available flags are:
       --encryption-key string       path or url to encryption key in jwks format
       --grant-type string           grant type
   -h, --help                        help for oauthc
+      --http-timeout duration       http client timeout (default 1m0s)
       --id-token-hint string        id token hint
       --idp-hint string             identity provider hint
       --insecure                    allow insecure connections
@@ -106,7 +108,6 @@ The available flags are:
   -s, --silent                      silent mode
       --subject-token string        third party token
       --subject-token-type string   third party token type
-      --timeout duration            http client timeout (default 1m0s)
       --tls-cert string             path to tls cert pem file
       --tls-key string              path to tls key pem file
       --tls-root-ca string          path to tls root ca pem file
