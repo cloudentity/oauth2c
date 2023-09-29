@@ -19,7 +19,8 @@ import (
 )
 
 var (
-	silent bool
+	silent   bool
+	noPrompt bool
 )
 
 type OAuth2Cmd struct {
@@ -74,6 +75,7 @@ func NewOAuth2Cmd() (cmd *OAuth2Cmd) {
 	cmd.PersistentFlags().DurationVar(&cconfig.Timeout, "timeout", time.Minute, "http client timeout")
 	cmd.PersistentFlags().BoolVar(&cconfig.Insecure, "insecure", false, "allow insecure connections")
 	cmd.PersistentFlags().BoolVarP(&silent, "silent", "s", false, "silent mode")
+	cmd.PersistentFlags().BoolVar(&noPrompt, "no-prompt", false, "disable prompt")
 	cmd.PersistentFlags().BoolVar(&cconfig.DPoP, "dpop", false, "use DPoP")
 	cmd.PersistentFlags().StringVar(&cconfig.Claims, "claims", "", "use claims")
 	cmd.PersistentFlags().StringVar(&cconfig.RAR, "rar", "", "use rich authorization request (RAR)")
@@ -107,6 +109,8 @@ func (c *OAuth2Cmd) Run(cconfig *oauth2.ClientConfig) func(cmd *cobra.Command, a
 
 		if silent {
 			browser.Stdout = io.Discard
+		} else {
+			browser.Stdout = os.Stderr
 		}
 
 		tr := &http.Transport{
@@ -168,7 +172,7 @@ func (c *OAuth2Cmd) Authorize(clientConfig oauth2.ClientConfig, hc *http.Client)
 		return err
 	}
 
-	if !silent {
+	if !silent && !noPrompt {
 		clientConfig = PromptForClientConfig(clientConfig, serverConfig)
 	}
 
@@ -197,10 +201,6 @@ func (c *OAuth2Cmd) Authorize(clientConfig oauth2.ClientConfig, hc *http.Client)
 }
 
 func (c *OAuth2Cmd) PrintResult(result interface{}) {
-	if !silent {
-		return
-	}
-
 	output, err := json.Marshal(result)
 
 	if err != nil {

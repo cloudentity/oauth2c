@@ -98,9 +98,9 @@ func (c *OAuth2Cmd) AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig,
 	LogRequestAndResponse(tokenRequest, tokenResponse)
 	LogTokenPayloadln(tokenResponse)
 
-	c.PrintResult(tokenResponse)
-
 	exchangeStatus("Exchanged authorization code for access token")
+
+	c.PrintResult(tokenResponse)
 
 	return nil
 }

@@ -47,9 +47,9 @@ func (c *OAuth2Cmd) ImplicitGrantFlow(clientConfig oauth2.ClientConfig, serverCo
 	LogTokenPayloadln(tokenResponse)
 	Logln()
 
-	c.PrintResult(tokenResponse)
-
 	callbackStatus("Obtained authorization")
+
+	c.PrintResult(tokenResponse)
 
 	return nil
 }

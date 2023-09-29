@@ -92,9 +92,9 @@ func (c *OAuth2Cmd) DeviceGrantFlow(clientConfig oauth2.ClientConfig, serverConf
 	LogRequestAndResponse(tokenRequest, tokenResponse)
 	LogTokenPayloadln(tokenResponse)
 
-	c.PrintResult(tokenResponse)
-
 	tokenStatus("Obtained token")
+
+	c.PrintResult(tokenResponse)
 
 	return nil
 }
