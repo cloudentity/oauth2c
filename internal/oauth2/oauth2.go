@@ -9,11 +9,8 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"os"
-	"os/signal"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/go-jose/go-jose/v3"
@@ -280,14 +277,9 @@ func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, hc *h
 		}
 	}()
 
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
-
 	timeout := time.After(clientConfig.BrowserTimeout)
 
 	select {
-	case <-signalChan:
-		return request, errors.New("interrupted")
 	case <-timeout:
 		return request, errors.New("timeout")
 	case <-done:
