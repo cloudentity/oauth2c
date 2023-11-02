@@ -15,6 +15,7 @@ type Config struct {
 	Type  string
 	Size  int
 	Curve int
+	Alg   string
 	Use   string
 }
 
@@ -27,8 +28,52 @@ func Generate(config Config) (jose.JSONWebKey, error) {
 	)
 
 	switch config.Use {
-	case "sig", "enc":
-		jwk.Use = config.Use
+	case "sig":
+		switch config.Type {
+		case "rsa":
+			switch config.Alg {
+			case "RS256", "RS384", "RS512":
+				jwk.Algorithm = config.Alg
+			default:
+				return jwk, fmt.Errorf("unknown algorithm: %s (use RS256, RS384 or RS512)", config.Alg)
+			}
+		case "ps":
+			switch config.Alg {
+			case "PS256", "PS384", "PS512":
+				jwk.Algorithm = config.Alg
+			default:
+				return jwk, fmt.Errorf("unknown algorithm: %s (use PS256, PS384 or PS512)", config.Alg)
+			}
+		case "ec":
+			switch config.Alg {
+			case "ES256", "ES384", "ES512":
+			jwk.Algorithm = "ES256"
+		}
+
+		jwk.Use = "sig"
+	case "enc":
+		jwk.Use = "enc"
+
+		switch config.Type {
+		case "rsa":
+			switch config.Alg {
+			case "RS256", "RS384", "RS512":
+				jwk.Algorithm = config.Alg
+			default:
+				return jwk, fmt.Errorf("unknown algorithm: %s (use RS256, RS384 or RS512)", config.Alg)
+			}
+		case "ps":
+			switch config.Alg {
+			case "PS256", "PS384", "PS512":
+				jwk.Algorithm = config.Alg
+			default:
+				return jwk, fmt.Errorf("unknown algorithm: %s (use PS256, PS384 or PS512)", config.Alg)
+			}
+		case "ec":
+			switch config.Alg {
+			case "ES256", "ES384", "ES512":
+			jwk.Algorithm = "ES256"
+		}
 	default:
 		return jwk, fmt.Errorf("invalid use: %s (use sig or enc)", config.Use)
 	}
@@ -59,16 +104,6 @@ func Generate(config Config) (jose.JSONWebKey, error) {
 		}
 	default:
 		return jwk, fmt.Errorf("uknown key type: %s (use rsa, ec or ps)", config.Type)
-	}
-
-	switch config.Type {
-
-	case "rsa":
-		jwk.Algorithm = "RS256"
-	case "ps":
-		jwk.Algorithm = "RS256"
-	case "ec":
-		jwk.Algorithm = "ES256"
 	}
 
 	return jwk, nil
