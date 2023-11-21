@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/cli/browser v1.3.1-0.20231006085632-b393df5d7bfa
-	github.com/go-jose/go-jose/v3 v3.0.0
+	github.com/go-jose/go-jose/v3 v3.0.1
 	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/google/uuid v1.3.0
 	github.com/grantae/certinfo v0.0.0-20170412194111-59d56a35515b
