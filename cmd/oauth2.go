@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cli/browser"
 	"github.com/cloudentity/oauth2c/internal/oauth2"
 	"github.com/imdario/mergo"
-	"github.com/cli/browser"
 	"github.com/spf13/cobra"
 )
 
@@ -32,7 +32,7 @@ func NewOAuth2Cmd() (cmd *OAuth2Cmd) {
 
 	cmd = &OAuth2Cmd{
 		Command: &cobra.Command{
-			Use:   "oauthc [issuer url]",
+			Use:   "oauth2c [issuer url]",
 			Short: "User-friendly command-line for OAuth2",
 			Args:  cobra.ExactArgs(1),
 		},
@@ -203,7 +203,6 @@ func (c *OAuth2Cmd) Authorize(clientConfig oauth2.ClientConfig, hc *http.Client)
 
 func (c *OAuth2Cmd) PrintResult(result interface{}) {
 	output, err := json.Marshal(result)
-
 	if err != nil {
 		fmt.Fprintf(c.ErrOrStderr(), "%+v", err)
 		fmt.Fprintln(c.ErrOrStderr())
