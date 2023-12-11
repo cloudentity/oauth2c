@@ -42,7 +42,7 @@ func (tc *CommandTestCase) Test() func(*testing.T) {
 			}
 		}
 
-		cmd := NewOAuth2Cmd()
+		cmd := NewOAuth2Cmd("master", "none", "unknown")
 		cmd.SetArgs(tc.args)
 		err := cmd.Execute()
 
@@ -62,7 +62,7 @@ func (tc *CommandTestCase) GetDeps(t *testing.T) map[string]string {
 		output := bytes.Buffer{}
 		result := map[string]interface{}{}
 
-		cmd := NewOAuth2Cmd()
+		cmd := NewOAuth2Cmd("master", "none", "unknown")
 		cmd.SetArgs(dep.args)
 		cmd.SetOut(&output)
 		err := cmd.Execute()

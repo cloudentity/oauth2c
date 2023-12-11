@@ -27,7 +27,7 @@ type OAuth2Cmd struct {
 	*cobra.Command
 }
 
-func NewOAuth2Cmd() (cmd *OAuth2Cmd) {
+func NewOAuth2Cmd(version, commit, date string) (cmd *OAuth2Cmd) {
 	var cconfig oauth2.ClientConfig
 
 	cmd = &OAuth2Cmd{
@@ -40,7 +40,7 @@ func NewOAuth2Cmd() (cmd *OAuth2Cmd) {
 
 	cmd.Command.Run = cmd.Run(&cconfig)
 
-	cmd.AddCommand(versionCmd)
+	cmd.AddCommand(NewVersionCmd(version, commit, date))
 	cmd.AddCommand(docsCmd)
 
 	cmd.PersistentFlags().StringVar(&cconfig.RedirectURL, "redirect-url", "http://localhost:9876/callback", "client redirect url")
