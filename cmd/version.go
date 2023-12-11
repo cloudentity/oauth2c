@@ -1,20 +1,15 @@
 package cmd
 
 import (
-	"fmt"
-	"runtime/debug"
-
 	"github.com/spf13/cobra"
 )
 
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Display version",
-	Run: func(cmd *cobra.Command, args []string) {
-		if info, ok := debug.ReadBuildInfo(); ok && info.Main.Sum != "" {
-			fmt.Println(info)
-		} else {
-			fmt.Println("unknown")
-		}
-	},
+func NewVersionCmd(version, commit, date string) *cobra.Command {
+	return &cobra.Command{
+		Use:   "version",
+		Short: "Display version",
+		Run: func(cmd *cobra.Command, args []string) {
+			cmd.Printf("oauth2c version %s (commit %s, built at %s)\n", version, commit, date)
+		},
+	}
 }
