@@ -88,6 +88,7 @@ type ClientConfig struct {
 	DPoP                   bool
 	Claims                 string
 	RAR                    string
+	Purpose                string
 }
 
 func RequestAuthorization(cconfig ClientConfig, sconfig ServerConfig, hc *http.Client) (r Request, codeVerifier string, err error) {
