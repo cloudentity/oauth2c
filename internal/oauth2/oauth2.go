@@ -51,43 +51,43 @@ const CodeVerifierLength = 43
 var CodeChallengeEncoder = base64.RawURLEncoding
 
 type ClientConfig struct {
-	IssuerURL              string
-	RedirectURL            string
-	GrantType              string
+	IssuerURL              string `validate:"url"`
+	RedirectURL            string `validate:"url"`
+	GrantType              string `validate:"oneof=authorization_code client_credentials implicit password refresh_token urn:ietf:params:oauth:grant-type:jwt-bearer urn:ietf:params:oauth:grant-type:token-exchange urn:ietf:params:oauth:grant-type:device_code"`
 	ClientID               string
 	ClientSecret           string
 	Scopes                 []string
 	ACRValues              []string
 	Audience               []string
-	AuthMethod             string
+	AuthMethod             string `validate:"omitempty,oneof=client_secret_basic client_secret_post client_secret_jwt private_key_jwt self_signed_tls_client_auth tls_client_auth none"`
 	PKCE                   bool
 	PAR                    bool
 	RequestObject          bool
 	EncryptedRequestObject bool
 	Insecure               bool
-	ResponseType           []string
-	ResponseMode           string
+	ResponseType           []string `validate:"omitempty,dive,oneof=code id_token token"`
+	ResponseMode           string   `validate:"omitempty,oneof=query form_post query.jwt form_post.jwt jwt"`
 	Username               string
 	Password               string
 	RefreshToken           string
-	Assertion              string
-	SigningKey             string
-	EncryptionKey          string
+	Assertion              string `validate:"omitempty,json"`
+	SigningKey             string `validate:"omitempty,uri"`
+	EncryptionKey          string `validate:"omitempty,uri"`
 	SubjectToken           string
-	SubjectTokenType       string
+	SubjectTokenType       string `validate:"omitempty,oneof=urn:ietf:params:oauth:token-type:access_token"`
 	ActorToken             string
-	ActorTokenType         string
+	ActorTokenType         string `validate:"omitempty,oneof=urn:ietf:params:oauth:token-type:access_token"`
 	IDTokenHint            string
 	LoginHint              string
 	IDPHint                string
-	TLSCert                string
-	TLSKey                 string
-	TLSRootCA              string
+	TLSCert                string `validate:"omitempty,uri"`
+	TLSKey                 string `validate:"omitempty,uri"`
+	TLSRootCA              string `validate:"omitempty,uri"`
 	HTTPTimeout            time.Duration
 	BrowserTimeout         time.Duration
 	DPoP                   bool
-	Claims                 string
-	RAR                    string
+	Claims                 string `validate:"omitempty,json"`
+	RAR                    string `validate:"omitempty,json"`
 	Purpose                string
 }
 
