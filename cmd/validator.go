@@ -19,5 +19,9 @@ func init() {
 
 	Validate = validator.New()
 
-	en_translations.RegisterDefaultTranslations(Validate, Trans)
+	err := en_translations.RegisterDefaultTranslations(Validate, Trans)
+
+	if err != nil {
+		panic(err)
+	}
 }
