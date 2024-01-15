@@ -109,6 +109,11 @@ func (c *OAuth2Cmd) Run(cconfig *oauth2.ClientConfig) func(cmd *cobra.Command, a
 			cconfig.IssuerURL = strings.TrimSuffix(args[0], oauth2.OpenIDConfigurationPath)
 		}
 
+		if err := Validate.Struct(cconfig); err != nil {
+			LogError(err)
+			os.Exit(1)
+		}
+
 		if silent {
 			browser.Stdout = io.Discard
 		} else {
