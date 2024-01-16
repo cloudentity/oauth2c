@@ -29,62 +29,72 @@ func Generate(config Config) (jose.JSONWebKey, error) {
 
 	switch config.Use {
 	case "sig":
+		jwk.Use = "sig"
+
 		switch config.Type {
 		case "rsa":
 			switch config.Alg {
-			case "RS256", "RS384", "RS512":
+			case "RS256", "RS384", "RS512", "PS256", "PS384", "PS512":
 				jwk.Algorithm = config.Alg
+			case "":
+				jwk.Algorithm = "RS256"
 			default:
-				return jwk, fmt.Errorf("unknown algorithm: %s (use RS256, RS384 or RS512)", config.Alg)
+				return jwk, fmt.Errorf("unknown algorithm: %s (use RS256, RS384, RS512, PS256, PS384, PS512)", config.Alg)
 			}
-		case "ps":
-			switch config.Alg {
-			case "PS256", "PS384", "PS512":
-				jwk.Algorithm = config.Alg
-			default:
-				return jwk, fmt.Errorf("unknown algorithm: %s (use PS256, PS384 or PS512)", config.Alg)
-			}
+
 		case "ec":
 			switch config.Alg {
 			case "ES256", "ES384", "ES512":
+				jwk.Algorithm = config.Alg
+			case "":
 				jwk.Algorithm = "ES256"
+			default:
+				return jwk, fmt.Errorf("unknown algorithm: %s (use ES256, ES384 or ES512)", config.Alg)
 			}
 		}
 
-		jwk.Use = "sig"
 	case "enc":
 		jwk.Use = "enc"
 
 		switch config.Type {
 		case "rsa":
 			switch config.Alg {
-			case "RS256", "RS384", "RS512":
+			case "RSA1_5", "RSA-OAEP", "RSA-OAEP-256":
 				jwk.Algorithm = config.Alg
+			case "":
+				jwk.Algorithm = "RSA-OAEP-256"
 			default:
-				return jwk, fmt.Errorf("unknown algorithm: %s (use RS256, RS384 or RS512)", config.Alg)
+				return jwk, fmt.Errorf("unknown algorithm: %s (use RSA1_5, RSA-OAEP, RSA-OAEP-256)", config.Alg)
 			}
-		case "ps":
-			switch config.Alg {
-			case "PS256", "PS384", "PS512":
-				jwk.Algorithm = config.Alg
-			default:
-				return jwk, fmt.Errorf("unknown algorithm: %s (use PS256, PS384 or PS512)", config.Alg)
-			}
+
 		case "ec":
 			switch config.Alg {
-			case "ES256", "ES384", "ES512":
-				jwk.Algorithm = "ES256"
+			case "ECDH-ES", "ECDH-ES+A128KW", "ECDH-ES+A192KW", "ECDH-ES+A256KW":
+				jwk.Algorithm = config.Alg
+			case "":
+				jwk.Algorithm = "ECDH-ES+A128KW"
 			}
 		}
+
 	default:
 		return jwk, fmt.Errorf("invalid use: %s (use sig or enc)", config.Use)
 	}
 
 	switch config.Type {
-	case "rsa", "ps":
-		if jwk.Key, err = rsa.GenerateKey(rand.Reader, config.Size); err != nil {
+	case "rsa":
+		var size int
+
+		switch config.Size {
+		case 2048, 3072, 4096:
+			size = config.Size
+		default:
+			return jwk, fmt.Errorf("invalid key size: %d (use 2048, 3072 or 4096)", config.Size)
+		}
+
+		if jwk.Key, err = rsa.GenerateKey(rand.Reader, size); err != nil {
 			return jwk, err
 		}
+
 	case "ec":
 		var curve elliptic.Curve
 
@@ -104,8 +114,9 @@ func Generate(config Config) (jose.JSONWebKey, error) {
 		if jwk.Key, err = ecdsa.GenerateKey(curve, rand.Reader); err != nil {
 			return jwk, err
 		}
+
 	default:
-		return jwk, fmt.Errorf("uknown key type: %s (use rsa, ec or ps)", config.Type)
+		return jwk, fmt.Errorf("uknown key type: %s (use rsa or ec)", config.Type)
 	}
 
 	return jwk, nil
