@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-jose/go-jose/v3"
 	"github.com/go-jose/go-jose/v3/jwt"
+	"github.com/go-playground/validator/v10"
 
 	"github.com/cloudentity/oauth2c/internal/oauth2"
 	"github.com/grantae/certinfo"
@@ -77,7 +78,16 @@ func LogBox(title string, msg string, args ...interface{}) {
 }
 
 func LogError(err error) {
-	pterm.Error.PrintOnError(err)
+	switch e := err.(type) {
+	case validator.ValidationErrors:
+		trans := e.Translate(Trans)
+
+		for _, v := range trans {
+			pterm.Error.Println(v)
+		}
+	default:
+		pterm.Error.PrintOnError(err)
+	}
 }
 
 func LogWarning(msg string) {

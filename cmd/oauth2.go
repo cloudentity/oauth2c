@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cli/browser"
 	"github.com/cloudentity/oauth2c/internal/oauth2"
 	"github.com/imdario/mergo"
-	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 )
 
@@ -40,7 +40,7 @@ type OAuth2Cmd struct {
 	*cobra.Command
 }
 
-func NewOAuth2Cmd() (cmd *OAuth2Cmd) {
+func NewOAuth2Cmd(version, commit, date string) (cmd *OAuth2Cmd) {
 	var cconfig oauth2.ClientConfig
 
 	cmd = &OAuth2Cmd{
@@ -55,7 +55,7 @@ func NewOAuth2Cmd() (cmd *OAuth2Cmd) {
 
 	cmd.Command.Run = cmd.Run(&cconfig)
 
-	cmd.AddCommand(versionCmd)
+	cmd.AddCommand(NewVersionCmd(version, commit, date))
 	cmd.AddCommand(docsCmd)
 	cmd.AddCommand(jwksCmd)
 
@@ -97,6 +97,7 @@ func NewOAuth2Cmd() (cmd *OAuth2Cmd) {
 	cmd.Flags().StringVar(&cconfig.Claims, "claims", "", "use claims")
 	cmd.Flags().StringVar(&cconfig.RAR, "rar", "", "use rich authorization request (RAR)")
 	cmd.Flags().StringSliceVar(&cconfig.ACRValues, "acr-values", []string{}, "ACR values")
+	cmd.Flags().StringVar(&cconfig.Purpose, "purpose", "", "string describing the purpose for obtaining End-User authorization")
 
 	return cmd
 }
@@ -122,6 +123,11 @@ func (c *OAuth2Cmd) Run(cconfig *oauth2.ClientConfig) func(cmd *cobra.Command, a
 			}
 		} else {
 			cconfig.IssuerURL = strings.TrimSuffix(args[0], oauth2.OpenIDConfigurationPath)
+		}
+
+		if err := Validate.Struct(cconfig); err != nil {
+			LogError(err)
+			os.Exit(1)
 		}
 
 		if silent {
@@ -219,7 +225,6 @@ func (c *OAuth2Cmd) Authorize(clientConfig oauth2.ClientConfig, hc *http.Client)
 
 func (c *OAuth2Cmd) PrintResult(result interface{}) {
 	output, err := json.Marshal(result)
-
 	if err != nil {
 		fmt.Fprintf(c.ErrOrStderr(), "%+v", err)
 		fmt.Fprintln(c.ErrOrStderr())

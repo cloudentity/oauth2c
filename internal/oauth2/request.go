@@ -57,6 +57,10 @@ func (r *Request) AuthorizeRequest(
 		r.Form.Set("audience", strings.Join(cconfig.Audience, " "))
 	}
 
+	if len(cconfig.Purpose) > 0 {
+		r.Form.Set("purpose", cconfig.Purpose)
+	}
+
 	if cconfig.IDTokenHint != "" {
 		r.Form.Set("id_token_hint", cconfig.IDTokenHint)
 	}
@@ -131,6 +135,10 @@ func (r *Request) AuthorizeRequest(
 
 		if len(cconfig.Audience) > 0 {
 			r.Form.Set("audience", strings.Join(cconfig.Audience, " "))
+		}
+
+		if len(cconfig.Purpose) > 0 {
+			r.Form.Set("purpose", cconfig.Purpose)
 		}
 	}
 

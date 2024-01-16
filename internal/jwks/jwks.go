@@ -47,7 +47,8 @@ func Generate(config Config) (jose.JSONWebKey, error) {
 		case "ec":
 			switch config.Alg {
 			case "ES256", "ES384", "ES512":
-			jwk.Algorithm = "ES256"
+				jwk.Algorithm = "ES256"
+			}
 		}
 
 		jwk.Use = "sig"
@@ -72,7 +73,8 @@ func Generate(config Config) (jose.JSONWebKey, error) {
 		case "ec":
 			switch config.Alg {
 			case "ES256", "ES384", "ES512":
-			jwk.Algorithm = "ES256"
+				jwk.Algorithm = "ES256"
+			}
 		}
 	default:
 		return jwk, fmt.Errorf("invalid use: %s (use sig or enc)", config.Use)
