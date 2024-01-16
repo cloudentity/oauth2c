@@ -23,6 +23,19 @@ var (
 	noPrompt bool
 )
 
+var example = `oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+	--client-id cauktionbud6q8ftlqq0 \
+	--client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+	--grant-type client_credentials \
+	--auth-method client_secret_basic \
+	--scopes introspect_tokens,revoke_tokens`
+
+var desc = `oauth2c is a command-line tool for interacting with OAuth 2.0 authorization servers.
+
+Its goal is to make it easy to fetch access tokens using any grant type or client authentication method.
+
+It is compliant with almost all basic and advanced OAuth 2.0, OIDC, OIDF FAPI and JWT profiles.`
+
 type OAuth2Cmd struct {
 	*cobra.Command
 }
@@ -32,9 +45,11 @@ func NewOAuth2Cmd(version, commit, date string) (cmd *OAuth2Cmd) {
 
 	cmd = &OAuth2Cmd{
 		Command: &cobra.Command{
-			Use:   "oauth2c [issuer url]",
-			Short: "User-friendly command-line for OAuth2",
-			Args:  cobra.ExactArgs(1),
+			Use:     "oauth2c issuerURL",
+			Short:   "User-friendly command-line for OAuth2",
+			Example: example,
+			Long:    desc,
+			Args:    cobra.ExactArgs(1),
 		},
 	}
 
@@ -42,46 +57,47 @@ func NewOAuth2Cmd(version, commit, date string) (cmd *OAuth2Cmd) {
 
 	cmd.AddCommand(NewVersionCmd(version, commit, date))
 	cmd.AddCommand(docsCmd)
+	cmd.AddCommand(jwksCmd)
 
-	cmd.PersistentFlags().StringVar(&cconfig.RedirectURL, "redirect-url", "http://localhost:9876/callback", "client redirect url")
-	cmd.PersistentFlags().StringVar(&cconfig.ClientID, "client-id", "", "client identifier")
-	cmd.PersistentFlags().StringVar(&cconfig.ClientSecret, "client-secret", "", "client secret")
-	cmd.PersistentFlags().StringVar(&cconfig.GrantType, "grant-type", "", "grant type")
-	cmd.PersistentFlags().StringVar(&cconfig.AuthMethod, "auth-method", "", "token endpoint authentication method")
-	cmd.PersistentFlags().StringVar(&cconfig.Username, "username", "", "resource owner password credentials grant flow username")
-	cmd.PersistentFlags().StringVar(&cconfig.Password, "password", "", "resource owner password credentials grant flow password")
-	cmd.PersistentFlags().StringVar(&cconfig.RefreshToken, "refresh-token", "", "refresh token")
-	cmd.PersistentFlags().StringSliceVar(&cconfig.ResponseType, "response-types", []string{""}, "response type")
-	cmd.PersistentFlags().StringVar(&cconfig.ResponseMode, "response-mode", "", "response mode")
-	cmd.PersistentFlags().StringSliceVar(&cconfig.Scopes, "scopes", []string{}, "requested scopes")
-	cmd.PersistentFlags().StringSliceVar(&cconfig.Audience, "audience", []string{}, "requested audience")
-	cmd.PersistentFlags().BoolVar(&cconfig.PKCE, "pkce", false, "enable proof key for code exchange (PKCE)")
-	cmd.PersistentFlags().BoolVar(&cconfig.PAR, "par", false, "enable pushed authorization requests (PAR)")
-	cmd.PersistentFlags().BoolVar(&cconfig.RequestObject, "request-object", false, "pass request parameters as jwt")
-	cmd.PersistentFlags().BoolVar(&cconfig.EncryptedRequestObject, "encrypted-request-object", false, "pass request parameters as encrypted jwt")
-	cmd.PersistentFlags().StringVar(&cconfig.Assertion, "assertion", "", "claims for jwt bearer assertion")
-	cmd.PersistentFlags().StringVar(&cconfig.SigningKey, "signing-key", "", "path or url to signing key in jwks format")
-	cmd.PersistentFlags().StringVar(&cconfig.EncryptionKey, "encryption-key", "", "path or url to encryption key in jwks format")
-	cmd.PersistentFlags().StringVar(&cconfig.SubjectToken, "subject-token", "", "third party token")
-	cmd.PersistentFlags().StringVar(&cconfig.SubjectTokenType, "subject-token-type", "", "third party token type")
-	cmd.PersistentFlags().StringVar(&cconfig.ActorToken, "actor-token", "", "acting party token")
-	cmd.PersistentFlags().StringVar(&cconfig.ActorTokenType, "actor-token-type", "", "acting party token type")
-	cmd.PersistentFlags().StringVar(&cconfig.IDTokenHint, "id-token-hint", "", "id token hint")
-	cmd.PersistentFlags().StringVar(&cconfig.LoginHint, "login-hint", "", "user identifier hint")
-	cmd.PersistentFlags().StringVar(&cconfig.IDPHint, "idp-hint", "", "identity provider hint")
-	cmd.PersistentFlags().StringVar(&cconfig.TLSCert, "tls-cert", "", "path to tls cert pem file")
-	cmd.PersistentFlags().StringVar(&cconfig.TLSKey, "tls-key", "", "path to tls key pem file")
-	cmd.PersistentFlags().StringVar(&cconfig.TLSRootCA, "tls-root-ca", "", "path to tls root ca pem file")
-	cmd.PersistentFlags().DurationVar(&cconfig.HTTPTimeout, "http-timeout", time.Minute, "http client timeout")
-	cmd.PersistentFlags().DurationVar(&cconfig.BrowserTimeout, "browser-timeout", 10*time.Minute, "browser timeout")
-	cmd.PersistentFlags().BoolVar(&cconfig.Insecure, "insecure", false, "allow insecure connections")
-	cmd.PersistentFlags().BoolVarP(&silent, "silent", "s", false, "silent mode")
-	cmd.PersistentFlags().BoolVar(&noPrompt, "no-prompt", false, "disable prompt")
-	cmd.PersistentFlags().BoolVar(&cconfig.DPoP, "dpop", false, "use DPoP")
-	cmd.PersistentFlags().StringVar(&cconfig.Claims, "claims", "", "use claims")
-	cmd.PersistentFlags().StringVar(&cconfig.RAR, "rar", "", "use rich authorization request (RAR)")
-	cmd.PersistentFlags().StringSliceVar(&cconfig.ACRValues, "acr-values", []string{}, "ACR values")
-	cmd.PersistentFlags().StringVar(&cconfig.Purpose, "purpose", "", "string describing the purpose for obtaining End-User authorization")
+	cmd.Flags().StringVar(&cconfig.RedirectURL, "redirect-url", "http://localhost:9876/callback", "client redirect url")
+	cmd.Flags().StringVar(&cconfig.ClientID, "client-id", "", "client identifier")
+	cmd.Flags().StringVar(&cconfig.ClientSecret, "client-secret", "", "client secret")
+	cmd.Flags().StringVar(&cconfig.GrantType, "grant-type", "", "grant type")
+	cmd.Flags().StringVar(&cconfig.AuthMethod, "auth-method", "", "token endpoint authentication method")
+	cmd.Flags().StringVar(&cconfig.Username, "username", "", "resource owner password credentials grant flow username")
+	cmd.Flags().StringVar(&cconfig.Password, "password", "", "resource owner password credentials grant flow password")
+	cmd.Flags().StringVar(&cconfig.RefreshToken, "refresh-token", "", "refresh token")
+	cmd.Flags().StringSliceVar(&cconfig.ResponseType, "response-types", []string{""}, "response type")
+	cmd.Flags().StringVar(&cconfig.ResponseMode, "response-mode", "", "response mode")
+	cmd.Flags().StringSliceVar(&cconfig.Scopes, "scopes", []string{}, "requested scopes")
+	cmd.Flags().StringSliceVar(&cconfig.Audience, "audience", []string{}, "requested audience")
+	cmd.Flags().BoolVar(&cconfig.PKCE, "pkce", false, "enable proof key for code exchange (PKCE)")
+	cmd.Flags().BoolVar(&cconfig.PAR, "par", false, "enable pushed authorization requests (PAR)")
+	cmd.Flags().BoolVar(&cconfig.RequestObject, "request-object", false, "pass request parameters as jwt")
+	cmd.Flags().BoolVar(&cconfig.EncryptedRequestObject, "encrypted-request-object", false, "pass request parameters as encrypted jwt")
+	cmd.Flags().StringVar(&cconfig.Assertion, "assertion", "", "claims for jwt bearer assertion")
+	cmd.Flags().StringVar(&cconfig.SigningKey, "signing-key", "", "path or url to signing key in jwks format")
+	cmd.Flags().StringVar(&cconfig.EncryptionKey, "encryption-key", "", "path or url to encryption key in jwks format")
+	cmd.Flags().StringVar(&cconfig.SubjectToken, "subject-token", "", "third party token")
+	cmd.Flags().StringVar(&cconfig.SubjectTokenType, "subject-token-type", "", "third party token type")
+	cmd.Flags().StringVar(&cconfig.ActorToken, "actor-token", "", "acting party token")
+	cmd.Flags().StringVar(&cconfig.ActorTokenType, "actor-token-type", "", "acting party token type")
+	cmd.Flags().StringVar(&cconfig.IDTokenHint, "id-token-hint", "", "id token hint")
+	cmd.Flags().StringVar(&cconfig.LoginHint, "login-hint", "", "user identifier hint")
+	cmd.Flags().StringVar(&cconfig.IDPHint, "idp-hint", "", "identity provider hint")
+	cmd.Flags().StringVar(&cconfig.TLSCert, "tls-cert", "", "path to tls cert pem file")
+	cmd.Flags().StringVar(&cconfig.TLSKey, "tls-key", "", "path to tls key pem file")
+	cmd.Flags().StringVar(&cconfig.TLSRootCA, "tls-root-ca", "", "path to tls root ca pem file")
+	cmd.Flags().DurationVar(&cconfig.HTTPTimeout, "http-timeout", time.Minute, "http client timeout")
+	cmd.Flags().DurationVar(&cconfig.BrowserTimeout, "browser-timeout", 10*time.Minute, "browser timeout")
+	cmd.Flags().BoolVar(&cconfig.Insecure, "insecure", false, "allow insecure connections")
+	cmd.Flags().BoolVarP(&silent, "silent", "s", false, "silent mode")
+	cmd.Flags().BoolVar(&noPrompt, "no-prompt", false, "disable prompt")
+	cmd.Flags().BoolVar(&cconfig.DPoP, "dpop", false, "use DPoP")
+	cmd.Flags().StringVar(&cconfig.Claims, "claims", "", "use claims")
+	cmd.Flags().StringVar(&cconfig.RAR, "rar", "", "use rich authorization request (RAR)")
+	cmd.Flags().StringSliceVar(&cconfig.ACRValues, "acr-values", []string{}, "ACR values")
+	cmd.Flags().StringVar(&cconfig.Purpose, "purpose", "", "string describing the purpose for obtaining End-User authorization")
 
 	return cmd
 }

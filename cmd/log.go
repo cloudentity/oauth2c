@@ -327,11 +327,13 @@ func LogRequestObject(r oauth2.Request) {
 			pterm.Println()
 
 			if r.SigningKey != nil {
-				LogKey("Signing key", r.SigningKey)
+				pterm.Println("Signing key")
+				LogKey(r.SigningKey)
 			}
 
 			if r.EncryptionKey != nil {
-				LogKey("Encryption key", r.EncryptionKey)
+				pterm.Println("Encryption key")
+				LogKey(r.EncryptionKey)
 			}
 		}
 	}
@@ -364,13 +366,12 @@ func LogAssertion(request oauth2.Request, title string, name string) {
 	LogJson(claims)
 	pterm.Println("")
 
-	LogKey("Signing key", request.SigningKey)
+	pterm.Println("Signing key")
+	LogKey(request.SigningKey)
 }
 
-func LogKey(name string, key interface{}) {
+func LogKey(key interface{}) {
 	var err error
-
-	pterm.Println(name)
 
 	switch key := key.(type) {
 	case *rsa.PublicKey:
