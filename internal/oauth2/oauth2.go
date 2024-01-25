@@ -2,6 +2,7 @@ package oauth2
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -83,6 +84,8 @@ type ClientConfig struct {
 	TLSCert                string `validate:"omitempty,uri"`
 	TLSKey                 string `validate:"omitempty,uri"`
 	TLSRootCA              string `validate:"omitempty,uri"`
+	CallbackTLSCert        string `validate:"omitempty,uri"`
+	CallbackTLSKey         string `validate:"omitempty,uri"`
 	HTTPTimeout            time.Duration
 	BrowserTimeout         time.Duration
 	DPoP                   bool
@@ -192,6 +195,7 @@ func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, hc *h
 	var (
 		srv         = http.Server{}
 		redirectURL *url.URL
+		cert        tls.Certificate
 		done        = make(chan struct{})
 	)
 
@@ -203,6 +207,16 @@ func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, hc *h
 
 	if redirectURL.Path == "" {
 		redirectURL.Path = "/"
+	}
+
+	if redirectURL.Scheme == "https" {
+		if cert, err = ReadKeyPair(clientConfig.CallbackTLSCert, clientConfig.CallbackTLSKey, hc); err != nil {
+			return request, errors.Wrapf(err, "failed to read callback tls key pair")
+		}
+
+		srv.TLSConfig = &tls.Config{
+			Certificates: []tls.Certificate{cert},
+		}
 	}
 
 	http.HandleFunc(redirectURL.Path, func(w http.ResponseWriter, r *http.Request) {
@@ -273,8 +287,14 @@ func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, hc *h
 	go func() {
 		defer close(done)
 
-		if serr := srv.ListenAndServe(); serr != http.ErrServerClosed {
-			err = serr
+		if redirectURL.Scheme == "https" {
+			if serr := srv.ListenAndServeTLS("", ""); serr != http.ErrServerClosed {
+				err = serr
+			}
+		} else {
+			if serr := srv.ListenAndServe(); serr != http.ErrServerClosed {
+				err = serr
+			}
 		}
 	}()
 

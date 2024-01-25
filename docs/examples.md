@@ -594,3 +594,23 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --rar '[{"type":"payment_initiation","locations":["https://example.com/payments"],"instructedAmount":{"currency":"EUR","amount":"123.50"},"creditorName":"Merchant A","creditorAccount":{"bic":"ABCIDEFFXXX","iban":"DE02100100109307118603"},"remittanceInformationUnstructured":"Ref Number Merchant"}]'
 ```
 </details>
+
+## Miscellaneous
+
+### Using HTTPs for Callback URL
+
+You can use `--callback-tls-cert` and `--callback-tls-key` flags to specify a
+TLS certificate and key for the HTTPs callback redirect URL.
+
+```sh
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id cauktionbud6q8ftlqq0 \
+  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+  --response-types code \
+  --response-mode query \
+  --grant-type authorization_code \
+  --auth-method client_secret_basic \
+  --redirect-url https://localhost:9876/callback \
+  --callback-tls-cert https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/cert.pem \
+  --callback-tls-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.pem
+```
