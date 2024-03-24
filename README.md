@@ -1,9 +1,9 @@
 # OAuth2c: user-friendly OAuth CLI
 
-[![status](https://github.com/cloudentity/oauth2c/workflows/build/badge.svg)](https://github.com/cloudentity/oauthc/actions)
+[![status](https://github.com/maordavidov/oauth2c/workflows/build/badge.svg)](https://github.com/maordavidov/oauthc/actions)
 [![license](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
-[![release](https://img.shields.io/github/release-pre/cloudentity/oauth2c.svg)](https://github.com/cloudentity/oauth2c/releases)
-[![downloads](https://img.shields.io/github/downloads/cloudentity/oauth2c/total)](https://github.com/cloudentity/oauth2c/releases)
+[![release](https://img.shields.io/github/release-pre/cloudentity/oauth2c.svg)](https://github.com/maordavidov/oauth2c/releases)
+[![downloads](https://img.shields.io/github/downloads/cloudentity/oauth2c/total)](https://github.com/maordavidov/oauth2c/releases)
 [![packages](https://repology.org/badge/tiny-repos/oauth2c.svg)](https://repology.org/project/oauth2c/versions)
 
 `oauth2c` is a command-line tool for interacting with OAuth 2.0 authorization
@@ -65,12 +65,12 @@ To compile `oauth2c` from source using `go`. To do this run the following
 command:
 
 ```sh
-go install github.com/cloudentity/oauth2c@latest
+go install github.com/maordavidov/oauth2c@latest
 ```
 
 You can also download a pre-built binary from the [releases page].
 
-[releases page]: https://github.com/cloudentity/oauth2c/releases
+[releases page]: https://github.com/maordavidov/oauth2c/releases
 
 ## Usage
 

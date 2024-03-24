@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/cli/browser"
-	"github.com/cloudentity/oauth2c/pkg/oauth2"
+	"github.com/maordavidov/oauth2c/pkg/oauth2"
 )
 
 func (c *OAuth2Cmd) ImplicitGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {

@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/cloudentity/oauth2c/cmd"
+	"github.com/maordavidov/oauth2c/cmd"
 	"github.com/pterm/pterm"
 )
 

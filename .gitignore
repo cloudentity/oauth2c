@@ -17,3 +17,4 @@ oauth2c
 # vendor/
 
 dist/
+.idea

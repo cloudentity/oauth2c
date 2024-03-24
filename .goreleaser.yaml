@@ -39,7 +39,7 @@ brews:
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     folder: Formula
-    homepage: "https://github.com/cloudentity/oauth2c"
+    homepage: "https://github.com/maordavidov/oauth2c"
     description: "CLI for OAuth2"
 
 # modelines, feel free to remove those if you don't want/use them:

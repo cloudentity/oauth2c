@@ -3,7 +3,7 @@ package oauth2_test
 import (
 	"testing"
 
-	"github.com/cloudentity/oauth2c/pkg/oauth2"
+	"github.com/maordavidov/oauth2c/pkg/oauth2"
 	"github.com/stretchr/testify/require"
 )
 

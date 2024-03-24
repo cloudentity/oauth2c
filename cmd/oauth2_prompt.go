@@ -1,6 +1,6 @@
 package cmd
 
-import "github.com/cloudentity/oauth2c/pkg/oauth2"
+import "github.com/maordavidov/oauth2c/pkg/oauth2"
 
 func PromptForClientConfig(client oauth2.ClientConfig, server oauth2.ServerConfig) oauth2.ClientConfig {
 	// grant type

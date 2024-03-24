@@ -1,4 +1,4 @@
-module github.com/cloudentity/oauth2c
+module github.com/maordavidov/oauth2c
 
 go 1.21
 
