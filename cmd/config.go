@@ -3,7 +3,7 @@ package cmd
 import (
 	"strings"
 
-	"github.com/cloudentity/oauth2c/internal/oauth2"
+	"github.com/cloudentity/oauth2c/pkg/oauth2"
 )
 
 type Config struct {

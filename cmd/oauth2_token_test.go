@@ -3,7 +3,7 @@ package cmd
 import (
 	"testing"
 
-	"github.com/cloudentity/oauth2c/internal/oauth2"
+	"github.com/cloudentity/oauth2c/pkg/oauth2"
 )
 
 func TestOAuth2NonBrowserGrantTypes(t *testing.T) {

@@ -15,7 +15,7 @@ import (
 	"github.com/go-jose/go-jose/v3/jwt"
 	"github.com/go-playground/validator/v10"
 
-	"github.com/cloudentity/oauth2c/internal/oauth2"
+	"github.com/cloudentity/oauth2c/pkg/oauth2"
 	"github.com/grantae/certinfo"
 	"github.com/pterm/pterm"
 	"github.com/tidwall/pretty"
