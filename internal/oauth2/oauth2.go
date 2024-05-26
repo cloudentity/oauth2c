@@ -465,6 +465,11 @@ func RequestToken(
 	}
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	var redirectURL *url.URL
+	if redirectURL, err = url.Parse(cconfig.RedirectURL); err != nil {
+		return request, response, err
+	}
+	req.Header.Add("Origin", redirectURL.Scheme+"://"+redirectURL.Host)
 
 	if cconfig.DPoP {
 		if err = DPoPSignRequest(cconfig.SigningKey, hc, req); err != nil {
