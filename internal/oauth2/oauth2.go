@@ -374,11 +374,12 @@ func RequestToken(
 	opts ...RequestTokenOption,
 ) (request Request, response TokenResponse, err error) {
 	var (
-		req      *http.Request
-		resp     *http.Response
-		params   RequestTokenParams
-		endpoint string
-		body     []byte
+		req         *http.Request
+		resp        *http.Response
+		params      RequestTokenParams
+		redirectURL *url.URL
+		endpoint    string
+		body        []byte
 	)
 
 	for _, opt := range opts {
@@ -460,16 +461,19 @@ func RequestToken(
 		return request, response, err
 	}
 
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
 	if cconfig.AuthMethod == ClientSecretBasicAuthMethod {
 		req.SetBasicAuth(cconfig.ClientID, cconfig.ClientSecret)
 	}
 
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	var redirectURL *url.URL
-	if redirectURL, err = url.Parse(cconfig.RedirectURL); err != nil {
-		return request, response, err
+	if cconfig.RedirectURL != "" {
+		if redirectURL, err = url.Parse(cconfig.RedirectURL); err != nil {
+			return request, response, err
+		}
+
+		req.Header.Add("Origin", fmt.Sprintf("%s://%s", redirectURL.Scheme, redirectURL.Host))
 	}
-	req.Header.Add("Origin", redirectURL.Scheme+"://"+redirectURL.Host)
 
 	if cconfig.DPoP {
 		if err = DPoPSignRequest(cconfig.SigningKey, hc, req); err != nil {
