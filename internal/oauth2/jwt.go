@@ -102,7 +102,7 @@ func RequestObjectClaims(params url.Values, serverConfig ServerConfig, clientCon
 	return func() (map[string]interface{}, error) {
 		claims := map[string]interface{}{
 			"iss": clientConfig.ClientID,
-			"aud": serverConfig.Issuer,
+			"aud": clientConfig.IssuerURL,
 			"exp": time.Now().Add(time.Minute * 10).Unix(),
 			"nbf": time.Now().Unix(),
 		}

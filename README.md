@@ -83,45 +83,54 @@ oauth2c [issuer url] [flags]
 The available flags are:
 
 ```sh
-      --acr-values strings          ACR values
-      --actor-token string          acting party token
-      --actor-token-type string     acting party token type
-      --assertion string            claims for jwt bearer assertion
-      --audience strings            requested audience
-      --auth-method string          token endpoint authentication method
-      --browser-timeout duration    browser timeout (default 10m0s)
-      --claims string               use claims
-      --client-id string            client identifier
-      --client-secret string        client secret
-      --dpop                        use DPoP
-      --encrypted-request-object    pass request parameters as encrypted jwt
-      --encryption-key string       path or url to encryption key in jwks format
-      --grant-type string           grant type
-  -h, --help                        help for oauthc
-      --http-timeout duration       http client timeout (default 1m0s)
-      --id-token-hint string        id token hint
-      --idp-hint string             identity provider hint
-      --insecure                    allow insecure connections
-      --login-hint string           user identifier hint
-      --no-prompt                   disable prompt
-      --par                         enable pushed authorization requests (PAR)
-      --password string             resource owner password credentials grant flow password
-      --pkce                        enable proof key for code exchange (PKCE)
-      --rar string                  use rich authorization request (RAR)
-      --redirect-url string         client redirect url (default "http://localhost:9876/callback")
-      --refresh-token string        refresh token
-      --request-object              pass request parameters as jwt
-      --response-mode string        response mode
-      --response-types strings      response type
-      --scopes strings              requested scopes
-      --signing-key string          path or url to signing key in jwks format
-  -s, --silent                      silent mode
-      --subject-token string        third party token
-      --subject-token-type string   third party token type
-      --tls-cert string             path to tls cert pem file
-      --tls-key string              path to tls key pem file
-      --tls-root-ca string          path to tls root ca pem file
-      --username string             resource owner password credentials grant flow username
+      --acr-values strings                                  ACR values
+      --actor-token string                                  acting party token
+      --actor-token-type string                             acting party token type
+      --assertion string                                    claims for jwt bearer assertion
+      --audience strings                                    requested audience
+      --auth-method string                                  token endpoint authentication method
+      --authorization-endpoint string                       server's authorization endpoint
+      --browser-timeout duration                            browser timeout (default 10m0s)
+      --callback-tls-cert string                            path to callback tls cert pem file
+      --callback-tls-key string                             path to callback tls key pem file
+      --claims string                                       use claims
+      --client-id string                                    client identifier
+      --client-secret string                                client secret
+      --device-authorization-endpoint string                server's device authorization endpoint
+      --dpop                                                use DPoP
+      --encrypted-request-object                            pass request parameters as encrypted jwt
+      --encryption-key string                               path or url to encryption key in jwks format
+      --grant-type string                                   grant type
+  -h, --help                                                help for oauth2c
+      --http-timeout duration                               http client timeout (default 1m0s)
+      --id-token-hint string                                id token hint
+      --idp-hint string                                     identity provider hint
+      --insecure                                            allow insecure connections
+      --login-hint string                                   user identifier hint
+      --mtls-pushed-authorization-request-endpoint string   server's mtls pushed authorization request endpoint
+      --mtls-token-endpoint string                          server's mtls token endpoint
+      --no-prompt                                           disable prompt
+      --par                                                 enable pushed authorization requests (PAR)
+      --password string                                     resource owner password credentials grant flow password
+      --pkce                                                enable proof key for code exchange (PKCE)
+      --purpose string                                      string describing the purpose for obtaining End-User authorization
+      --pushed-authorization-request-endpoint string        server's pushed authorization request endpoint
+      --rar string                                          use rich authorization request (RAR)
+      --redirect-url string                                 client redirect url (default "http://localhost:9876/callback")
+      --refresh-token string                                refresh token
+      --request-object                                      pass request parameters as jwt
+      --response-mode string                                response mode
+      --response-types strings                              response type
+      --scopes strings                                      requested scopes
+      --signing-key string                                  path or url to signing key in jwks format
+  -s, --silent                                              silent mode
+      --subject-token string                                third party token
+      --subject-token-type string                           third party token type
+      --tls-cert string                                     path to tls cert pem file
+      --tls-key string                                      path to tls key pem file
+      --tls-root-ca string                                  path to tls root ca pem file
+      --token-endpoint string                               server's token endpoint
+      --username string                                     resource owner password credentials grant flow username
 ```
 
 `oauth2c` opens a browser for flows such as authorization code and starts an
@@ -708,6 +717,22 @@ oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
   --redirect-url https://localhost:9876/callback \
   --callback-tls-cert https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/cert.pem \
   --callback-tls-key https://raw.githubusercontent.com/cloudentity/oauth2c/master/data/key.pem
+```
+
+#### Specifying Authorization Server's Endpoint Manually
+
+If your authorization server does not support OIDC, you can specify the endpoint manually using flags. 
+
+```sh
+oauth2c https://oauth2c.us.authz.cloudentity.io/oauth2c/demo \
+  --client-id cauktionbud6q8ftlqq0 \
+  --client-secret HCwQ5uuUWBRHd04ivjX5Kl0Rz8zxMOekeLtqzki0GPc \
+  --response-types code \
+  --response-mode query \
+  --grant-type authorization_code \
+  --auth-method client_secret_basic \
+  --token-endpoint https://oauth2c.us.authz.cloudentity.io/oauth2c/demo/oauth2/token \
+  --authorization-endpoint https://oauth2c.us.authz.cloudentity.io/oauth2c/demo/oauth2/authorize
 ```
 
 ## License
