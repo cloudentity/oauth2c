@@ -15,10 +15,10 @@ func TestSignJWT(t *testing.T) {
 
 	claims := AssertionClaims(
 		ServerConfig{
-			Issuer:        "https://example.com/tid/aid",
 			TokenEndpoint: "https://example.com/tid/aid/oauth2/token",
 		},
 		ClientConfig{
+			IssuerURL: "https://example.com/tid/aid",
 			Assertion: `{"sub": "jdoe@example.com"}`,
 		},
 	)

@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 type DeviceAuthorizationResponse struct {
@@ -23,6 +25,10 @@ func RequestDeviceAuthorization(ctx context.Context, cconfig ClientConfig, sconf
 		req  *http.Request
 		resp *http.Response
 	)
+
+	if sconfig.DeviceAuthorizationEndpoint == "" {
+		return request, response, errors.New("the server's device authorization endpoint is not configured")
+	}
 
 	request.Form = url.Values{
 		"client_id": {cconfig.ClientID},

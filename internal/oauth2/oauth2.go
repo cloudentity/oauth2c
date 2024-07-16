@@ -95,6 +95,10 @@ type ClientConfig struct {
 }
 
 func RequestAuthorization(cconfig ClientConfig, sconfig ServerConfig, hc *http.Client) (r Request, codeVerifier string, err error) {
+	if sconfig.AuthorizationEndpoint == "" {
+		return r, "", errors.New("the server's authorization endpoint is not configured")
+	}
+
 	if r.URL, err = url.Parse(sconfig.AuthorizationEndpoint); err != nil {
 		return r, "", errors.Wrapf(err, "failed to parse authorization endpoint")
 	}
@@ -126,6 +130,14 @@ func RequestPAR(
 		resp     *http.Response
 		endpoint string
 	)
+
+	if sconfig.AuthorizationEndpoint == "" {
+		return parRequest, parResponse, authorizeRequest, "", errors.New("the server's authorization endpoint is not configured")
+	}
+
+	if sconfig.PushedAuthorizationRequestEndpoint == "" && sconfig.MTLsEndpointAliases.PushedAuthorizationRequestEndpoint == "" {
+		return parRequest, parResponse, authorizeRequest, "", errors.New("the server's pushed authorization request endpoint is not configured")
+	}
 
 	// push authorization request to /par
 	if codeVerifier, err = parRequest.AuthorizeRequest(cconfig, sconfig, hc); err != nil {
@@ -381,6 +393,10 @@ func RequestToken(
 		endpoint    string
 		body        []byte
 	)
+
+	if sconfig.TokenEndpoint == "" && sconfig.MTLsEndpointAliases.TokenEndpoint == "" {
+		return request, response, errors.New("the server's token endpoint is not configured")
+	}
 
 	for _, opt := range opts {
 		opt(&params)

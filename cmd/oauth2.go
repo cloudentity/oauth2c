@@ -28,7 +28,10 @@ type OAuth2Cmd struct {
 }
 
 func NewOAuth2Cmd(version, commit, date string) (cmd *OAuth2Cmd) {
-	var cconfig oauth2.ClientConfig
+	var (
+		cconfig oauth2.ClientConfig
+		sconfig oauth2.ServerConfig
+	)
 
 	cmd = &OAuth2Cmd{
 		Command: &cobra.Command{
@@ -38,7 +41,7 @@ func NewOAuth2Cmd(version, commit, date string) (cmd *OAuth2Cmd) {
 		},
 	}
 
-	cmd.Command.Run = cmd.Run(&cconfig)
+	cmd.Command.Run = cmd.Run(&cconfig, &sconfig)
 
 	cmd.AddCommand(NewVersionCmd(version, commit, date))
 	cmd.AddCommand(docsCmd)
@@ -85,10 +88,17 @@ func NewOAuth2Cmd(version, commit, date string) (cmd *OAuth2Cmd) {
 	cmd.PersistentFlags().StringSliceVar(&cconfig.ACRValues, "acr-values", []string{}, "ACR values")
 	cmd.PersistentFlags().StringVar(&cconfig.Purpose, "purpose", "", "string describing the purpose for obtaining End-User authorization")
 
+	cmd.PersistentFlags().StringVar(&sconfig.TokenEndpoint, "token-endpoint", "", "server's token endpoint")
+	cmd.PersistentFlags().StringVar(&sconfig.AuthorizationEndpoint, "authorization-endpoint", "", "server's authorization endpoint")
+	cmd.PersistentFlags().StringVar(&sconfig.DeviceAuthorizationEndpoint, "device-authorization-endpoint", "", "server's device authorization endpoint")
+	cmd.PersistentFlags().StringVar(&sconfig.PushedAuthorizationRequestEndpoint, "pushed-authorization-request-endpoint", "", "server's pushed authorization request endpoint")
+	cmd.PersistentFlags().StringVar(&sconfig.MTLsEndpointAliases.TokenEndpoint, "mtls-token-endpoint", "", "server's mtls token endpoint")
+	cmd.PersistentFlags().StringVar(&sconfig.MTLsEndpointAliases.PushedAuthorizationRequestEndpoint, "mtls-pushed-authorization-request-endpoint", "", "server's mtls pushed authorization request endpoint")
+
 	return cmd
 }
 
-func (c *OAuth2Cmd) Run(cconfig *oauth2.ClientConfig) func(cmd *cobra.Command, args []string) {
+func (c *OAuth2Cmd) Run(cconfig *oauth2.ClientConfig, sconfig *oauth2.ServerConfig) func(cmd *cobra.Command, args []string) {
 	return func(cmd *cobra.Command, args []string) {
 		var (
 			config Config
@@ -148,7 +158,7 @@ func (c *OAuth2Cmd) Run(cconfig *oauth2.ClientConfig) func(cmd *cobra.Command, a
 			}
 		}
 
-		if err := c.Authorize(*cconfig, hc); err != nil {
+		if err := c.Authorize(*cconfig, *sconfig, hc); err != nil {
 			var oauth2Error *oauth2.Error
 
 			if errors.As(err, &oauth2Error) {
@@ -164,21 +174,26 @@ func (c *OAuth2Cmd) Run(cconfig *oauth2.ClientConfig) func(cmd *cobra.Command, a
 	}
 }
 
-func (c *OAuth2Cmd) Authorize(clientConfig oauth2.ClientConfig, hc *http.Client) error {
+func (c *OAuth2Cmd) Authorize(
+	clientConfig oauth2.ClientConfig,
+	serverConfig oauth2.ServerConfig,
+	hc *http.Client,
+) error {
 	var (
 		serverRequest oauth2.Request
-		serverConfig  oauth2.ServerConfig
 		err           error
 	)
 
 	// openid configuration
-	if serverRequest, serverConfig, err = oauth2.FetchOpenIDConfiguration(
-		context.Background(),
-		clientConfig.IssuerURL,
-		hc,
-	); err != nil {
-		LogRequestln(serverRequest)
-		return err
+	if !serverConfig.IsConfigured() {
+		if serverRequest, serverConfig, err = oauth2.FetchOpenIDConfiguration(
+			context.Background(),
+			clientConfig.IssuerURL,
+			hc,
+		); err != nil {
+			LogRequestln(serverRequest)
+			return err
+		}
 	}
 
 	if !silent && !noPrompt {
