@@ -467,7 +467,7 @@ func RequestToken(
 		req.SetBasicAuth(cconfig.ClientID, cconfig.ClientSecret)
 	}
 
-	if cconfig.RedirectURL != "" {
+	if cconfig.RedirectURL != "" && cconfig.AuthMethod == NoneAuthMethod {
 		if redirectURL, err = url.Parse(cconfig.RedirectURL); err != nil {
 			return request, response, err
 		}

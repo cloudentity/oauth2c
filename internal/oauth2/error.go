@@ -3,6 +3,7 @@ package oauth2
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -46,14 +47,19 @@ func (e *Error) Error() string {
 func ParseError(resp *http.Response) error {
 	var (
 		payload Error
+		body    []byte
 		err     error
 	)
 
 	payload.StatusCode = resp.StatusCode
 	payload.TraceID = resp.Header.Get("X-Trace-ID")
 
-	if err = json.NewDecoder(resp.Body).Decode(&payload); err != nil {
+	if body, err = io.ReadAll(resp.Body); err != nil {
 		return err
+	}
+
+	if err = json.Unmarshal(body, &payload); err != nil {
+		return fmt.Errorf("failed to parse error response (%s): %w", string(body), err)
 	}
 
 	return &payload
