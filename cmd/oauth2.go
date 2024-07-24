@@ -87,8 +87,8 @@ func NewOAuth2Cmd(version, commit, date string) (cmd *OAuth2Cmd) {
 	cmd.PersistentFlags().StringVar(&cconfig.RAR, "rar", "", "use rich authorization request (RAR)")
 	cmd.PersistentFlags().StringSliceVar(&cconfig.ACRValues, "acr-values", []string{}, "ACR values")
 	cmd.PersistentFlags().StringVar(&cconfig.Purpose, "purpose", "", "string describing the purpose for obtaining End-User authorization")
-	cmd.PersistentFlags().StringSliceVar(&cconfig.Prompt, "prompt", []string{}, "list of string values that specifies whether the Authorization Server prompts the End-User for reauthentication and consent")
-	cmd.PersistentFlags().StringVar(&cconfig.MaxAge, "max-age", "", "maximum Authentication Age. Specifies the allowable elapsed time in seconds since the last time the End-User was actively authenticated by the OP")
+	cmd.PersistentFlags().StringSliceVar(&cconfig.Prompt, "prompt", []string{}, "end-user authorization purpose")
+	cmd.PersistentFlags().StringVar(&cconfig.MaxAge, "max-age", "", "maximum authentication age in seconds")
 
 	cmd.PersistentFlags().StringVar(&sconfig.TokenEndpoint, "token-endpoint", "", "server's token endpoint")
 	cmd.PersistentFlags().StringVar(&sconfig.AuthorizationEndpoint, "authorization-endpoint", "", "server's authorization endpoint")
