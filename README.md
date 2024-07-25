@@ -107,12 +107,14 @@ The available flags are:
       --idp-hint string                                     identity provider hint
       --insecure                                            allow insecure connections
       --login-hint string                                   user identifier hint
+      --max-age string                                      maximum authentication age in seconds
       --mtls-pushed-authorization-request-endpoint string   server's mtls pushed authorization request endpoint
       --mtls-token-endpoint string                          server's mtls token endpoint
       --no-prompt                                           disable prompt
       --par                                                 enable pushed authorization requests (PAR)
       --password string                                     resource owner password credentials grant flow password
       --pkce                                                enable proof key for code exchange (PKCE)
+      --prompt strings                                      end-user authorization purpose
       --purpose string                                      string describing the purpose for obtaining End-User authorization
       --pushed-authorization-request-endpoint string        server's pushed authorization request endpoint
       --rar string                                          use rich authorization request (RAR)

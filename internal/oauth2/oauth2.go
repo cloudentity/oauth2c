@@ -92,6 +92,8 @@ type ClientConfig struct {
 	Claims                 string `validate:"omitempty,json"`
 	RAR                    string `validate:"omitempty,json"`
 	Purpose                string
+	Prompt                 []string
+	MaxAge                 string
 }
 
 func RequestAuthorization(cconfig ClientConfig, sconfig ServerConfig, hc *http.Client) (r Request, codeVerifier string, err error) {
