@@ -383,7 +383,7 @@ func LogKey(name string, key interface{}) {
 			pterm.Error.Println(err)
 		}
 
-		pterm.FgGray.Printfln(p.String())
+		pterm.FgGray.Printfln("%s", p.String())
 	case *rsa.PrivateKey:
 		p := bytes.Buffer{}
 
@@ -394,7 +394,7 @@ func LogKey(name string, key interface{}) {
 			pterm.Error.Println(err)
 		}
 
-		pterm.FgGray.Printfln(p.String())
+		pterm.FgGray.Printfln("%s", p.String())
 	case *ecdsa.PublicKey:
 		b, err := x509.MarshalPKIXPublicKey(key)
 
@@ -411,7 +411,7 @@ func LogKey(name string, key interface{}) {
 			pterm.Error.Println(err)
 		}
 
-		pterm.FgGray.Printfln(p.String())
+		pterm.FgGray.Printfln("%s", p.String())
 	case *ecdsa.PrivateKey:
 		b, err := x509.MarshalECPrivateKey(key)
 
@@ -428,7 +428,7 @@ func LogKey(name string, key interface{}) {
 			pterm.Error.Println(err)
 		}
 
-		pterm.FgGray.Printfln(p.String())
+		pterm.FgGray.Printfln("%s", p.String())
 	case []byte:
 		pterm.FgGray.Println(string(key))
 	case string:
