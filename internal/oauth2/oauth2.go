@@ -72,8 +72,8 @@ type ClientConfig struct {
 	Password               string
 	RefreshToken           string
 	Assertion              string `validate:"omitempty,json"`
-	SigningKey             string `validate:"omitempty,uri"`
-	EncryptionKey          string `validate:"omitempty,uri"`
+	SigningKey             string
+	EncryptionKey          string
 	SubjectToken           string
 	SubjectTokenType       string `validate:"omitempty,oneof=urn:ietf:params:oauth:token-type:access_token"`
 	ActorToken             string
@@ -81,11 +81,11 @@ type ClientConfig struct {
 	IDTokenHint            string
 	LoginHint              string
 	IDPHint                string
-	TLSCert                string `validate:"omitempty,uri"`
-	TLSKey                 string `validate:"omitempty,uri"`
-	TLSRootCA              string `validate:"omitempty,uri"`
-	CallbackTLSCert        string `validate:"omitempty,uri"`
-	CallbackTLSKey         string `validate:"omitempty,uri"`
+	TLSCert                string
+	TLSKey                 string
+	TLSRootCA              string
+	CallbackTLSCert        string
+	CallbackTLSKey         string
 	HTTPTimeout            time.Duration
 	BrowserTimeout         time.Duration
 	DPoP                   bool
