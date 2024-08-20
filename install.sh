@@ -67,6 +67,7 @@ get_binaries() {
     darwin/arm64) BINARIES="oauth2c" ;;
     linux/386) BINARIES="oauth2c" ;;
     linux/amd64) BINARIES="oauth2c" ;;
+    linux/arm64) BINARIES="oauth2c" ;;
     windows/386) BINARIES="oauth2c" ;;
     windows/amd64) BINARIES="oauth2c" ;;
     *)
