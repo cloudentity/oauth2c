@@ -89,6 +89,7 @@ The available flags are:
       --assertion string                                    claims for jwt bearer assertion
       --audience strings                                    requested audience
       --auth-method string                                  token endpoint authentication method
+      --authentication-code string                          authentication code used for passwordless authentication: https://cloudentity.com/developers/app-dev-tutorials/identity-pools/add-passwordless-authentication/
       --authorization-endpoint string                       server's authorization endpoint
       --browser-timeout duration                            browser timeout (default 10m0s)
       --callback-tls-cert string                            path to callback tls cert pem file

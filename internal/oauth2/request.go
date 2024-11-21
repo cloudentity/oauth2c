@@ -69,6 +69,10 @@ func (r *Request) AuthorizeRequest(
 		r.Form.Set("max_age", cconfig.MaxAge)
 	}
 
+	if len(cconfig.AuthenticationCode) > 0 {
+		r.Form.Set("authentication_code", cconfig.AuthenticationCode)
+	}
+
 	if cconfig.IDTokenHint != "" {
 		r.Form.Set("id_token_hint", cconfig.IDTokenHint)
 	}
@@ -155,6 +159,10 @@ func (r *Request) AuthorizeRequest(
 
 		if len(cconfig.MaxAge) > 0 {
 			r.Form.Set("max_age", cconfig.MaxAge)
+		}
+
+		if len(cconfig.AuthenticationCode) > 0 {
+			r.Form.Set("authentication_code", cconfig.AuthenticationCode)
 		}
 	}
 
