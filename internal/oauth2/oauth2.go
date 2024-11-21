@@ -94,6 +94,7 @@ type ClientConfig struct {
 	Purpose                string
 	Prompt                 []string
 	MaxAge                 string
+	AuthenticationCode     string
 }
 
 func RequestAuthorization(cconfig ClientConfig, sconfig ServerConfig, hc *http.Client) (r Request, codeVerifier string, err error) {
