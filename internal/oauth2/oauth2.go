@@ -325,7 +325,7 @@ func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, hc *h
 
 type TokenResponse struct {
 	AccessToken          string                   `json:"access_token,omitempty"`
-	ExpiresIn            int64                    `json:"expires_in,omitempty"`
+	ExpiresIn            FlexibleInt64            `json:"expires_in,omitempty"`
 	IDToken              string                   `json:"id_token,omitempty"`
 	IssuedTokenType      string                   `json:"issued_token_type,omitempty"`
 	RefreshToken         string                   `json:"refresh_token,omitempty"`
@@ -334,12 +334,49 @@ type TokenResponse struct {
 	AuthorizationDetails []map[string]interface{} `json:"authorization_details,omitempty"`
 }
 
+// FlexibleInt64 is a type that can be unmarshaled from a JSON number or
+// string. This was added to support the `expires_in` field in the token
+// response. Typically it is expressed as a JSON number, but at least
+// login.microsoft.com returns the number as a string.
+type FlexibleInt64 int64
+
+func (f *FlexibleInt64) UnmarshalJSON(b []byte) error {
+	if len(b) == 0 {
+		return fmt.Errorf("cannot unmarshal empty int")
+	}
+
+	// check if we have a number in a string, and parse it if so
+	if b[0] == '"' {
+		var s string
+		if err := json.Unmarshal(b, &s); err != nil {
+			return err
+		}
+
+		i, err := strconv.ParseInt(s, 10, 64)
+		if err != nil {
+			return err
+		}
+
+		*f = FlexibleInt64(i)
+		return nil
+	}
+
+	// finally we assume that we have a number that's not wrapped in a string
+	var i int64
+	if err := json.Unmarshal(b, &i); err != nil {
+		return err
+	}
+
+	*f = FlexibleInt64(i)
+	return nil
+}
+
 func NewTokenResponseFromForm(f url.Values) TokenResponse {
 	expiresIn, _ := strconv.ParseInt(f.Get("expires_in"), 10, 64)
 
 	return TokenResponse{
 		AccessToken:     f.Get("access_token"),
-		ExpiresIn:       expiresIn,
+		ExpiresIn:       FlexibleInt64(expiresIn),
 		IDToken:         f.Get("id_token"),
 		IssuedTokenType: f.Get("issued_token_type"),
 		RefreshToken:    f.Get("refresh_token"),
