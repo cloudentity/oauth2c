@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/cloudentity/oauth2c/internal/oauth2"
 	"github.com/cli/browser"
+	"github.com/cloudentity/oauth2c/internal/oauth2"
 )
 
 func (c *OAuth2Cmd) AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig, serverConfig oauth2.ServerConfig, hc *http.Client) error {
@@ -54,10 +54,13 @@ func (c *OAuth2Cmd) AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig,
 		LogBox("PKCE", "code_verifier = %s\ncode_challenge = BASE64URL-ENCODE(SHA256(ASCII(code_verifier)))", codeVerifier)
 	}
 
-	Logfln("\nOpen the following URL:\n\n%s\n", authorizeRequest.URL.String())
+	Logfln("\nGo the following URL:\n\n%s\n", authorizeRequest.URL.String())
 
-	if err = browser.OpenURL(authorizeRequest.URL.String()); err != nil {
-		LogError(err)
+	if !clientConfig.NoBrowser {
+		Logfln("Opening browser...\n")
+		if err = browser.OpenURL(authorizeRequest.URL.String()); err != nil {
+			LogError(err)
+		}
 	}
 
 	Logln()
