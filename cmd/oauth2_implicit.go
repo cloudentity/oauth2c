@@ -25,7 +25,7 @@ func (c *OAuth2Cmd) ImplicitGrantFlow(clientConfig oauth2.ClientConfig, serverCo
 
 	LogRequest(authorizeRequest)
 
-	Logfln("\nGo the following URL:\n\n%s\n", authorizeRequest.URL.String())
+	Logfln("\nGo to the following URL:\n\n%s\n", authorizeRequest.URL.String())
 
 	if !clientConfig.NoBrowser {
 		Logfln("Opening browser...\n")

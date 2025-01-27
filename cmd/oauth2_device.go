@@ -31,7 +31,7 @@ func (c *OAuth2Cmd) DeviceGrantFlow(clientConfig oauth2.ClientConfig, serverConf
 
 	LogRequestAndResponse(authorizationRequest, authorizationResponse)
 
-	Logfln("\nGo the following URL:\n\n%s\n", authorizationResponse.VerificationURIComplete)
+	Logfln("\nGo to the following URL:\n\n%s\n", authorizationResponse.VerificationURIComplete)
 
 	if !clientConfig.NoBrowser {
 		Logfln("Opening browser...\n")
