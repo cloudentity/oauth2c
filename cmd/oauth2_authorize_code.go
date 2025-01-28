@@ -54,10 +54,10 @@ func (c *OAuth2Cmd) AuthorizationCodeGrantFlow(clientConfig oauth2.ClientConfig,
 		LogBox("PKCE", "code_verifier = %s\ncode_challenge = BASE64URL-ENCODE(SHA256(ASCII(code_verifier)))", codeVerifier)
 	}
 
-	Logfln("\nGo to the following URL:\n\n%s\n", authorizeRequest.URL.String())
+	Logfln("\nGo to the following URL:\n\n%s", authorizeRequest.URL.String())
 
 	if !clientConfig.NoBrowser {
-		Logfln("Opening browser...\n")
+		Logfln("\nOpening browser...")
 		if err = browser.OpenURL(authorizeRequest.URL.String()); err != nil {
 			LogError(err)
 		}

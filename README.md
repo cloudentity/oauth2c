@@ -111,6 +111,7 @@ The available flags are:
       --max-age string                                      maximum authentication age in seconds
       --mtls-pushed-authorization-request-endpoint string   server's mtls pushed authorization request endpoint
       --mtls-token-endpoint string                          server's mtls token endpoint
+      --no-browser                                          do not open browser
       --no-prompt                                           disable prompt
       --par                                                 enable pushed authorization requests (PAR)
       --password string                                     resource owner password credentials grant flow password
