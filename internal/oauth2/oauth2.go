@@ -88,6 +88,7 @@ type ClientConfig struct {
 	CallbackTLSKey         string `validate:"omitempty,uri|file"`
 	HTTPTimeout            time.Duration
 	BrowserTimeout         time.Duration
+	NoBrowser              bool
 	DPoP                   bool
 	Claims                 string `validate:"omitempty,json"`
 	RAR                    string `validate:"omitempty,json"`

@@ -81,6 +81,7 @@ func NewOAuth2Cmd(version, commit, date string) (cmd *OAuth2Cmd) {
 	cmd.PersistentFlags().DurationVar(&cconfig.BrowserTimeout, "browser-timeout", 10*time.Minute, "browser timeout")
 	cmd.PersistentFlags().BoolVar(&cconfig.Insecure, "insecure", false, "allow insecure connections")
 	cmd.PersistentFlags().BoolVarP(&silent, "silent", "s", false, "silent mode")
+	cmd.PersistentFlags().BoolVar(&cconfig.NoBrowser, "no-browser", false, "do not open browser")
 	cmd.PersistentFlags().BoolVar(&noPrompt, "no-prompt", false, "disable prompt")
 	cmd.PersistentFlags().BoolVar(&cconfig.DPoP, "dpop", false, "use DPoP")
 	cmd.PersistentFlags().StringVar(&cconfig.Claims, "claims", "", "use claims")
