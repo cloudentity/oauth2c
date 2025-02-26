@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/cli/browser v1.3.1-0.20231006085632-b393df5d7bfa
-	github.com/go-jose/go-jose/v3 v3.0.3
+	github.com/go-jose/go-jose/v3 v3.0.4
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.17.0
