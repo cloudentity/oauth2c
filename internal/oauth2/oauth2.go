@@ -233,6 +233,13 @@ func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, hc *h
 		srv.TLSConfig = &tls.Config{
 			Certificates: []tls.Certificate{cert},
 		}
+		if redirectURL.Port() == "" {
+			srv.Addr += ":443"
+		}
+	} else {
+		if redirectURL.Port() == "" {
+			srv.Addr += ":80"
+		}
 	}
 
 	http.HandleFunc(redirectURL.Path, func(w http.ResponseWriter, r *http.Request) {
