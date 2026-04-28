@@ -21,6 +21,7 @@ import (
 var (
 	silent   bool
 	noPrompt bool
+	rawJSON  bool
 )
 
 type OAuth2Cmd struct {
@@ -93,6 +94,7 @@ func NewOAuth2Cmd(version, commit, date string) (cmd *OAuth2Cmd) {
 	cmd.PersistentFlags().StringVar(&cconfig.MaxAge, "max-age", "", "maximum authentication age in seconds")
 	cmd.PersistentFlags().StringVar(&cconfig.AuthenticationCode, "authentication-code", "", "authentication code used for passwordless authentication")
 	cmd.PersistentFlags().BoolVar(&cconfig.NoOrigin, "no-origin", false, "do not include an Origin header")
+	cmd.PersistentFlags().BoolVar(&rawJSON, "raw", false, "output raw JSON response from the server")
 
 	cmd.PersistentFlags().StringVar(&sconfig.TokenEndpoint, "token-endpoint", "", "server's token endpoint")
 	cmd.PersistentFlags().StringVar(&sconfig.AuthorizationEndpoint, "authorization-endpoint", "", "server's authorization endpoint")
@@ -230,7 +232,12 @@ func (c *OAuth2Cmd) Authorize(
 	return fmt.Errorf("unknown grant type: %s", clientConfig.GrantType)
 }
 
-func (c *OAuth2Cmd) PrintResult(result interface{}) {
+func (c *OAuth2Cmd) PrintResult(result oauth2.TokenResponse) {
+	if rawJSON && result.RawJSON != nil {
+		_, _ = fmt.Fprintln(c.OutOrStdout(), string(result.RawJSON))
+		return
+	}
+
 	output, err := json.Marshal(result)
 	if err != nil {
 		_, _ = fmt.Fprintf(c.ErrOrStderr(), "%+v", err)

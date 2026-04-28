@@ -349,6 +349,7 @@ type TokenResponse struct {
 	Scope                string                   `json:"scope,omitempty"`
 	TokenType            string                   `json:"token_type,omitempty"`
 	AuthorizationDetails []map[string]interface{} `json:"authorization_details,omitempty"`
+	RawJSON              json.RawMessage          `json:"-"`
 }
 
 // FlexibleInt64 is a type that can be unmarshaled from a JSON number or
@@ -581,6 +582,8 @@ func RequestToken(
 	if err = json.Unmarshal(body, &response); err != nil {
 		return request, response, fmt.Errorf("failed to parse exchange response: %w", err)
 	}
+
+	response.RawJSON = json.RawMessage(body)
 
 	return request, response, nil
 }
