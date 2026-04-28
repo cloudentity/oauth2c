@@ -10,6 +10,72 @@ import (
 	"github.com/cloudentity/oauth2c/internal/oauth2"
 )
 
+func TestTokenResponseExtraFields(t *testing.T) {
+	body := []byte(`{
+		"access_token": "token",
+		"expires_in": 3600,
+		"token_type": "Bearer",
+		"email": "me@email.com",
+		"environment_id": "envid-token-here",
+		"legal_entity_name": "oauth environment provider"
+	}`)
+
+	var resp oauth2.TokenResponse
+	require.NoError(t, json.Unmarshal(body, &resp))
+
+	require.Equal(t, "token", resp.AccessToken)
+	require.Equal(t, oauth2.FlexibleInt64(3600), resp.ExpiresIn)
+	require.Equal(t, "Bearer", resp.TokenType)
+
+	out, err := json.Marshal(resp)
+	require.NoError(t, err)
+
+	var roundTrip map[string]any
+	require.NoError(t, json.Unmarshal(out, &roundTrip))
+
+	require.Equal(t, "token", roundTrip["access_token"])
+	require.Equal(t, "Bearer", roundTrip["token_type"])
+	require.Equal(t, "me@email.com", roundTrip["email"])
+	require.Equal(t, "envid-token-here", roundTrip["environment_id"])
+	require.Equal(t, "oauth environment provider", roundTrip["legal_entity_name"])
+	require.NotContains(t, roundTrip, "raw")
+}
+
+func TestTokenResponseNoExtraFields(t *testing.T) {
+	body := []byte(`{"access_token": "token", "expires_in": 3600, "token_type": "Bearer"}`)
+
+	var resp oauth2.TokenResponse
+	require.NoError(t, json.Unmarshal(body, &resp))
+
+	out, err := json.Marshal(resp)
+	require.NoError(t, err)
+
+	var roundTrip map[string]any
+	require.NoError(t, json.Unmarshal(out, &roundTrip))
+
+	require.Equal(t, "token", roundTrip["access_token"])
+	require.Equal(t, "Bearer", roundTrip["token_type"])
+	require.Len(t, roundTrip, 3)
+}
+
+func TestTokenResponseTypedFieldsWinOnConflict(t *testing.T) {
+	body := []byte(`{"access_token": "from-server", "expires_in": "3600"}`)
+
+	var resp oauth2.TokenResponse
+	require.NoError(t, json.Unmarshal(body, &resp))
+
+	resp.AccessToken = "overridden"
+
+	out, err := json.Marshal(resp)
+	require.NoError(t, err)
+
+	var roundTrip map[string]any
+	require.NoError(t, json.Unmarshal(out, &roundTrip))
+
+	require.Equal(t, "overridden", roundTrip["access_token"])
+	require.EqualValues(t, 3600, roundTrip["expires_in"])
+}
+
 func TestUnmarshalExpires(t *testing.T) {
 	tests := map[string]struct {
 		bytes         []byte

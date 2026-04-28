@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"maps"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -341,20 +342,56 @@ func WaitForCallback(clientConfig ClientConfig, serverConfig ServerConfig, hc *h
 }
 
 type TokenResponse struct {
-	AccessToken          string                   `json:"access_token,omitempty"`
-	ExpiresIn            FlexibleInt64            `json:"expires_in,omitempty"`
-	IDToken              string                   `json:"id_token,omitempty"`
-	IssuedTokenType      string                   `json:"issued_token_type,omitempty"`
-	RefreshToken         string                   `json:"refresh_token,omitempty"`
-	Scope                string                   `json:"scope,omitempty"`
-	TokenType            string                   `json:"token_type,omitempty"`
-	AuthorizationDetails []map[string]interface{} `json:"authorization_details,omitempty"`
+	AccessToken          string           `json:"access_token,omitempty"`
+	ExpiresIn            FlexibleInt64    `json:"expires_in,omitempty"`
+	IDToken              string           `json:"id_token,omitempty"`
+	IssuedTokenType      string           `json:"issued_token_type,omitempty"`
+	RefreshToken         string           `json:"refresh_token,omitempty"`
+	Scope                string           `json:"scope,omitempty"`
+	TokenType            string           `json:"token_type,omitempty"`
+	AuthorizationDetails []map[string]any `json:"authorization_details,omitempty"`
+
+	raw map[string]json.RawMessage
 }
 
-// FlexibleInt64 is a type that can be unmarshaled from a JSON number or
-// string. This was added to support the `expires_in` field in the token
-// response. Typically it is expressed as a JSON number, but at least
-// login.microsoft.com returns the number as a string.
+type tokenResponseAlias TokenResponse
+
+func (t *TokenResponse) UnmarshalJSON(data []byte) error {
+	var typed tokenResponseAlias
+
+	if err := json.Unmarshal(data, &typed); err != nil {
+		return err
+	}
+
+	*t = TokenResponse(typed)
+
+	return json.Unmarshal(data, &t.raw)
+}
+
+func (t TokenResponse) MarshalJSON() ([]byte, error) {
+	var typedMap map[string]json.RawMessage
+
+	typed, err := json.Marshal(tokenResponseAlias(t))
+	if err != nil {
+		return nil, err
+	}
+
+	if len(t.raw) == 0 {
+		return typed, nil
+	}
+
+	if err := json.Unmarshal(typed, &typedMap); err != nil {
+		return nil, err
+	}
+
+	out := make(map[string]json.RawMessage, len(t.raw))
+
+	maps.Copy(out, t.raw)
+	maps.Copy(out, typedMap)
+
+	return json.Marshal(out)
+}
+
 type FlexibleInt64 int64
 
 func (f *FlexibleInt64) UnmarshalJSON(b []byte) error {
@@ -365,6 +402,7 @@ func (f *FlexibleInt64) UnmarshalJSON(b []byte) error {
 	// check if we have a number in a string, and parse it if so
 	if b[0] == '"' {
 		var s string
+
 		if err := json.Unmarshal(b, &s); err != nil {
 			return err
 		}
@@ -378,13 +416,14 @@ func (f *FlexibleInt64) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 
-	// finally we assume that we have a number that's not wrapped in a string
 	var i int64
+
 	if err := json.Unmarshal(b, &i); err != nil {
 		return err
 	}
 
 	*f = FlexibleInt64(i)
+
 	return nil
 }
 
