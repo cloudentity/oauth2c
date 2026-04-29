@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/go-jose/go-jose/v3/jwt"
+	"github.com/go-jose/go-jose/v4/jwt"
 	"github.com/hashicorp/go-multierror"
 	"github.com/lithammer/shortuuid/v4"
 	"github.com/pkg/errors"
@@ -255,8 +255,8 @@ func (r *Request) ParseJARM(signingKey interface{}, encryptionKey interface{}) e
 
 	r.JARM = map[string]interface{}{}
 
-	if nestedToken, err = jwt.ParseSignedAndEncrypted(response); err != nil {
-		if token, err2 = jwt.ParseSigned(response); err2 != nil {
+	if nestedToken, err = jwt.ParseSignedAndEncrypted(response, JOSEKeyAlgorithms, JOSEContentEncryption, JOSESignatureAlgorithms); err != nil {
+		if token, err2 = jwt.ParseSigned(response, JOSESignatureAlgorithms); err2 != nil {
 			return errors.Wrapf(multierror.Append(err, err2), "failed to parse JARM response")
 		}
 	} else if encryptionKey != nil {

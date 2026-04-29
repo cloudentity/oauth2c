@@ -13,8 +13,8 @@ import (
 	"strings"
 
 	"github.com/cli/browser"
-	"github.com/go-jose/go-jose/v3"
-	"github.com/go-jose/go-jose/v3/jwt"
+	"github.com/go-jose/go-jose/v4"
+	"github.com/go-jose/go-jose/v4/jwt"
 	"github.com/go-playground/validator/v10"
 
 	"github.com/cloudentity/oauth2c/internal/oauth2"
@@ -316,7 +316,7 @@ func LogRequestObject(r oauth2.Request) {
 		if token, requestClaims, err = oauth2.UnsafeParseJWT(r.RequestObject); err != nil {
 			pterm.Error.Println(err)
 		} else {
-			if encryptedToken, err = jose.ParseEncrypted(request); err == nil {
+			if encryptedToken, err = jose.ParseEncrypted(request, oauth2.JOSEKeyAlgorithms, oauth2.JOSEContentEncryption); err == nil {
 				pterm.DefaultBox.WithTitle("Request object").Printfln("request = JWE-%s(JWT-%s(payload))", encryptedToken.Header.Algorithm, token.Headers[0].Algorithm)
 			} else {
 				pterm.DefaultBox.WithTitle("Request object").Printfln("request = JWT-%s(payload)", token.Headers[0].Algorithm)

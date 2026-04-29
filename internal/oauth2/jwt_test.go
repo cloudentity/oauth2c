@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/go-jose/go-jose/v3"
+	"github.com/go-jose/go-jose/v4"
 	"github.com/stretchr/testify/require"
 )
 
@@ -26,7 +26,7 @@ func TestSignJWT(t *testing.T) {
 	jwt, _, err := SignJWT(claims, JWKSigner("../../data/rsa/key.json", http.DefaultClient))
 	require.NoError(t, err)
 
-	jws, err := jose.ParseSigned(jwt)
+	jws, err := jose.ParseSigned(jwt, JOSESignatureAlgorithms)
 	require.NoError(t, err)
 
 	bs, err := jws.Verify(key.Public())
