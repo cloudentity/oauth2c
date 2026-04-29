@@ -27,18 +27,18 @@ func (e *Error) Error() string {
 	var output strings.Builder
 
 	if e.StatusCode != 0 {
-		output.WriteString(fmt.Sprintf("%d: ", e.StatusCode))
+		fmt.Fprintf(&output, "%d: ", e.StatusCode)
 	}
 
 	if e.Cause != "" {
-		output.WriteString(fmt.Sprintf("%s caused by %s ", e.ErrorCode, e.Cause))
+		fmt.Fprintf(&output, "%s caused by %s ", e.ErrorCode, e.Cause)
 		return fmt.Sprintf("%d: %s caused by %s (%s)", e.StatusCode, e.ErrorCode, e.Cause, e.TraceID)
 	} else {
-		output.WriteString(fmt.Sprintf("%s ", e.ErrorCode))
+		fmt.Fprintf(&output, "%s ", e.ErrorCode)
 	}
 
 	if e.TraceID != "" {
-		output.WriteString(fmt.Sprintf("(%s)", e.TraceID))
+		fmt.Fprintf(&output, "(%s)", e.TraceID)
 	}
 
 	return strings.TrimSpace(output.String())
