@@ -124,6 +124,7 @@ The available flags are:
       --redirect-url string                                 client redirect url (default "http://localhost:9876/callback")
       --refresh-token string                                refresh token
       --request-object                                      pass request parameters as jwt
+      --resource strings                                    requested resource
       --response-mode string                                response mode
       --response-types strings                              response type
       --scopes strings                                      requested scopes
