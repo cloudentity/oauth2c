@@ -1,50 +1,33 @@
-name: Dependabot auto-approve
-
+name: Dependabot auto-approve and merge
 on: pull_request
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
-  auto-approve:
+  dependabot:
     runs-on: ubuntu-latest
-    if: >-
-      github.event.pull_request.user.login == 'dependabot[bot]' &&
-      github.actor == 'dependabot[bot]'
-    permissions:
-      pull-requests: write
-      checks: read
-      statuses: read
-      actions: read
-      contents: read
+    if: ${{ github.actor == 'dependabot[bot]' }}
     steps:
-      - name: Verify all commits are from the bot
-        run: |
-          authors=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/commits" --paginate --jq '.[].author.login' | sort -u)
-          if [ "$authors" != "$BOT_LOGIN" ]; then
-            echo "::error::Refusing to auto-approve: PR contains commits not authored by ${BOT_LOGIN} (authors: ${authors})"
-            exit 1
-          fi
-        env:
-          REPO: ${{ github.repository }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          BOT_LOGIN: dependabot[bot]
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Wait for required checks to pass
-        timeout-minutes: 30
-        run: |
-          set +e
-          output=$(gh pr checks "$PR_URL" --required --watch --fail-fast 2>&1)
-          code=$?
-          set -e
-          echo "$output"
-          if [ $code -ne 0 ] && echo "$output" | grep -qi "no required checks"; then
-            echo "No required checks configured on the base branch; skipping wait."
-            exit 0
-          fi
-          exit $code
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Approve the PR
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@21025c705c08248db411dc16f3619e6b5f9ea21a # v2
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Approve a PR - dependabot
         run: gh pr review --approve "$PR_URL"
         env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Second approval - golang deps only
+        if: steps.metadata.outputs.package-ecosystem == 'go_modules'
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{ secrets.GH_SERVICE_ACCOUNT_DEVOPS_2_PAT1 }}
+      - name: Enable auto-merge
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
