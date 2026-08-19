@@ -75,14 +75,14 @@ type ClientConfig struct {
 	Password               string
 	RefreshToken           string
 	Assertion              string `validate:"omitempty,json"`
-	AssertionJWT           string
+	AssertionJWT           string `validate:"omitempty,jwt"`
 	SigningKey             string `validate:"omitempty,uri|file"`
 	EncryptionKey          string `validate:"omitempty,uri|file"`
-	RequestedTokenType     string
+	RequestedTokenType     string `validate:"omitempty,uri"`
 	SubjectToken           string
-	SubjectTokenType       string `validate:"omitempty,oneof=urn:ietf:params:oauth:token-type:access_token"`
+	SubjectTokenType       string `validate:"omitempty,oneof=urn:ietf:params:oauth:token-type:access_token urn:ietf:params:oauth:token-type:id_token"`
 	ActorToken             string
-	ActorTokenType         string `validate:"omitempty,oneof=urn:ietf:params:oauth:token-type:access_token"`
+	ActorTokenType         string `validate:"omitempty,oneof=urn:ietf:params:oauth:token-type:access_token urn:ietf:params:oauth:token-type:id_token"`
 	IDTokenHint            string
 	LoginHint              string
 	IDPHint                string

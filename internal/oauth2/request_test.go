@@ -70,19 +70,7 @@ func TestRequestTokenResource(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			var got url.Values
-
-			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				body, err := io.ReadAll(r.Body)
-				require.NoError(t, err)
-
-				got, err = url.ParseQuery(string(body))
-				require.NoError(t, err)
-
-				w.Header().Set("Content-Type", "application/json")
-				_, _ = w.Write([]byte(`{"access_token":"tok","token_type":"Bearer","expires_in":3600}`))
-			}))
-			defer srv.Close()
+			srv, form := formCaptureServer(t)
 
 			cconfig := oauth2.ClientConfig{
 				ClientID:     "test-client",
@@ -96,7 +84,7 @@ func TestRequestTokenResource(t *testing.T) {
 			_, _, err := oauth2.RequestToken(context.Background(), cconfig, sconfig, &http.Client{})
 			require.NoError(t, err)
 
-			require.Equal(t, tc.expected, got["resource"])
+			require.Equal(t, tc.expected, form()["resource"])
 		})
 	}
 }
@@ -122,19 +110,7 @@ func TestRequestTokenRequestedTokenType(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			var got url.Values
-
-			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				body, err := io.ReadAll(r.Body)
-				require.NoError(t, err)
-
-				got, err = url.ParseQuery(string(body))
-				require.NoError(t, err)
-
-				w.Header().Set("Content-Type", "application/json")
-				_, _ = w.Write([]byte(`{"access_token":"tok","token_type":"N_A","expires_in":3600}`))
-			}))
-			defer srv.Close()
+			srv, form := formCaptureServer(t)
 
 			cconfig := oauth2.ClientConfig{
 				ClientID:           "test-client",
@@ -150,16 +126,88 @@ func TestRequestTokenRequestedTokenType(t *testing.T) {
 			_, _, err := oauth2.RequestToken(context.Background(), cconfig, sconfig, &http.Client{})
 			require.NoError(t, err)
 
-			require.Equal(t, tc.expected, got["requested_token_type"])
+			require.Equal(t, tc.expected, form()["requested_token_type"])
 		})
 	}
 }
 
-// An ID-JAG is signed by the identity provider, so the redeeming client has a token and no key to
-// sign one with. The absence of a signing key here is the point: it proves SignJWT is bypassed
-// rather than merely overridden.
+// An ID-JAG is signed by the identity provider, so the redeeming client presents the token it was
+// given rather than signing one of its own.
 func TestRequestTokenAssertionJWT(t *testing.T) {
 	const grant = "eyJ0eXAiOiJvYXV0aC1pZC1qYWcrand0IiwiYWxnIjoiUlMyNTYifQ.eyJpc3MiOiJodHRwczovL2lkcC5leGFtcGxlLmNvbSJ9.signature"
+
+	srv, form := formCaptureServer(t)
+
+	cconfig := oauth2.ClientConfig{
+		ClientID:     "test-client",
+		ClientSecret: "test-secret",
+		GrantType:    oauth2.JWTBearerGrantType,
+		AuthMethod:   oauth2.ClientSecretPostAuthMethod,
+		AssertionJWT: grant,
+	}
+	sconfig := oauth2.ServerConfig{TokenEndpoint: srv.URL}
+
+	request, _, err := oauth2.RequestToken(context.Background(), cconfig, sconfig, &http.Client{})
+	require.NoError(t, err)
+
+	require.Equal(t, []string{grant}, form()["assertion"])
+	require.Nil(t, request.SigningKey)
+}
+
+func TestRequestTokenAssertionJWTUnsetStillSigns(t *testing.T) {
+	srv, form := formCaptureServer(t)
+
+	cconfig := oauth2.ClientConfig{
+		ClientID:     "test-client",
+		ClientSecret: "test-secret",
+		GrantType:    oauth2.JWTBearerGrantType,
+		AuthMethod:   oauth2.ClientSecretPostAuthMethod,
+		SigningKey:   "../../data/rsa/key.json",
+		Assertion:    `{"sub":"jdoe@example.com"}`,
+	}
+	sconfig := oauth2.ServerConfig{TokenEndpoint: srv.URL}
+
+	request, _, err := oauth2.RequestToken(context.Background(), cconfig, sconfig, &http.Client{})
+	require.NoError(t, err)
+
+	assertion := form().Get("assertion")
+	require.NotEmpty(t, assertion)
+
+	token, claims, err := oauth2.UnsafeParseJWT(assertion)
+	require.NoError(t, err)
+	require.Equal(t, "RS256", token.Headers[0].Algorithm)
+	require.Equal(t, "jdoe@example.com", claims["sub"])
+	require.NotNil(t, request.SigningKey)
+}
+
+// Client authentication signs its own assertion, so its key must not be mistaken for one standing
+// behind a pre-signed grant.
+func TestRequestTokenAssertionJWTKeepsClientAuthKeySeparate(t *testing.T) {
+	const grant = "eyJ0eXAiOiJvYXV0aC1pZC1qYWcrand0IiwiYWxnIjoiUlMyNTYifQ.eyJpc3MiOiJodHRwczovL2lkcC5leGFtcGxlLmNvbSJ9.signature"
+
+	srv, form := formCaptureServer(t)
+
+	cconfig := oauth2.ClientConfig{
+		ClientID:     "test-client",
+		GrantType:    oauth2.JWTBearerGrantType,
+		AuthMethod:   oauth2.PrivateKeyJwtAuthMethod,
+		SigningKey:   "../../data/rsa/key.json",
+		AssertionJWT: grant,
+	}
+	sconfig := oauth2.ServerConfig{TokenEndpoint: srv.URL}
+
+	request, _, err := oauth2.RequestToken(context.Background(), cconfig, sconfig, &http.Client{})
+	require.NoError(t, err)
+
+	require.Equal(t, []string{grant}, form()["assertion"])
+	require.NotEmpty(t, form().Get("client_assertion"))
+
+	require.Nil(t, request.SigningKey)
+	require.NotNil(t, request.ClientAssertionKey)
+}
+
+func formCaptureServer(t *testing.T) (*httptest.Server, func() url.Values) {
+	t.Helper()
 
 	var got url.Values
 
@@ -173,32 +221,8 @@ func TestRequestTokenAssertionJWT(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`{"access_token":"tok","token_type":"Bearer","expires_in":3600}`))
 	}))
-	defer srv.Close()
 
-	cconfig := oauth2.ClientConfig{
-		ClientID:     "test-client",
-		ClientSecret: "test-secret",
-		GrantType:    oauth2.JWTBearerGrantType,
-		AuthMethod:   oauth2.ClientSecretPostAuthMethod,
-		AssertionJWT: grant,
-	}
-	sconfig := oauth2.ServerConfig{TokenEndpoint: srv.URL}
+	t.Cleanup(srv.Close)
 
-	_, _, err := oauth2.RequestToken(context.Background(), cconfig, sconfig, &http.Client{})
-	require.NoError(t, err)
-
-	require.Equal(t, []string{grant}, got["assertion"])
-}
-
-func TestRequestTokenAssertionJWTUnsetStillSigns(t *testing.T) {
-	cconfig := oauth2.ClientConfig{
-		ClientID:     "test-client",
-		ClientSecret: "test-secret",
-		GrantType:    oauth2.JWTBearerGrantType,
-		AuthMethod:   oauth2.ClientSecretPostAuthMethod,
-	}
-	sconfig := oauth2.ServerConfig{TokenEndpoint: "http://localhost:0"}
-
-	_, _, err := oauth2.RequestToken(context.Background(), cconfig, sconfig, &http.Client{})
-	require.Error(t, err)
+	return srv, func() url.Values { return got }
 }
