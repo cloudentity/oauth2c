@@ -75,8 +75,10 @@ type ClientConfig struct {
 	Password               string
 	RefreshToken           string
 	Assertion              string `validate:"omitempty,json"`
+	AssertionJWT           string
 	SigningKey             string `validate:"omitempty,uri|file"`
 	EncryptionKey          string `validate:"omitempty,uri|file"`
+	RequestedTokenType     string
 	SubjectToken           string
 	SubjectTokenType       string `validate:"omitempty,oneof=urn:ietf:params:oauth:token-type:access_token"`
 	ActorToken             string
@@ -531,7 +533,11 @@ func RequestToken(
 	case JWTBearerGrantType:
 		var assertion string
 
-		if assertion, request.SigningKey, err = SignJWT(
+		// A grant minted elsewhere - an ID-JAG, say - is presented as-is: signing our own claims
+		// over it would replace the very assertion the server is meant to verify.
+		if cconfig.AssertionJWT != "" {
+			assertion = cconfig.AssertionJWT
+		} else if assertion, request.SigningKey, err = SignJWT(
 			AssertionClaims(sconfig, cconfig),
 			JWKSigner(cconfig.SigningKey, hc),
 		); err != nil {
@@ -542,6 +548,10 @@ func RequestToken(
 	case TokenExchangeGrantType:
 		request.Form.Set("subject_token", cconfig.SubjectToken)
 		request.Form.Set("subject_token_type", cconfig.SubjectTokenType)
+
+		if cconfig.RequestedTokenType != "" {
+			request.Form.Set("requested_token_type", cconfig.RequestedTokenType)
+		}
 
 		if cconfig.ActorToken != "" {
 			request.Form.Set("actor_token", cconfig.ActorToken)
