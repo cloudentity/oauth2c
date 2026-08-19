@@ -365,7 +365,11 @@ func LogAssertion(request oauth2.Request, title string, name string) {
 	LogJson(claims)
 	pterm.Println("")
 
-	LogKey("Signing key", request.SigningKey)
+	// A pre-signed assertion has no key of ours behind it, and the guard matches how the
+	// signing key is logged elsewhere.
+	if request.SigningKey != nil {
+		LogKey("Signing key", request.SigningKey)
+	}
 }
 
 func LogKey(name string, key interface{}) {
