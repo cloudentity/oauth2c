@@ -100,3 +100,51 @@ func TestRequestTokenResource(t *testing.T) {
 		})
 	}
 }
+
+func TestRequestTokenClientID(t *testing.T) {
+	tests := map[string]struct {
+		authMethod string
+		expected   string
+	}{
+		"unset":              {authMethod: "", expected: "test-client"},
+		"none":               {authMethod: oauth2.NoneAuthMethod, expected: "test-client"},
+		"client_secret_post": {authMethod: oauth2.ClientSecretPostAuthMethod, expected: "test-client"},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			var got url.Values
+
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				body, err := io.ReadAll(r.Body)
+				require.NoError(t, err)
+
+				got, err = url.ParseQuery(string(body))
+				require.NoError(t, err)
+
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(`{"access_token":"tok","token_type":"Bearer","expires_in":3600}`))
+			}))
+			defer srv.Close()
+
+			cconfig := oauth2.ClientConfig{
+				ClientID:   "test-client",
+				GrantType:  oauth2.DeviceGrantType,
+				AuthMethod: tc.authMethod,
+			}
+			sconfig := oauth2.ServerConfig{TokenEndpoint: srv.URL}
+
+			_, _, err := oauth2.RequestToken(
+				context.Background(),
+				cconfig,
+				sconfig,
+				&http.Client{},
+				oauth2.WithDeviceCode("device-code"),
+			)
+			require.NoError(t, err)
+
+			require.Equal(t, tc.expected, got.Get("client_id"))
+			require.Equal(t, "device-code", got.Get("device_code"))
+		})
+	}
+}
